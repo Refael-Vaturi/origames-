@@ -51,6 +51,15 @@ interface GameVote {
   voted_player_id: string;
 }
 
+interface GameScore {
+  id: string;
+  room_id: string;
+  round_id: string;
+  player_id: string;
+  points: number;
+  reason: string;
+}
+
 const COLORS = [
   "hsl(267 84% 58%)",
   "hsl(340 82% 62%)",
