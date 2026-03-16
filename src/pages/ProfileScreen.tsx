@@ -107,9 +107,28 @@ const ProfileScreen = () => {
               <>
                 <h2 className="mt-3 font-display text-xl font-bold text-foreground">{displayName}</h2>
                 <p className="text-sm text-muted-foreground font-body">{username ? `@${username}` : ""}</p>
-                <p className="text-xs text-muted-foreground font-body mt-1">
-                  Level {profile?.level || 1} · {profile?.xp || 0} XP
-                </p>
+                {(() => {
+                  const xp = profile?.xp || 0;
+                  const level = profile?.level || 1;
+                  const xpInLevel = xp % 100;
+                  return (
+                    <div className="w-full mt-3 px-2">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-display text-sm font-bold text-primary">Lv.{level}</span>
+                        <span className="text-xs text-muted-foreground font-body">{xp} XP</span>
+                      </div>
+                      <div className="w-full h-3 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-gradient-to-r from-primary to-accent transition-all duration-500"
+                          style={{ width: `${xpInLevel}%` }}
+                        />
+                      </div>
+                      <p className="text-xs text-muted-foreground font-body mt-1 text-center">
+                        {100 - xpInLevel} XP {t("profile.toNextLevel") || "to next level"}
+                      </p>
+                    </div>
+                  );
+                })()}
               </>
             )}
           </div>

@@ -39,6 +39,7 @@ const translations: Translations = {
   "profile.wins": { en: "Wins", he: "ניצחונות" },
   "profile.caught": { en: "Fakes Caught", he: "Fakes שנתפסו" },
   "profile.survived": { en: "Survived", he: "שרדו" },
+  "profile.toNextLevel": { en: "to next level", he: "לרמה הבאה" },
 
   // Settings
   "settings.title": { en: "Settings", he: "הגדרות" },
