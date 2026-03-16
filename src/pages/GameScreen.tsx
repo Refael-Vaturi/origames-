@@ -453,6 +453,29 @@ const GameScreen = () => {
 
   const caughtFake = mostVotedPlayerId === currentRound?.fake_player_id;
 
+  // Cumulative scores per player
+  const cumulativeScores = useMemo(() => {
+    const totals: Record<string, number> = {};
+    scores.forEach((s) => {
+      totals[s.player_id] = (totals[s.player_id] || 0) + s.points;
+    });
+    return totals;
+  }, [scores]);
+
+  // Round-specific scores
+  const roundScores = useMemo(() => {
+    if (!currentRound) return {} as Record<string, number>;
+    const totals: Record<string, number> = {};
+    scores
+      .filter((s) => s.round_id === currentRound.id)
+      .forEach((s) => {
+        totals[s.player_id] = (totals[s.player_id] || 0) + s.points;
+      });
+    return totals;
+  }, [scores, currentRound]);
+
+  const myScore = myPlayerId ? cumulativeScores[myPlayerId] || 0 : 0;
+
   const hintsSubmittedCount = currentRoundHints.length;
   const votesSubmittedCount = currentRound ? votes.filter((v) => v.round_id === currentRound.id).length : 0;
 
