@@ -172,8 +172,8 @@ const LobbyScreen = () => {
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "rooms", filter: `id=eq.${roomId}` },
         (payload) => {
-          if ((payload.new as { status?: string })?.status === "playing") {
-            navigate("/game");
+        if ((payload.new as { status?: string })?.status === "playing") {
+            navigate("/game?room=" + roomId);
           }
         },
       )
