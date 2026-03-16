@@ -154,9 +154,11 @@ const LobbyScreen = () => {
     toast({ title: newReady ? `✅ ${t("lobby.ready")}` : t("lobby.notReady") });
   };
 
+  const allReady = players.length >= 2 && players.every(p => p.is_ready);
+
   const handleStartGame = async () => {
-    if (players.length < 2) {
-      toast({ title: t("lobby.waiting"), variant: "destructive" });
+    if (!allReady) {
+      toast({ title: t("lobby.notAllReady"), variant: "destructive" });
       return;
     }
     if (roomId) {
