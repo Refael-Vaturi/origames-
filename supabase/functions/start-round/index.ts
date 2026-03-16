@@ -41,7 +41,7 @@ const WORDS = [
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response("ok", { headers: corsHeaders });
   }
 
   try {
@@ -106,7 +106,7 @@ Deno.serve(async (req) => {
       .single();
 
     if (error) {
-      // Handle race condition - unique constraint violation
+      // Handle race condition
       if (error.code === "23505") {
         const { data: raceExisting } = await admin
           .from("game_rounds")

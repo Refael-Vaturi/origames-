@@ -87,6 +87,51 @@ export type Database = {
           },
         ]
       }
+      game_scores: {
+        Row: {
+          created_at: string
+          id: string
+          player_id: string
+          points: number
+          reason: string
+          room_id: string
+          round_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          player_id: string
+          points?: number
+          reason: string
+          room_id: string
+          round_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          player_id?: string
+          points?: number
+          reason?: string
+          room_id?: string
+          round_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_scores_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "game_scores_round_id_fkey"
+            columns: ["round_id"]
+            isOneToOne: false
+            referencedRelation: "game_rounds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       game_votes: {
         Row: {
           created_at: string

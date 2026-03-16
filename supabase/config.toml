@@ -1,1 +1,13 @@
 project_id = "vxrcfdnjdgdnwqosvvhx"
+
+[functions.join-room-guest]
+verify_jwt = false
+
+[functions.set-guest-ready]
+verify_jwt = false
+
+[functions.start-round]
+verify_jwt = false
+
+[functions.game-action]
+verify_jwt = false

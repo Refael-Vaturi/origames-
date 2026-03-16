@@ -8,7 +8,7 @@ const corsHeaders = {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response("ok", { headers: corsHeaders });
   }
 
   try {
@@ -27,10 +27,10 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Determine player identity
+    // ─── Determine player identity ───
     let playerId: string | null = null;
 
-    // Check guest credentials first
+    // 1) Check guest credentials
     if (body.guest_player_id && body.guest_token) {
       const { data: session } = await admin
         .from("room_guest_sessions")
@@ -44,32 +44,32 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Try authenticated user
+    // 2) Try authenticated user via getClaims
     if (!playerId) {
       const authHeader = req.headers.get("authorization");
-      if (authHeader) {
+      if (authHeader?.startsWith("Bearer ")) {
         const token = authHeader.replace("Bearer ", "");
         const userClient = createClient(supabaseUrl, anonKey, {
-          global: { headers: { Authorization: `Bearer ${token}` } },
+          global: { headers: { Authorization: authHeader } },
         });
-        const {
-          data: { user },
-        } = await userClient.auth.getUser();
+        const { data: claimsData, error: claimsError } = await userClient.auth.getClaims(token);
 
-        if (user) {
-          // Get round to find room_id
-          const { data: round } = await admin
+        if (!claimsError && claimsData?.claims?.sub) {
+          const userId = claimsData.claims.sub as string;
+
+          // Find player by user_id → need round to get room
+          const { data: roundData } = await admin
             .from("game_rounds")
             .select("room_id")
             .eq("id", round_id)
             .single();
 
-          if (round) {
+          if (roundData) {
             const { data: player } = await admin
               .from("room_players")
               .select("id")
-              .eq("room_id", round.room_id)
-              .eq("user_id", user.id)
+              .eq("room_id", roundData.room_id)
+              .eq("user_id", userId)
               .single();
 
             if (player) playerId = player.id;
@@ -85,6 +85,7 @@ Deno.serve(async (req) => {
       });
     }
 
+    // ─── Handle actions ───
     if (action === "submit-hint") {
       const { hint_round, hint_text } = body;
       if (!hint_round || !hint_text) {
@@ -133,6 +134,89 @@ Deno.serve(async (req) => {
           status: 500,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
+      }
+
+      // ─── Auto-calculate scores when all votes are in ───
+      const { data: roundData } = await admin
+        .from("game_rounds")
+        .select("room_id, fake_player_id")
+        .eq("id", round_id)
+        .single();
+
+      if (roundData) {
+        const { data: allPlayers } = await admin
+          .from("room_players")
+          .select("id")
+          .eq("room_id", roundData.room_id);
+
+        const { data: allVotes } = await admin
+          .from("game_votes")
+          .select("voter_id, voted_player_id")
+          .eq("round_id", round_id);
+
+        // Check if already scored
+        const { count: existingScores } = await admin
+          .from("game_scores")
+          .select("id", { count: "exact", head: true })
+          .eq("round_id", round_id);
+
+        if (
+          allPlayers &&
+          allVotes &&
+          allVotes.length >= allPlayers.length &&
+          (existingScores || 0) === 0
+        ) {
+          // Count votes per player
+          const voteCounts: Record<string, number> = {};
+          allVotes.forEach((v) => {
+            voteCounts[v.voted_player_id] = (voteCounts[v.voted_player_id] || 0) + 1;
+          });
+
+          // Find most voted player(s)
+          const maxVotes = Math.max(...Object.values(voteCounts));
+          const mostVoted = Object.entries(voteCounts)
+            .filter(([, count]) => count === maxVotes)
+            .map(([id]) => id);
+
+          const fakeId = roundData.fake_player_id;
+          const caughtFake = mostVoted.includes(fakeId);
+
+          const scores: {
+            room_id: string;
+            round_id: string;
+            player_id: string;
+            points: number;
+            reason: string;
+          }[] = [];
+
+          if (caughtFake) {
+            // Each player who voted correctly gets 10 points
+            allVotes.forEach((v) => {
+              if (v.voted_player_id === fakeId) {
+                scores.push({
+                  room_id: roundData.room_id,
+                  round_id,
+                  player_id: v.voter_id,
+                  points: 10,
+                  reason: "correct_vote",
+                });
+              }
+            });
+          } else {
+            // Fake survived — fake gets 15 points
+            scores.push({
+              room_id: roundData.room_id,
+              round_id,
+              player_id: fakeId,
+              points: 15,
+              reason: "survived",
+            });
+          }
+
+          if (scores.length > 0) {
+            await admin.from("game_scores").insert(scores);
+          }
+        }
       }
     } else {
       return new Response(JSON.stringify({ error: "Unknown action" }), {
