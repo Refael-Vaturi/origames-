@@ -5,7 +5,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Copy, Share2, Send, Crown, Check } from "lucide-react";
+import RoomChat from "@/components/RoomChat";
+import { ArrowLeft, Copy, Share2, Crown, Check } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
