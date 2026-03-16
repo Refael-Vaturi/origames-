@@ -14,7 +14,131 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string
+          fakes_caught: number
+          games_played: number
+          id: string
+          level: number
+          survived: number
+          updated_at: string
+          user_id: string
+          username: string | null
+          wins: number
+          xp: number
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string
+          fakes_caught?: number
+          games_played?: number
+          id?: string
+          level?: number
+          survived?: number
+          updated_at?: string
+          user_id: string
+          username?: string | null
+          wins?: number
+          xp?: number
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string
+          fakes_caught?: number
+          games_played?: number
+          id?: string
+          level?: number
+          survived?: number
+          updated_at?: string
+          user_id?: string
+          username?: string | null
+          wins?: number
+          xp?: number
+        }
+        Relationships: []
+      }
+      room_players: {
+        Row: {
+          id: string
+          is_ready: boolean
+          joined_at: string
+          room_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          is_ready?: boolean
+          joined_at?: string
+          room_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          is_ready?: boolean
+          joined_at?: string
+          room_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "room_players_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rooms: {
+        Row: {
+          code: string
+          created_at: string
+          discussion_time: number
+          host_id: string
+          id: string
+          is_private: boolean
+          max_players: number
+          name: string
+          response_time: number
+          rounds: number
+          status: string
+          vote_time: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          discussion_time?: number
+          host_id: string
+          id?: string
+          is_private?: boolean
+          max_players?: number
+          name?: string
+          response_time?: number
+          rounds?: number
+          status?: string
+          vote_time?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          discussion_time?: number
+          host_id?: string
+          id?: string
+          is_private?: boolean
+          max_players?: number
+          name?: string
+          response_time?: number
+          rounds?: number
+          status?: string
+          vote_time?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
