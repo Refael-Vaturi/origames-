@@ -84,6 +84,7 @@ const translations: Translations = {
   "lobby.ready": { en: "Ready", he: "מוכן" },
   "lobby.notReady": { en: "Not Ready", he: "לא מוכן" },
   "lobby.startGame": { en: "Start Game", he: "התחל משחק" },
+  "lobby.notAllReady": { en: "Not all players are ready", he: "לא כל השחקנים מוכנים" },
   "lobby.chat": { en: "Chat", he: "צ'אט" },
   "lobby.chatPlaceholder": { en: "Type a message...", he: "...כתוב הודעה" },
   "lobby.waiting": { en: "Waiting for players...", he: "...ממתין לשחקנים" },
