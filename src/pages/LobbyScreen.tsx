@@ -370,20 +370,6 @@ const LobbyScreen = () => {
       </div>
 
       <div className="border-t border-border px-4 py-3 space-y-3">
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={chatInput}
-            onChange={(e) => setChatInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSendChat()}
-            placeholder={t("lobby.chatPlaceholder")}
-            className="flex-1 h-11 px-4 rounded-2xl border-2 border-input bg-background font-body text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
-          />
-          <button onClick={handleSendChat} className="h-11 w-11 rounded-2xl gradient-hero flex items-center justify-center text-primary-foreground">
-            <Send className="w-4 h-4" />
-          </button>
-        </div>
-
         <div className="flex gap-3">
           <Button variant={isReady ? "secondary" : "game"} size="lg" className="flex-1" onClick={handleReady}>
             {isReady ? t("lobby.notReady") : t("lobby.ready")}
