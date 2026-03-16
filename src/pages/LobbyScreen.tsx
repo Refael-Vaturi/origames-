@@ -294,8 +294,8 @@ const LobbyScreen = () => {
             {isReady ? t("lobby.notReady") : t("lobby.ready")}
           </Button>
           {isHost && (
-            <Button variant="hero" size="lg" className="flex-1" onClick={handleStartGame}>
-              {t("lobby.startGame")}
+            <Button variant="hero" size="lg" className="flex-1" onClick={handleStartGame} disabled={!allReady}>
+              {t("lobby.startGame")} {allReady ? "" : `(${players.filter(p => p.is_ready).length}/${players.length})`}
             </Button>
           )}
         </div>
