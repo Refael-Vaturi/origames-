@@ -111,6 +111,23 @@ Deno.serve(async (req) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
+
+      // Award XP for submitting a hint (auth users only)
+      const { data: roundForHint } = await admin
+        .from("game_rounds")
+        .select("room_id")
+        .eq("id", round_id)
+        .single();
+      if (roundForHint) {
+        const { data: hintPlayer } = await admin
+          .from("room_players")
+          .select("user_id, is_guest")
+          .eq("id", playerId)
+          .single();
+        if (hintPlayer && !hintPlayer.is_guest) {
+          await admin.rpc("increment_profile_stat", { p_user_id: hintPlayer.user_id, p_field: "xp", p_amount: 5 });
+        }
+      }
     } else if (action === "submit-vote") {
       const { voted_player_id } = body;
       if (!voted_player_id) {
