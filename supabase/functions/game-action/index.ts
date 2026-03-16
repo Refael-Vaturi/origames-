@@ -139,14 +139,14 @@ Deno.serve(async (req) => {
       // ─── Auto-calculate scores when all votes are in ───
       const { data: roundData } = await admin
         .from("game_rounds")
-        .select("room_id, fake_player_id")
+        .select("room_id, fake_player_id, round_number")
         .eq("id", round_id)
         .single();
 
       if (roundData) {
         const { data: allPlayers } = await admin
           .from("room_players")
-          .select("id")
+          .select("id, user_id, is_guest")
           .eq("room_id", roundData.room_id);
 
         const { data: allVotes } = await admin
@@ -189,8 +189,13 @@ Deno.serve(async (req) => {
             reason: string;
           }[] = [];
 
+          // Helper: get user_id for a player_id (only auth users)
+          const getAuthUserId = (pid: string) => {
+            const p = allPlayers.find((pl) => pl.id === pid);
+            return p && !p.is_guest ? p.user_id : null;
+          };
+
           if (caughtFake) {
-            // Each player who voted correctly gets 10 points
             allVotes.forEach((v) => {
               if (v.voted_player_id === fakeId) {
                 scores.push({
@@ -203,7 +208,6 @@ Deno.serve(async (req) => {
               }
             });
           } else {
-            // Fake survived — fake gets 15 points
             scores.push({
               room_id: roundData.room_id,
               round_id,
@@ -215,6 +219,65 @@ Deno.serve(async (req) => {
 
           if (scores.length > 0) {
             await admin.from("game_scores").insert(scores);
+          }
+
+          // ─── Update profile stats (only for authenticated users) ───
+          // Per-round: fakes_caught / survived
+          if (caughtFake) {
+            // Increment fakes_caught for each auth user who voted correctly
+            const correctVoterUserIds = allVotes
+              .filter((v) => v.voted_player_id === fakeId)
+              .map((v) => getAuthUserId(v.voter_id))
+              .filter(Boolean) as string[];
+
+            for (const uid of correctVoterUserIds) {
+              await admin.rpc("increment_profile_stat", { p_user_id: uid, p_field: "fakes_caught", p_amount: 1 });
+            }
+          } else {
+            // Increment survived for fake player if authenticated
+            const fakeUserId = getAuthUserId(fakeId);
+            if (fakeUserId) {
+              await admin.rpc("increment_profile_stat", { p_user_id: fakeUserId, p_field: "survived", p_amount: 1 });
+            }
+          }
+
+          // ─── Last round? Update games_played + wins ───
+          const { data: roomData } = await admin
+            .from("rooms")
+            .select("rounds")
+            .eq("id", roundData.room_id)
+            .single();
+
+          if (roomData && roundData.round_number >= roomData.rounds) {
+            // Increment games_played for all auth players
+            const authUserIds = allPlayers
+              .filter((p) => !p.is_guest)
+              .map((p) => p.user_id);
+
+            for (const uid of authUserIds) {
+              await admin.rpc("increment_profile_stat", { p_user_id: uid, p_field: "games_played", p_amount: 1 });
+            }
+
+            // Find winner (highest cumulative score)
+            const { data: allScores } = await admin
+              .from("game_scores")
+              .select("player_id, points")
+              .eq("room_id", roundData.room_id);
+
+            if (allScores && allScores.length > 0) {
+              const totals: Record<string, number> = {};
+              allScores.forEach((s) => {
+                totals[s.player_id] = (totals[s.player_id] || 0) + s.points;
+              });
+              const maxPts = Math.max(...Object.values(totals));
+              const winnerId = Object.entries(totals).find(([, pts]) => pts === maxPts)?.[0];
+              if (winnerId) {
+                const winnerUserId = getAuthUserId(winnerId);
+                if (winnerUserId) {
+                  await admin.rpc("increment_profile_stat", { p_user_id: winnerUserId, p_field: "wins", p_amount: 1 });
+                }
+              }
+            }
           }
         }
       }
