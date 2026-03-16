@@ -13,6 +13,38 @@ const translations: Translations = {
   "welcome.guest": { en: "Continue as Guest", he: "המשך כאורח" },
   "welcome.joinCode": { en: "Join with Code", he: "הצטרף עם קוד" },
 
+  // Auth
+  "auth.login": { en: "Login", he: "התחברות" },
+  "auth.register": { en: "Register", he: "הרשמה" },
+  "auth.google": { en: "Continue with Google", he: "המשך עם Google" },
+  "auth.apple": { en: "Continue with Apple", he: "המשך עם Apple" },
+  "auth.or": { en: "or", he: "או" },
+  "auth.email": { en: "Email", he: "אימייל" },
+  "auth.password": { en: "Password", he: "סיסמה" },
+  "auth.displayName": { en: "Display Name", he: "שם תצוגה" },
+  "auth.loginBtn": { en: "Login", he: "התחבר" },
+  "auth.registerBtn": { en: "Create Account", he: "צור חשבון" },
+  "auth.switchRegister": { en: "Don't have an account? Register", he: "אין לך חשבון? הירשם" },
+  "auth.switchLogin": { en: "Already have an account? Login", he: "יש לך חשבון? התחבר" },
+
+  // Profile
+  "profile.title": { en: "Profile", he: "פרופיל" },
+  "profile.displayName": { en: "Display Name", he: "שם תצוגה" },
+  "profile.save": { en: "Save", he: "שמור" },
+  "profile.gamesPlayed": { en: "Games Played", he: "משחקים ששוחקו" },
+  "profile.wins": { en: "Wins", he: "ניצחונות" },
+  "profile.caught": { en: "Fakes Caught", he: "Fakes שנתפסו" },
+  "profile.survived": { en: "Survived", he: "שרדו" },
+
+  // Settings
+  "settings.title": { en: "Settings", he: "הגדרות" },
+  "settings.language": { en: "Language", he: "שפה" },
+  "settings.sound": { en: "Sound Effects", he: "אפקטי קול" },
+  "settings.vibration": { en: "Vibration", he: "רטט" },
+  "settings.darkMode": { en: "Dark Mode", he: "מצב כהה" },
+  "settings.about": { en: "About Fake It Fast", he: "אודות Fake It Fast" },
+  "settings.logout": { en: "Logout", he: "התנתק" },
+
   // Home
   "home.startGlobal": { en: "Start Global Game", he: "התחל משחק עולמי" },
   "home.playFriends": { en: "Play with Friends", he: "שחק עם חברים" },
@@ -21,6 +53,7 @@ const translations: Translations = {
   "home.onlineFriends": { en: "Online Friends", he: "חברים אונליין" },
   "home.invites": { en: "Invites", he: "הזמנות" },
   "home.settings": { en: "Settings", he: "הגדרות" },
+  "home.notifications": { en: "Notifications", he: "התראות" },
 
   // Join
   "join.title": { en: "Join a Room", he: "הצטרף לחדר" },
@@ -50,26 +83,12 @@ const translations: Translations = {
   "lobby.notReady": { en: "Not Ready", he: "לא מוכן" },
   "lobby.startGame": { en: "Start Game", he: "התחל משחק" },
   "lobby.chat": { en: "Chat", he: "צ'אט" },
+  "lobby.chatPlaceholder": { en: "Type a message...", he: "...כתוב הודעה" },
   "lobby.waiting": { en: "Waiting for players...", he: "...ממתין לשחקנים" },
   "lobby.settings": { en: "Game Settings", he: "הגדרות משחק" },
-
-  // Game
-  "game.yourSecret": { en: "This is your secret", he: "זה הסוד שלך" },
-  "game.dontExpose": { en: "Don't expose yourself too early!", he: "!אל תיחשף מדי מוקדם" },
-  "game.giveHint": { en: "Give a clever hint", he: "תן רמז חכם" },
-  "game.whoIsDifferent": { en: "Who got something different?", he: "?מי לדעתך קיבל משהו שונה" },
-  "game.reveal": { en: "The truth is revealed!", he: "!האמת נחשפת" },
-  "game.wasFake": { en: "was the Fake!", he: "!היה ה-Fake" },
-  "game.survived": { en: "The Fake survived!", he: "!ה-Fake שרד" },
-  "game.round": { en: "Round", he: "סיבוב" },
-  "game.score": { en: "Score", he: "ניקוד" },
-  "game.vote": { en: "Vote", he: "הצבע" },
-  "game.discuss": { en: "Discussion", he: "דיון" },
-  "game.nextRound": { en: "Next Round", he: "סיבוב הבא" },
-  "game.results": { en: "Results", he: "תוצאות" },
-  "game.rematch": { en: "Rematch", he: "משחק חוזר" },
-  "game.backToLobby": { en: "Back to Lobby", he: "חזרה ללובי" },
-  "game.inviteFriends": { en: "Invite Friends", he: "הזמן חברים" },
+  "lobby.codeCopied": { en: "Room code copied!", he: "!קוד החדר הועתק" },
+  "lobby.linkCopied": { en: "Invite link copied!", he: "!קישור ההזמנה הועתק" },
+  "lobby.copyFailed": { en: "Failed to copy", he: "ההעתקה נכשלה" },
 
   // Matchmaking
   "matchmaking.searching": { en: "Searching", he: "מחפש" },
@@ -88,6 +107,24 @@ const translations: Translations = {
   "tutorial.step3Desc": { en: "Discuss the hints and vote who you think got a different word. Catch the Fake to score points!", he: "דונו על הרמזים והצביעו מי לדעתכם קיבל מילה שונה. תפסו את ה-Fake כדי לצבור נקודות!" },
   "tutorial.step4Title": { en: "The Reveal!", he: "!החשיפה" },
   "tutorial.step4Desc": { en: "Find out who was the Fake! If caught, the majority scores. If not — the Fake wins bonus points!", he: "גלו מי היה ה-Fake! אם נתפס — הרוב מרוויח. אם לא — ה-Fake מקבל בונוס!" },
+
+  // Game
+  "game.yourSecret": { en: "This is your secret", he: "זה הסוד שלך" },
+  "game.dontExpose": { en: "Don't expose yourself too early!", he: "!אל תיחשף מדי מוקדם" },
+  "game.giveHint": { en: "Give a clever hint", he: "תן רמז חכם" },
+  "game.whoIsDifferent": { en: "Who got something different?", he: "?מי לדעתך קיבל משהו שונה" },
+  "game.reveal": { en: "The truth is revealed!", he: "!האמת נחשפת" },
+  "game.wasFake": { en: "was the Fake!", he: "!היה ה-Fake" },
+  "game.survived": { en: "The Fake survived!", he: "!ה-Fake שרד" },
+  "game.round": { en: "Round", he: "סיבוב" },
+  "game.score": { en: "Score", he: "ניקוד" },
+  "game.vote": { en: "Vote", he: "הצבע" },
+  "game.discuss": { en: "Discussion", he: "דיון" },
+  "game.nextRound": { en: "Next Round", he: "סיבוב הבא" },
+  "game.results": { en: "Results", he: "תוצאות" },
+  "game.rematch": { en: "Rematch", he: "משחק חוזר" },
+  "game.backToLobby": { en: "Back to Lobby", he: "חזרה ללובי" },
+  "game.inviteFriends": { en: "Invite Friends", he: "הזמן חברים" },
 
   // General
   "general.language": { en: "עברית", he: "English" },
