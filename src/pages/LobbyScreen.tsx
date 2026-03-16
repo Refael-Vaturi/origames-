@@ -36,9 +36,8 @@ const LobbyScreen = () => {
   const { t } = useLanguage();
   const { user, profile } = useAuth();
 
-  const [chatInput, setChatInput] = useState("");
   const [isReady, setIsReady] = useState(false);
-  const [messages, setMessages] = useState<{ name: string; text: string }[]>([]);
+  const [copied, setCopied] = useState(false);
   const [copied, setCopied] = useState(false);
   const [players, setPlayers] = useState<RoomPlayer[]>([]);
   const [roomId, setRoomId] = useState<string | null>(null);
