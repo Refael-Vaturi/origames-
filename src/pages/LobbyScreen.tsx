@@ -154,9 +154,11 @@ const LobbyScreen = () => {
     toast({ title: newReady ? `✅ ${t("lobby.ready")}` : t("lobby.notReady") });
   };
 
+  const allReady = players.length >= 2 && players.every(p => p.is_ready);
+
   const handleStartGame = async () => {
-    if (players.length < 2) {
-      toast({ title: t("lobby.waiting"), variant: "destructive" });
+    if (!allReady) {
+      toast({ title: t("lobby.notAllReady"), variant: "destructive" });
       return;
     }
     if (roomId) {
@@ -292,8 +294,8 @@ const LobbyScreen = () => {
             {isReady ? t("lobby.notReady") : t("lobby.ready")}
           </Button>
           {isHost && (
-            <Button variant="hero" size="lg" className="flex-1" onClick={handleStartGame}>
-              {t("lobby.startGame")}
+            <Button variant="hero" size="lg" className="flex-1" onClick={handleStartGame} disabled={!allReady}>
+              {t("lobby.startGame")} {allReady ? "" : `(${players.filter(p => p.is_ready).length}/${players.length})`}
             </Button>
           )}
         </div>
