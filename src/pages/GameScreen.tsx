@@ -804,16 +804,32 @@ const GameScreen = () => {
                 })()}
               </div>
 
-              {/* Vote breakdown */}
-              <div className="space-y-1 mb-4">
-                {players.map((p, i) => (
-                  <div key={p.id} className="flex items-center justify-between text-sm px-2">
-                    <span className="font-body text-muted-foreground">{getPlayerName(p)}</span>
-                    <span className="font-display font-bold text-foreground">
-                      {voteResults[p.id] || 0} {t("game.vote")}
-                    </span>
-                  </div>
-                ))}
+              {/* Score + Vote breakdown */}
+              <div className="space-y-2 mb-4">
+                {players
+                  .slice()
+                  .sort((a, b) => (cumulativeScores[b.id] || 0) - (cumulativeScores[a.id] || 0))
+                  .map((p, i) => {
+                    const rs = roundScores[p.id] || 0;
+                    const total = cumulativeScores[p.id] || 0;
+                    return (
+                      <div key={p.id} className="flex items-center justify-between text-sm px-2 py-1 bg-background rounded-xl">
+                        <div className="flex items-center gap-2">
+                          <span className="font-display font-bold text-xs text-muted-foreground w-4">{i + 1}</span>
+                          <span className="font-body text-foreground">{getPlayerName(p)}</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          {rs > 0 && (
+                            <span className="text-xs font-display font-semibold text-game-green">+{rs}</span>
+                          )}
+                          <span className="font-display font-bold text-primary">{total}</span>
+                          <span className="text-xs text-muted-foreground">
+                            ({voteResults[p.id] || 0} {t("game.vote")})
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
               </div>
 
               <Button variant="hero" size="lg" className="w-full" onClick={handleNextRound}>
