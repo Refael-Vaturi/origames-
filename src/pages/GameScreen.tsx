@@ -222,7 +222,24 @@ const GameScreen = () => {
           }
         },
       )
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "game_scores", filter: `room_id=eq.${roomId}` },
+        (payload) => {
+          const score = payload.new as GameScore;
+          setScores((prev) => (prev.some((s) => s.id === score.id) ? prev : [...prev, score]));
+        },
+      )
       .subscribe();
+
+    // Fetch existing scores for this room
+    supabase
+      .from("game_scores")
+      .select("*")
+      .eq("room_id", roomId)
+      .then(({ data }) => {
+        if (data) setScores(data as unknown as GameScore[]);
+      });
 
     return () => {
       supabase.removeChannel(channel);
