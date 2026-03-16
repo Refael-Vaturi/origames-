@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Mail, Lock, Eye, EyeOff } from "lucide-react";
@@ -10,25 +10,53 @@ import { toast } from "@/hooks/use-toast";
 
 const AuthScreen = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { t } = useLanguage();
-  const [mode, setMode] = useState<"login" | "register">("login");
+
+  const redirectPath = useMemo(() => {
+    const target = searchParams.get("redirect") || "/home";
+    if (!target.startsWith("/") || target.startsWith("//")) return "/home";
+    return target;
+  }, [searchParams]);
+
+  const modeFromUrl = searchParams.get("mode") === "register" ? "register" : "login";
+  const [mode, setMode] = useState<"login" | "register">(modeFromUrl);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    setMode(modeFromUrl);
+  }, [modeFromUrl]);
+
+  const handleAuthError = (error: unknown) => {
+    const message = String((error as { message?: string })?.message || error || "");
+
+    if (message.includes("Email not confirmed") || message.includes("email_not_confirmed")) {
+      toast({ title: t("auth.emailNotConfirmed"), variant: "destructive" });
+      return;
+    }
+
+    if (message.includes("Invalid login credentials") || message.includes("invalid_credentials")) {
+      toast({ title: t("auth.invalidCredentials"), variant: "destructive" });
+      return;
+    }
+
+    toast({ title: t("auth.error") || "Error", description: message, variant: "destructive" });
+  };
+
   const handleGoogleSignIn = async () => {
     setLoading(true);
     try {
       const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin + "/home",
+        redirect_uri: window.location.origin + redirectPath,
       });
-      if (result.error) {
-        toast({ title: t("auth.error") || "Error", description: String(result.error), variant: "destructive" });
-      }
+
+      if (result.error) handleAuthError(result.error);
     } catch (e) {
-      toast({ title: "Error", description: String(e), variant: "destructive" });
+      handleAuthError(e);
     } finally {
       setLoading(false);
     }
@@ -38,13 +66,12 @@ const AuthScreen = () => {
     setLoading(true);
     try {
       const result = await lovable.auth.signInWithOAuth("apple", {
-        redirect_uri: window.location.origin + "/home",
+        redirect_uri: window.location.origin + redirectPath,
       });
-      if (result.error) {
-        toast({ title: t("auth.error") || "Error", description: String(result.error), variant: "destructive" });
-      }
+
+      if (result.error) handleAuthError(result.error);
     } catch (e) {
-      toast({ title: "Error", description: String(e), variant: "destructive" });
+      handleAuthError(e);
     } finally {
       setLoading(false);
     }
@@ -53,6 +80,7 @@ const AuthScreen = () => {
   const handleSubmit = async () => {
     if (!email || !password) return;
     setLoading(true);
+
     try {
       if (mode === "register") {
         const { error } = await supabase.auth.signUp({
@@ -60,18 +88,20 @@ const AuthScreen = () => {
           password,
           options: {
             data: { display_name: displayName || "Player" },
-            emailRedirectTo: window.location.origin + "/home",
+            emailRedirectTo: window.location.origin + redirectPath,
           },
         });
+
         if (error) throw error;
+
         toast({ title: t("auth.checkEmail") || "Check your email to confirm!" });
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        navigate("/home");
+        navigate(redirectPath, { replace: true });
       }
-    } catch (e: any) {
-      toast({ title: "Error", description: e.message, variant: "destructive" });
+    } catch (e) {
+      handleAuthError(e);
     } finally {
       setLoading(false);
     }
@@ -95,7 +125,6 @@ const AuthScreen = () => {
             </h1>
           </div>
 
-          {/* Google / Apple buttons */}
           <div className="space-y-3 mb-6">
             <button
               onClick={handleGoogleSignIn}
@@ -123,14 +152,12 @@ const AuthScreen = () => {
             </button>
           </div>
 
-          {/* Divider */}
           <div className="flex items-center gap-3 mb-6">
             <div className="flex-1 h-px bg-border" />
             <span className="text-xs text-muted-foreground font-body">{t("auth.or")}</span>
             <div className="flex-1 h-px bg-border" />
           </div>
 
-          {/* Form */}
           <div className="space-y-3 mb-4">
             {mode === "register" && (
               <input
@@ -163,6 +190,7 @@ const AuthScreen = () => {
               <button
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute end-4 top-1/2 -translate-y-1/2 text-muted-foreground"
+                type="button"
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
