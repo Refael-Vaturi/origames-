@@ -297,8 +297,9 @@ Deno.serve(async (req) => {
               const winnerId = Object.entries(totals).find(([, pts]) => pts === maxPts)?.[0];
               if (winnerId) {
                 const winnerUserId = getAuthUserId(winnerId);
-                if (winnerUserId) {
+              if (winnerUserId) {
                   await admin.rpc("increment_profile_stat", { p_user_id: winnerUserId, p_field: "wins", p_amount: 1 });
+                  await admin.rpc("increment_profile_stat", { p_user_id: winnerUserId, p_field: "xp", p_amount: 25 });
                 }
               }
             }
