@@ -347,15 +347,15 @@ const LobbyScreen = () => {
           })}
         </motion.div>
 
-        {messages.length > 0 && (
-          <div className="space-y-2 mb-4">
-            <h2 className="font-display text-sm font-semibold text-muted-foreground uppercase tracking-wider">{t("lobby.chat")}</h2>
-            {messages.map((msg, i) => (
-              <div key={i} className="bg-card rounded-2xl p-3 shadow-card">
-                <span className="font-display font-semibold text-xs text-primary">{msg.name}</span>
-                <p className="text-sm font-body text-foreground">{msg.text}</p>
-              </div>
-            ))}
+        {roomId && myPlayerId && (
+          <div className="mb-4">
+            <h2 className="font-display text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2">{t("lobby.chat")}</h2>
+            <RoomChat
+              roomId={roomId}
+              playerId={myPlayerId}
+              playerName={myPlayerName}
+              maxHeight="180px"
+            />
           </div>
         )}
 
