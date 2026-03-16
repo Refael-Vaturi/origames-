@@ -62,23 +62,61 @@ export type Database = {
         }
         Relationships: []
       }
+      room_guest_sessions: {
+        Row: {
+          created_at: string
+          id: string
+          room_player_id: string
+          session_token: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          room_player_id: string
+          session_token: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          room_player_id?: string
+          session_token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "room_guest_sessions_room_player_id_fkey"
+            columns: ["room_player_id"]
+            isOneToOne: false
+            referencedRelation: "room_players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       room_players: {
         Row: {
+          guest_avatar: string | null
+          guest_name: string | null
           id: string
+          is_guest: boolean
           is_ready: boolean
           joined_at: string
           room_id: string
           user_id: string
         }
         Insert: {
+          guest_avatar?: string | null
+          guest_name?: string | null
           id?: string
+          is_guest?: boolean
           is_ready?: boolean
           joined_at?: string
           room_id: string
           user_id: string
         }
         Update: {
+          guest_avatar?: string | null
+          guest_name?: string | null
           id?: string
+          is_guest?: boolean
           is_ready?: boolean
           joined_at?: string
           room_id?: string
