@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import RoomChat from "@/components/RoomChat";
-import { Eye, EyeOff, MessageSquare, Vote, Sparkles, Loader2 } from "lucide-react";
+import { Eye, EyeOff, MessageSquare, Send, Vote, Sparkles, Loader2 } from "lucide-react";
 
 type Phase =
   | "loading"
