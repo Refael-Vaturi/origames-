@@ -1,215 +1,455 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Eye, EyeOff, MessageSquare, Send, Vote, Sparkles } from "lucide-react";
+import { Eye, EyeOff, MessageSquare, Send, Vote, Sparkles, Loader2 } from "lucide-react";
 
-type GamePhase = "secret" | "hint1" | "hint2" | "hint3" | "discussion" | "voting" | "reveal";
+type Phase =
+  | "loading"
+  | "secret"
+  | "hint"
+  | "waiting_hints"
+  | "hint_reveal"
+  | "discussion"
+  | "voting"
+  | "waiting_votes"
+  | "reveal";
 
-// Each word has its own set of specific hints
-interface WordEntry {
-  word: string;
-  hints: string[];
+interface Player {
+  id: string;
+  user_id: string;
+  is_guest: boolean;
+  guest_name: string | null;
+  guest_avatar: string | null;
+  display_name?: string;
 }
 
-const wordsEn: WordEntry[] = [
-  { word: "Basketball", hints: ["You dribble it", "Orange and round", "Slam dunk", "Court sport", "Hoops"] },
-  { word: "Pizza", hints: ["Cheesy slices", "Italian origin", "Comes in a box", "Pepperoni on top", "Baked in an oven"] },
-  { word: "Dog", hints: ["Man's best friend", "It barks", "Wags its tail", "Loves walks", "Fetches sticks"] },
-  { word: "Guitar", hints: ["Has strings", "You strum it", "Rock instrument", "Has a neck", "Acoustic or electric"] },
-  { word: "Beach", hints: ["Sandy ground", "Waves crash here", "Sunscreen needed", "Seashells around", "Surfing spot"] },
-  { word: "Coffee", hints: ["Morning drink", "Caffeine boost", "Brewed hot", "Comes in beans", "Barista makes it"] },
-  { word: "Airplane", hints: ["It flies high", "Has wings", "Runway needed", "Pilot controls it", "Turbulence possible"] },
-  { word: "Moon", hints: ["Shines at night", "Has craters", "Orbits Earth", "Full or crescent", "Astronauts visited"] },
-  { word: "Doctor", hints: ["Wears white coat", "Prescribes medicine", "Uses stethoscope", "Works in hospital", "Heals people"] },
-  { word: "Chocolate", hints: ["Sweet treat", "Made from cocoa", "Melts in heat", "Dark or milk", "Valentine's gift"] },
-  { word: "Rain", hints: ["Falls from clouds", "You need umbrella", "Makes puddles", "Waters plants", "Thunder follows"] },
-  { word: "Lion", hints: ["King of jungle", "Has a mane", "Roars loudly", "Lives in pride", "African predator"] },
-  { word: "Bicycle", hints: ["Two wheels", "You pedal it", "Has handlebars", "Chain driven", "Eco-friendly ride"] },
-  { word: "Apple", hints: ["Red or green", "Grows on trees", "Has seeds inside", "Crunchy bite", "Keeps doctor away"] },
-  { word: "Camera", hints: ["Takes pictures", "Has a lens", "Flash of light", "Say cheese", "Memory captured"] },
-  { word: "Elephant", hints: ["Largest land animal", "Has a trunk", "Big floppy ears", "Never forgets", "Gray and wrinkly"] },
-  { word: "Ice Cream", hints: ["Cold dessert", "Comes in cone", "Many flavors", "Melts fast", "Summer favorite"] },
-  { word: "Volcano", hints: ["Erupts with lava", "Mountain shaped", "Very dangerous", "Smoke rises", "Hot inside"] },
-];
+interface GameRound {
+  id: string;
+  room_id: string;
+  round_number: number;
+  word_en: string;
+  word_he: string;
+  fake_player_id: string;
+}
 
-const wordsHe: WordEntry[] = [
-  { word: "כדורסל", hints: ["מכדררים אותו", "כתום ועגול", "סלאם דאנק", "ספורט מגרש", "טבעת וקרש"] },
-  { word: "פיצה", hints: ["פרוסות עם גבינה", "מקור איטלקי", "מגיעה בקופסה", "פפרוני למעלה", "נאפית בתנור"] },
-  { word: "כלב", hints: ["החבר הכי טוב", "הוא נובח", "מכשכש בזנב", "אוהב טיולים", "מביא מקלות"] },
-  { word: "גיטרה", hints: ["יש לה מיתרים", "מנגנים עליה", "כלי רוק", "יש לה צוואר", "אקוסטית או חשמלית"] },
-  { word: "חוף", hints: ["קרקע חולית", "גלים מתנפצים", "צריך קרם הגנה", "צדפים מסביב", "מקום לגלוש"] },
-  { word: "קפה", hints: ["משקה בוקר", "בוסט קפאין", "מחלחל חם", "מגיע בפולים", "בריסטה מכין"] },
-  { word: "מטוס", hints: ["טס גבוה", "יש לו כנפיים", "צריך מסלול", "טייס שולט", "טורבולנציה אפשרית"] },
-  { word: "ירח", hints: ["מאיר בלילה", "יש לו מכתשים", "סובב את כדור הארץ", "מלא או חרמש", "אסטרונאוטים ביקרו"] },
-  { word: "רופא", hints: ["לובש חלוק לבן", "רושם תרופות", "משתמש בסטטוסקופ", "עובד בבית חולים", "מרפא אנשים"] },
-  { word: "שוקולד", hints: ["חטיף מתוק", "עשוי מקקאו", "נמס בחום", "מריר או חלב", "מתנת ולנטיין"] },
-  { word: "גשם", hints: ["יורד מעננים", "צריך מטריה", "יוצר שלוליות", "משקה צמחים", "רעם אחרי"] },
-  { word: "אריה", hints: ["מלך הג'ונגל", "יש לו רעמה", "שואג בקול", "חי בלהקה", "טורף אפריקאי"] },
-  { word: "אופניים", hints: ["שני גלגלים", "דוושים עליהם", "יש כידון", "שרשרת מניעה", "תחבורה ירוקה"] },
-  { word: "תפוח", hints: ["אדום או ירוק", "גדל על עץ", "יש גרעינים בפנים", "ביס פריך", "מרחיק רופא"] },
-  { word: "מצלמה", hints: ["מצלמת תמונות", "יש לה עדשה", "הבזק אור", "תגיד צ'יז", "זיכרון נלכד"] },
-  { word: "פיל", hints: ["היונק הגדול ביבשה", "יש לו חדק", "אוזניים גדולות", "אף פעם לא שוכח", "אפור ומקומט"] },
-  { word: "גלידה", hints: ["קינוח קר", "מגיעה בגביע", "הרבה טעמים", "נמסה מהר", "אהובה בקיץ"] },
-  { word: "הר געש", hints: ["מתפרץ עם לבה", "צורת הר", "מאוד מסוכן", "עשן עולה", "חם בפנים"] },
+interface GameHint {
+  id: string;
+  round_id: string;
+  player_id: string;
+  hint_round: number;
+  hint_text: string;
+}
+
+interface GameVote {
+  id: string;
+  round_id: string;
+  voter_id: string;
+  voted_player_id: string;
+}
+
+const COLORS = [
+  "hsl(267 84% 58%)",
+  "hsl(340 82% 62%)",
+  "hsl(174 72% 50%)",
+  "hsl(38 100% 60%)",
+  "hsl(142 70% 50%)",
+  "hsl(200 80% 55%)",
+  "hsl(30 90% 55%)",
+  "hsl(280 70% 60%)",
 ];
 
 const GameScreen = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { t, language } = useLanguage();
-  const [phase, setPhase] = useState<GamePhase>("secret");
-  const [timer, setTimer] = useState(5);
-  const [hint, setHint] = useState("");
-  const [selectedVote, setSelectedVote] = useState<number | null>(null);
-  const [round, setRound] = useState(1);
-  const [hintRound, setHintRound] = useState(1); // 1-3 within a round
-  const [allHints, setAllHints] = useState<Record<number, string[]>>({}); // playerId -> hints[]
-  const totalRounds = 5;
+  const { user } = useAuth();
 
-  const words = language === "he" ? wordsHe : wordsEn;
+  const roomId = searchParams.get("room");
 
-  // Pick a random word for this round
-  const wordEntry = useMemo(() => {
-    return words[Math.floor(Math.random() * words.length)];
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [round, language]);
+  // Core state
+  const [room, setRoom] = useState<any>(null);
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [myPlayerId, setMyPlayerId] = useState<string | null>(null);
+  const [currentRound, setCurrentRound] = useState<GameRound | null>(null);
+  const [roundNumber, setRoundNumber] = useState(1);
+  const [hints, setHints] = useState<GameHint[]>([]);
+  const [votes, setVotes] = useState<GameVote[]>([]);
 
-  // Pick random faker each round (id 1-5, where 1 = "You")
-  const fakePlayerId = useMemo(() => {
-    return Math.floor(Math.random() * 5) + 1;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [round]);
+  // UI state
+  const [phase, setPhase] = useState<Phase>("loading");
+  const [hintInput, setHintInput] = useState("");
+  const [selectedVote, setSelectedVote] = useState<string | null>(null);
+  const [timer, setTimer] = useState(0);
+  const [currentHintRound, setCurrentHintRound] = useState(1);
+  const [myHintSubmitted, setMyHintSubmitted] = useState(false);
+  const [myVoteSubmitted, setMyVoteSubmitted] = useState(false);
 
-  const iAmFake = fakePlayerId === 1;
+  // Derived
+  const iAmFake = currentRound?.fake_player_id === myPlayerId;
+  const word = currentRound ? (language === "he" ? currentRound.word_he : currentRound.word_en) : "";
+  const totalPlayers = players.length;
+  const totalRounds = room?.rounds || 5;
 
-  const playerNames = useMemo(() => {
-    const you = language === "he" ? "אתה" : "You";
-    return [you, "Player2", "Player3", "Player4", "Player5"];
-  }, [language]);
-
-  // Generate unique hints per player per hint round using the word's hint pool
-  const botHints = useMemo(() => {
-    const result: Record<number, string[]> = {};
-    // Shuffle available hints for this word
-    const available = [...wordEntry.hints].sort(() => Math.random() - 0.5);
-
-    // We need 3 hint rounds × 4 bots = 12 hints max, but we have 5 per word
-    // So we cycle through + add variations
-    const extendedHints = [...available, ...available.map(h => h + "!"), ...available.map(h => "..." + h)];
-    let hintIdx = 0;
-
-    for (let pid = 2; pid <= 5; pid++) {
-      result[pid] = [];
-      for (let hr = 0; hr < 3; hr++) {
-        if (pid === fakePlayerId) {
-          // Fake player gives vague/generic hints
-          const vagueEn = ["Hmm... it's common", "People like it", "I see it often", "It's a thing", "Everyone knows it", "Hard to describe"];
-          const vagueHe = ["אממ... זה נפוץ", "אנשים אוהבים את זה", "אני רואה את זה הרבה", "זה דבר", "כולם מכירים", "קשה לתאר"];
-          const vague = language === "he" ? vagueHe : vagueEn;
-          result[pid].push(vague[Math.floor(Math.random() * vague.length)]);
-        } else {
-          result[pid].push(extendedHints[hintIdx % extendedHints.length]);
-          hintIdx++;
-        }
-      }
+  // Guest session
+  const guestSession = useMemo(() => {
+    if (user) return null;
+    if (!room) return null;
+    try {
+      const stored = localStorage.getItem(`guest_room_${room.code}`);
+      if (stored) return JSON.parse(stored);
+    } catch {
+      /* empty */
     }
+    return null;
+  }, [user, room]);
 
-    return result;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [round, language, fakePlayerId]);
+  const getPlayerName = useCallback(
+    (player: Player) => {
+      if (player.is_guest) return player.guest_name || t("join.guestDefault");
+      return player.display_name || "Player";
+    },
+    [t],
+  );
 
-  const phaseTimes: Record<GamePhase, number> = {
-    secret: 5,
-    hint1: 15,
-    hint2: 15,
-    hint3: 15,
-    discussion: 45,
-    voting: 20,
-    reveal: 8,
-  };
+  const getPlayerInitial = useCallback(
+    (player: Player) => {
+      if (player.guest_avatar) return player.guest_avatar;
+      return getPlayerName(player)[0];
+    },
+    [getPlayerName],
+  );
 
-  const phaseOrder: GamePhase[] = ["secret", "hint1", "hint2", "hint3", "discussion", "voting", "reveal"];
-
+  // ─── Init: fetch room + players + find my ID ───
   useEffect(() => {
-    setTimer(phaseTimes[phase]);
-    const interval = setInterval(() => {
-      setTimer((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          advancePhase();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phase]);
+    if (!roomId) {
+      navigate("/home");
+      return;
+    }
 
-  const advancePhase = useCallback(() => {
-    const idx = phaseOrder.indexOf(phase);
-    if (idx < phaseOrder.length - 1) {
-      const nextPhase = phaseOrder[idx + 1];
-
-      // Save player hint when moving from hint phase
-      if (phase.startsWith("hint") && hint.trim()) {
-        setAllHints((prev) => ({
-          ...prev,
-          1: [...(prev[1] || []), hint.trim()],
-        }));
-        setHint("");
+    const init = async () => {
+      const { data: roomData } = await supabase.from("rooms").select("*").eq("id", roomId).single();
+      if (!roomData) {
+        navigate("/home");
+        return;
       }
+      setRoom(roomData);
 
-      if (nextPhase === "hint2") setHintRound(2);
-      else if (nextPhase === "hint3") setHintRound(3);
+      const { data: playersData } = await supabase.from("room_players").select("*").eq("room_id", roomId);
+      if (!playersData) return;
 
-      setPhase(nextPhase);
+      const authIds = playersData.filter((p) => !p.is_guest).map((p) => p.user_id);
+      const { data: profiles } = authIds.length
+        ? await supabase.from("profiles").select("user_id, display_name").in("user_id", authIds)
+        : { data: [] as { user_id: string; display_name: string }[] };
+
+      const enriched: Player[] = playersData.map((p) => ({
+        id: p.id,
+        user_id: p.user_id,
+        is_guest: p.is_guest,
+        guest_name: p.guest_name,
+        guest_avatar: p.guest_avatar,
+        display_name: profiles?.find((pr) => pr.user_id === p.user_id)?.display_name,
+      }));
+      setPlayers(enriched);
+
+      // Find my player ID
+      if (user) {
+        const me = enriched.find((p) => p.user_id === user.id);
+        if (me) setMyPlayerId(me.id);
+      } else {
+        const stored = localStorage.getItem(`guest_room_${roomData.code}`);
+        if (stored) {
+          try {
+            const gs = JSON.parse(stored);
+            setMyPlayerId(gs.playerId);
+          } catch {
+            /* empty */
+          }
+        }
+      }
+    };
+
+    init();
+  }, [roomId, user, navigate]);
+
+  // ─── Start round when ready ───
+  useEffect(() => {
+    if (!room || !myPlayerId || players.length < 2 || currentRound) return;
+
+    const startRound = async () => {
+      const { data, error } = await supabase.functions.invoke("start-round", {
+        body: { room_id: roomId, round_number: roundNumber },
+      });
+      if (!error && data && !data.error) {
+        setCurrentRound(data as GameRound);
+        setPhase("secret");
+        setTimer(5);
+      }
+    };
+
+    startRound();
+  }, [room, myPlayerId, players, currentRound, roomId, roundNumber]);
+
+  // ─── Realtime: listen for new rounds ───
+  useEffect(() => {
+    if (!roomId) return;
+
+    const channel = supabase
+      .channel(`game-rounds-${roomId}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "game_rounds", filter: `room_id=eq.${roomId}` },
+        (payload) => {
+          const round = payload.new as GameRound;
+          if (round.round_number === roundNumber && !currentRound) {
+            setCurrentRound(round);
+            setPhase("secret");
+            setTimer(5);
+          }
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [roomId, roundNumber, currentRound]);
+
+  // ─── Realtime: listen for hints & votes of current round ───
+  useEffect(() => {
+    if (!currentRound) return;
+
+    // Fetch existing data first
+    const fetchExisting = async () => {
+      const [hintsRes, votesRes] = await Promise.all([
+        supabase.from("game_hints").select("*").eq("round_id", currentRound.id),
+        supabase.from("game_votes").select("*").eq("round_id", currentRound.id),
+      ]);
+      if (hintsRes.data) setHints(hintsRes.data as unknown as GameHint[]);
+      if (votesRes.data) setVotes(votesRes.data as unknown as GameVote[]);
+    };
+    fetchExisting();
+
+    const channel = supabase
+      .channel(`round-data-${currentRound.id}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "game_hints", filter: `round_id=eq.${currentRound.id}` },
+        (payload) => {
+          const hint = payload.new as GameHint;
+          setHints((prev) => (prev.some((h) => h.id === hint.id) ? prev : [...prev, hint]));
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "game_votes", filter: `round_id=eq.${currentRound.id}` },
+        (payload) => {
+          const vote = payload.new as GameVote;
+          setVotes((prev) => (prev.some((v) => v.id === vote.id) ? prev : [...prev, vote]));
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [currentRound?.id]);
+
+  // ─── Timer for secret / discussion / hint_reveal ───
+  useEffect(() => {
+    if (phase !== "secret" && phase !== "discussion" && phase !== "hint_reveal") return;
+    if (timer <= 0) {
+      if (phase === "secret") {
+        setPhase("hint");
+        setCurrentHintRound(1);
+        setMyHintSubmitted(false);
+        setHintInput("");
+      } else if (phase === "discussion") {
+        setPhase("voting");
+        setMyVoteSubmitted(false);
+      } else if (phase === "hint_reveal") {
+        if (currentHintRound < 3) {
+          setCurrentHintRound((prev) => prev + 1);
+          setMyHintSubmitted(false);
+          setHintInput("");
+          setPhase("hint");
+        } else {
+          setPhase("discussion");
+          setTimer(room?.discussion_time || 45);
+        }
+      }
+      return;
     }
-  }, [phase, hint]);
+    const interval = setInterval(() => setTimer((prev) => prev - 1), 1000);
+    return () => clearInterval(interval);
+  }, [phase, timer, currentHintRound, room]);
 
-  const handleSubmitHint = () => {
-    if (hint.trim()) {
-      advancePhase();
+  // ─── Check: all hints submitted? ───
+  useEffect(() => {
+    if (phase !== "waiting_hints" || !currentRound) return;
+    const count = hints.filter((h) => h.round_id === currentRound.id && h.hint_round === currentHintRound).length;
+    if (count >= totalPlayers) {
+      setPhase("hint_reveal");
+      setTimer(4);
+    }
+  }, [phase, hints, currentRound, currentHintRound, totalPlayers]);
+
+  // ─── Check: all votes submitted? ───
+  useEffect(() => {
+    if (phase !== "waiting_votes" || !currentRound) return;
+    const count = votes.filter((v) => v.round_id === currentRound.id).length;
+    if (count >= totalPlayers) {
+      setPhase("reveal");
+    }
+  }, [phase, votes, currentRound, totalPlayers]);
+
+  // ─── Submit hint ───
+  const handleSubmitHint = async () => {
+    if (!hintInput.trim() || !currentRound || !myPlayerId) return;
+
+    setMyHintSubmitted(true);
+    setPhase("waiting_hints");
+
+    const body: Record<string, unknown> = {
+      action: "submit-hint",
+      round_id: currentRound.id,
+      hint_round: currentHintRound,
+      hint_text: hintInput.trim(),
+    };
+
+    if (!user && guestSession) {
+      body.guest_player_id = guestSession.playerId;
+      body.guest_token = guestSession.token;
+    }
+
+    const { error } = await supabase.functions.invoke("game-action", { body });
+    if (error) {
+      console.error("Failed to submit hint:", error);
+      setMyHintSubmitted(false);
+      setPhase("hint");
     }
   };
 
-  const handleNextRound = () => {
-    if (round < totalRounds) {
-      setRound(round + 1);
-      setPhase("secret");
-      setHint("");
-      setHintRound(1);
-      setSelectedVote(null);
-      setAllHints({});
-    } else {
+  // ─── Submit vote ───
+  const handleSubmitVote = async () => {
+    if (!selectedVote || !currentRound || !myPlayerId) return;
+
+    setMyVoteSubmitted(true);
+    setPhase("waiting_votes");
+
+    const body: Record<string, unknown> = {
+      action: "submit-vote",
+      round_id: currentRound.id,
+      voted_player_id: selectedVote,
+    };
+
+    if (!user && guestSession) {
+      body.guest_player_id = guestSession.playerId;
+      body.guest_token = guestSession.token;
+    }
+
+    const { error } = await supabase.functions.invoke("game-action", { body });
+    if (error) {
+      console.error("Failed to submit vote:", error);
+      setMyVoteSubmitted(false);
+      setPhase("voting");
+    }
+  };
+
+  // ─── Next round ───
+  const handleNextRound = async () => {
+    const next = roundNumber + 1;
+    if (next > totalRounds) {
       navigate("/results");
+      return;
+    }
+
+    setRoundNumber(next);
+    setCurrentRound(null);
+    setHints([]);
+    setVotes([]);
+    setHintInput("");
+    setSelectedVote(null);
+    setMyHintSubmitted(false);
+    setMyVoteSubmitted(false);
+    setCurrentHintRound(1);
+    setPhase("loading");
+
+    const { data, error } = await supabase.functions.invoke("start-round", {
+      body: { room_id: roomId, round_number: next },
+    });
+    if (data && !error && !data.error) {
+      setCurrentRound(data as GameRound);
+      setPhase("secret");
+      setTimer(5);
     }
   };
 
-  const colors = ["hsl(267 84% 58%)", "hsl(340 82% 62%)", "hsl(174 72% 50%)", "hsl(38 100% 60%)", "hsl(142 70% 50%)"];
+  // ─── Computed data ───
+  const currentRoundHints = useMemo(() => {
+    if (!currentRound) return [];
+    return hints.filter((h) => h.round_id === currentRound.id && h.hint_round === currentHintRound);
+  }, [hints, currentRound, currentHintRound]);
 
-  const currentHintRoundIdx = hintRound - 1;
+  const allRoundHints = useMemo(() => {
+    if (!currentRound) return {} as Record<string, GameHint[]>;
+    const byPlayer: Record<string, GameHint[]> = {};
+    hints
+      .filter((h) => h.round_id === currentRound.id)
+      .forEach((h) => {
+        if (!byPlayer[h.player_id]) byPlayer[h.player_id] = [];
+        byPlayer[h.player_id].push(h);
+      });
+    return byPlayer;
+  }, [hints, currentRound]);
 
-  const getPhaseLabel = () => {
-    if (phase.startsWith("hint")) {
-      return `${t("game.giveHint")} (${hintRound}/3)`;
-    }
-    return "";
-  };
+  const voteResults = useMemo(() => {
+    if (!currentRound) return {} as Record<string, number>;
+    const counts: Record<string, number> = {};
+    votes
+      .filter((v) => v.round_id === currentRound.id)
+      .forEach((v) => {
+        counts[v.voted_player_id] = (counts[v.voted_player_id] || 0) + 1;
+      });
+    return counts;
+  }, [votes, currentRound]);
 
-  const fakePlayer = playerNames[fakePlayerId - 1];
+  const mostVotedPlayerId = useMemo(() => {
+    const entries = Object.entries(voteResults);
+    if (entries.length === 0) return null;
+    return entries.sort((a, b) => b[1] - a[1])[0][0];
+  }, [voteResults]);
+
+  const caughtFake = mostVotedPlayerId === currentRound?.fake_player_id;
+
+  const hintsSubmittedCount = currentRoundHints.length;
+  const votesSubmittedCount = currentRound ? votes.filter((v) => v.round_id === currentRound.id).length : 0;
+
+  // ─── Loading state ───
+  if (phase === "loading") {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
       <header className="px-4 py-3 flex items-center justify-between border-b border-border">
         <span className="font-display font-semibold text-sm text-foreground">
-          {t("game.round")} {round}/{totalRounds}
+          {t("game.round")} {roundNumber}/{totalRounds}
         </span>
-        <div className="font-display text-lg font-bold text-primary">{timer}s</div>
+        {(phase === "secret" || phase === "discussion" || phase === "hint_reveal") && (
+          <div className="font-display text-lg font-bold text-primary">{timer}s</div>
+        )}
         <span className="font-display font-semibold text-sm text-muted-foreground">
-          {t("game.score")}: 0
+          {players.length} {t("general.players")}
         </span>
       </header>
 
@@ -217,7 +457,7 @@ const GameScreen = () => {
       <div className="flex-1 flex flex-col items-center justify-center px-4 py-6">
         <AnimatePresence mode="wait">
           {/* SECRET PHASE */}
-          {phase === "secret" && (
+          {phase === "secret" && currentRound && (
             <motion.div
               key="secret"
               initial={{ scale: 0.5, opacity: 0 }}
@@ -230,87 +470,56 @@ const GameScreen = () => {
                   <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-destructive flex items-center justify-center">
                     <EyeOff className="w-8 h-8 text-destructive-foreground" />
                   </div>
-                  <h2 className="font-display text-xl font-bold text-foreground mb-2">
-                    {t("game.youAreFake")}
-                  </h2>
+                  <h2 className="font-display text-xl font-bold text-foreground mb-2">{t("game.youAreFake")}</h2>
                   <div className="bg-card rounded-3xl p-6 shadow-card mb-4">
-                    <p className="font-display text-2xl font-bold text-destructive">
-                      {t("game.noWordForYou")}
-                    </p>
+                    <p className="font-display text-2xl font-bold text-destructive">{t("game.noWordForYou")}</p>
                   </div>
-                  <p className="text-sm text-muted-foreground font-body">
-                    {t("game.fakeInstruction")}
-                  </p>
+                  <p className="text-sm text-muted-foreground font-body">{t("game.fakeInstruction")}</p>
                 </>
               ) : (
                 <>
                   <div className="w-16 h-16 mx-auto mb-4 rounded-full gradient-hero flex items-center justify-center">
                     <Eye className="w-8 h-8 text-primary-foreground" />
                   </div>
-                  <h2 className="font-display text-xl font-bold text-foreground mb-2">
-                    {t("game.yourSecret")}
-                  </h2>
+                  <h2 className="font-display text-xl font-bold text-foreground mb-2">{t("game.yourSecret")}</h2>
                   <div className="bg-card rounded-3xl p-6 shadow-card mb-4">
-                    <p className="font-display text-3xl font-bold text-primary">{wordEntry.word}</p>
+                    <p className="font-display text-3xl font-bold text-primary">{word}</p>
                   </div>
-                  <p className="text-sm text-muted-foreground font-body">
-                    {t("game.dontExpose")}
-                  </p>
+                  <p className="text-sm text-muted-foreground font-body">{t("game.dontExpose")}</p>
                 </>
               )}
             </motion.div>
           )}
 
-          {/* HINT PHASES (1-3) */}
-          {phase.startsWith("hint") && (
+          {/* HINT INPUT */}
+          {phase === "hint" && (
             <motion.div
-              key={`hints-${hintRound}`}
+              key={`hint-${currentHintRound}`}
               initial={{ x: 100, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: -100, opacity: 0 }}
               className="w-full max-w-sm"
             >
               <h2 className="font-display text-lg font-bold text-foreground mb-1 text-center">
-                {getPhaseLabel()}
+                {t("game.giveHint")} ({currentHintRound}/3)
               </h2>
-              <p className="text-xs text-muted-foreground text-center mb-4 font-body">
+              <p className="text-xs text-muted-foreground text-center mb-6 font-body">
                 {iAmFake ? t("game.fakeHintTip") : t("game.hintTip")}
               </p>
-
-              <div className="space-y-2 mb-4">
-                {[2, 3, 4, 5].map((pid, i) => (
-                  <motion.div
-                    key={pid}
-                    initial={{ x: -20, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ delay: i * 0.3 }}
-                    className="flex items-center gap-3 bg-card rounded-2xl p-3 shadow-card"
-                  >
-                    <div
-                      className="w-8 h-8 rounded-full flex items-center justify-center text-primary-foreground font-display font-bold text-xs"
-                      style={{ background: colors[pid - 1] }}
-                    >
-                      {playerNames[pid - 1][0]}
-                    </div>
-                    <span className="text-sm font-body text-foreground">
-                      {botHints[pid]?.[currentHintRoundIdx] || "..."}
-                    </span>
-                  </motion.div>
-                ))}
-              </div>
-
               <div className="flex gap-2">
                 <input
                   type="text"
-                  value={hint}
-                  onChange={(e) => setHint(e.target.value)}
+                  value={hintInput}
+                  onChange={(e) => setHintInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSubmitHint()}
                   placeholder={iAmFake ? t("game.fakeHintPlaceholder") : t("game.giveHint")}
                   maxLength={50}
                   className="flex-1 h-12 px-4 rounded-2xl border-2 border-input bg-background font-body text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
                 />
                 <button
                   onClick={handleSubmitHint}
-                  className="h-12 w-12 rounded-2xl gradient-hero flex items-center justify-center text-primary-foreground"
+                  disabled={!hintInput.trim()}
+                  className="h-12 w-12 rounded-2xl gradient-hero flex items-center justify-center text-primary-foreground disabled:opacity-50"
                 >
                   <Send className="w-5 h-5" />
                 </button>
@@ -318,7 +527,68 @@ const GameScreen = () => {
             </motion.div>
           )}
 
-          {/* DISCUSSION PHASE */}
+          {/* WAITING FOR HINTS */}
+          {phase === "waiting_hints" && (
+            <motion.div
+              key="waiting-hints"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="text-center w-full max-w-sm"
+            >
+              <Loader2 className="w-10 h-10 mx-auto mb-4 animate-spin text-primary" />
+              <h2 className="font-display text-lg font-bold text-foreground mb-2">
+                {t("game.waitingForPlayers")}
+              </h2>
+              <p className="text-sm text-muted-foreground font-body">
+                {hintsSubmittedCount}/{totalPlayers}
+              </p>
+            </motion.div>
+          )}
+
+          {/* HINT REVEAL */}
+          {phase === "hint_reveal" && (
+            <motion.div
+              key={`hint-reveal-${currentHintRound}`}
+              initial={{ x: 100, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: -100, opacity: 0 }}
+              className="w-full max-w-sm"
+            >
+              <h2 className="font-display text-lg font-bold text-foreground mb-4 text-center">
+                {t("game.giveHint")} ({currentHintRound}/3) — {timer}s
+              </h2>
+              <div className="space-y-2">
+                {players.map((player, i) => {
+                  const playerHint = currentRoundHints.find((h) => h.player_id === player.id);
+                  return (
+                    <motion.div
+                      key={player.id}
+                      initial={{ x: -20, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      transition={{ delay: i * 0.15 }}
+                      className="flex items-center gap-3 bg-card rounded-2xl p-3 shadow-card"
+                    >
+                      <div
+                        className="w-8 h-8 rounded-full flex items-center justify-center text-primary-foreground font-display font-bold text-xs"
+                        style={{ background: COLORS[i % COLORS.length] }}
+                      >
+                        {getPlayerInitial(player)}
+                      </div>
+                      <div className="flex-1">
+                        <span className="text-xs font-display font-semibold text-muted-foreground">
+                          {getPlayerName(player)}
+                        </span>
+                        <p className="text-sm font-body text-foreground">{playerHint?.hint_text || "..."}</p>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </motion.div>
+          )}
+
+          {/* DISCUSSION */}
           {phase === "discussion" && (
             <motion.div
               key="discussion"
@@ -327,34 +597,38 @@ const GameScreen = () => {
               exit={{ x: -100, opacity: 0 }}
               className="w-full max-w-sm"
             >
-              <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-game-cyan flex items-center justify-center">
-                <MessageSquare className="w-6 h-6 text-primary-foreground" />
+              <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-accent flex items-center justify-center">
+                <MessageSquare className="w-6 h-6 text-accent-foreground" />
               </div>
               <h2 className="font-display text-lg font-bold text-foreground mb-4 text-center">
-                {t("game.discuss")}
+                {t("game.discuss")} — {timer}s
               </h2>
-
               <div className="space-y-2 mb-4 max-h-64 overflow-y-auto">
-                {[1, 2, 3, 4, 5].map((pid) => {
-                  const name = playerNames[pid - 1];
-                  const hints = pid === 1 ? (allHints[1] || []) : (botHints[pid] || []);
+                {players.map((player, i) => {
+                  const playerHints = allRoundHints[player.id] || [];
                   return (
-                    <div key={pid} className="bg-card rounded-2xl p-3 shadow-card">
+                    <div key={player.id} className="bg-card rounded-2xl p-3 shadow-card">
                       <div className="flex items-center gap-2 mb-1">
                         <div
                           className="w-7 h-7 rounded-full flex items-center justify-center text-primary-foreground font-display font-bold text-xs"
-                          style={{ background: colors[(pid - 1) % colors.length] }}
+                          style={{ background: COLORS[i % COLORS.length] }}
                         >
-                          {name[0]}
+                          {getPlayerInitial(player)}
                         </div>
-                        <span className="text-xs font-display font-semibold text-foreground">{name}</span>
+                        <span className="text-xs font-display font-semibold text-foreground">
+                          {getPlayerName(player)}
+                        </span>
                       </div>
                       <div className="ps-9 space-y-1">
-                        {hints.length > 0 ? hints.map((h, i) => (
-                          <p key={i} className="text-sm font-body text-muted-foreground">
-                            {i + 1}. {h}
-                          </p>
-                        )) : (
+                        {playerHints.length > 0 ? (
+                          playerHints
+                            .sort((a, b) => a.hint_round - b.hint_round)
+                            .map((h) => (
+                              <p key={h.id} className="text-sm font-body text-muted-foreground">
+                                {h.hint_round}. {h.hint_text}
+                              </p>
+                            ))
+                        ) : (
                           <p className="text-sm font-body text-muted-foreground">...</p>
                         )}
                       </div>
@@ -362,14 +636,10 @@ const GameScreen = () => {
                   );
                 })}
               </div>
-
-              <Button variant="game" size="lg" className="w-full" onClick={() => advancePhase()}>
-                {t("game.vote")} →
-              </Button>
             </motion.div>
           )}
 
-          {/* VOTING PHASE */}
+          {/* VOTING */}
           {phase === "voting" && (
             <motion.div
               key="voting"
@@ -378,89 +648,126 @@ const GameScreen = () => {
               exit={{ x: -100, opacity: 0 }}
               className="w-full max-w-sm"
             >
-              <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-game-pink flex items-center justify-center">
-                <Vote className="w-6 h-6 text-primary-foreground" />
+              <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-destructive/20 flex items-center justify-center">
+                <Vote className="w-6 h-6 text-destructive" />
               </div>
               <h2 className="font-display text-lg font-bold text-foreground mb-4 text-center">
                 {t("game.whoIsDifferent")}
               </h2>
-
               <div className="space-y-2 mb-4">
-                {[2, 3, 4, 5].map((pid) => (
-                  <motion.button
-                    key={pid}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setSelectedVote(pid)}
-                    className={`w-full flex items-center gap-3 rounded-2xl p-3 transition-all border-2 ${
-                      selectedVote === pid
-                        ? "border-primary bg-primary/10 shadow-card"
-                        : "border-transparent bg-card shadow-card"
-                    }`}
-                  >
-                    <div
-                      className="w-10 h-10 rounded-full flex items-center justify-center text-primary-foreground font-display font-bold"
-                      style={{ background: colors[(pid - 1) % colors.length] }}
-                    >
-                      {playerNames[pid - 1][0]}
-                    </div>
-                    <span className="font-display font-semibold text-sm text-foreground">{playerNames[pid - 1]}</span>
-                  </motion.button>
-                ))}
+                {players
+                  .filter((p) => p.id !== myPlayerId)
+                  .map((player) => {
+                    const idx = players.indexOf(player);
+                    return (
+                      <motion.button
+                        key={player.id}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setSelectedVote(player.id)}
+                        className={`w-full flex items-center gap-3 rounded-2xl p-3 transition-all border-2 ${
+                          selectedVote === player.id
+                            ? "border-primary bg-primary/10 shadow-card"
+                            : "border-transparent bg-card shadow-card"
+                        }`}
+                      >
+                        <div
+                          className="w-10 h-10 rounded-full flex items-center justify-center text-primary-foreground font-display font-bold"
+                          style={{ background: COLORS[idx % COLORS.length] }}
+                        >
+                          {getPlayerInitial(player)}
+                        </div>
+                        <span className="font-display font-semibold text-sm text-foreground">
+                          {getPlayerName(player)}
+                        </span>
+                      </motion.button>
+                    );
+                  })}
               </div>
-
-              <Button
-                variant="hero"
-                size="lg"
-                className="w-full"
-                onClick={() => advancePhase()}
-                disabled={!selectedVote}
-              >
+              <Button variant="hero" size="lg" className="w-full" onClick={handleSubmitVote} disabled={!selectedVote}>
                 {t("game.vote")}
               </Button>
             </motion.div>
           )}
 
-          {/* REVEAL PHASE */}
-          {phase === "reveal" && (
+          {/* WAITING FOR VOTES */}
+          {phase === "waiting_votes" && (
+            <motion.div
+              key="waiting-votes"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="text-center w-full max-w-sm"
+            >
+              <Loader2 className="w-10 h-10 mx-auto mb-4 animate-spin text-primary" />
+              <h2 className="font-display text-lg font-bold text-foreground mb-2">{t("game.waitingForVotes")}</h2>
+              <p className="text-sm text-muted-foreground font-body">
+                {votesSubmittedCount}/{totalPlayers}
+              </p>
+            </motion.div>
+          )}
+
+          {/* REVEAL */}
+          {phase === "reveal" && currentRound && (
             <motion.div
               key="reveal"
               initial={{ scale: 0.3, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               className="text-center w-full max-w-sm"
             >
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-game-yellow flex items-center justify-center">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-accent flex items-center justify-center">
                 <Sparkles className="w-8 h-8 text-accent-foreground" />
               </div>
-              <h2 className="font-display text-2xl font-bold text-foreground mb-2">
-                {t("game.reveal")}
-              </h2>
-
+              <h2 className="font-display text-2xl font-bold text-foreground mb-2">{t("game.reveal")}</h2>
               <div className="bg-card rounded-3xl p-6 shadow-card mb-4">
-                <div
-                  className="w-14 h-14 mx-auto mb-3 rounded-full flex items-center justify-center text-primary-foreground font-display font-bold text-xl"
-                  style={{ background: colors[(fakePlayerId - 1) % colors.length] }}
-                >
-                  {fakePlayer[0]}
-                </div>
-                <p className="font-display text-lg font-bold text-foreground mb-1">
-                  {fakePlayer} {t("game.wasFake")}
-                </p>
-                <p className="text-sm text-muted-foreground font-body mb-2">
-                  {t("game.theWordWas")}: <span className="font-semibold text-primary">{wordEntry.word}</span>
-                </p>
-                {selectedVote === fakePlayerId ? (
-                  <p className="text-sm font-display font-bold text-game-green">
-                    🎉 {t("game.youCaughtFake")}
-                  </p>
-                ) : (
-                  <p className="text-sm font-display font-bold text-game-pink">
-                    😈 {t("game.fakeSurvived")}
-                  </p>
-                )}
+                {(() => {
+                  const fakePlayer = players.find((p) => p.id === currentRound.fake_player_id);
+                  const fakeName = fakePlayer ? getPlayerName(fakePlayer) : "?";
+                  const fakeIdx = fakePlayer ? players.indexOf(fakePlayer) : 0;
+                  return (
+                    <>
+                      <div
+                        className="w-14 h-14 mx-auto mb-3 rounded-full flex items-center justify-center text-primary-foreground font-display font-bold text-xl"
+                        style={{ background: COLORS[fakeIdx % COLORS.length] }}
+                      >
+                        {fakePlayer ? getPlayerInitial(fakePlayer) : "?"}
+                      </div>
+                      <p className="font-display text-lg font-bold text-foreground mb-1">
+                        {fakeName} {t("game.wasFake")}
+                      </p>
+                      <p className="text-sm text-muted-foreground font-body mb-2">
+                        {t("game.theWordWas")}:{" "}
+                        <span className="font-semibold text-primary">
+                          {language === "he" ? currentRound.word_he : currentRound.word_en}
+                        </span>
+                      </p>
+                      {caughtFake ? (
+                        <p className="text-sm font-display font-bold text-game-green">
+                          🎉 {t("game.youCaughtFake")}
+                        </p>
+                      ) : (
+                        <p className="text-sm font-display font-bold text-destructive">
+                          😈 {t("game.fakeSurvived")}
+                        </p>
+                      )}
+                    </>
+                  );
+                })()}
+              </div>
+
+              {/* Vote breakdown */}
+              <div className="space-y-1 mb-4">
+                {players.map((p, i) => (
+                  <div key={p.id} className="flex items-center justify-between text-sm px-2">
+                    <span className="font-body text-muted-foreground">{getPlayerName(p)}</span>
+                    <span className="font-display font-bold text-foreground">
+                      {voteResults[p.id] || 0} {t("game.vote")}
+                    </span>
+                  </div>
+                ))}
               </div>
 
               <Button variant="hero" size="lg" className="w-full" onClick={handleNextRound}>
-                {round < totalRounds ? t("game.nextRound") : t("game.results")}
+                {roundNumber < totalRounds ? t("game.nextRound") : t("game.results")}
               </Button>
             </motion.div>
           )}

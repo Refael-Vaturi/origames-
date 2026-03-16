@@ -149,7 +149,7 @@ const LobbyScreen = () => {
       await fetchPlayers(room.id, guestSession);
 
       if (room.status === "playing") {
-        navigate("/game");
+        navigate("/game?room=" + room.id);
       }
     };
 
@@ -172,8 +172,8 @@ const LobbyScreen = () => {
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "rooms", filter: `id=eq.${roomId}` },
         (payload) => {
-          if ((payload.new as { status?: string })?.status === "playing") {
-            navigate("/game");
+        if ((payload.new as { status?: string })?.status === "playing") {
+            navigate("/game?room=" + roomId);
           }
         },
       )
@@ -266,7 +266,7 @@ const LobbyScreen = () => {
       await supabase.from("rooms").update({ status: "playing" }).eq("id", roomId);
     }
 
-    navigate("/game");
+    navigate("/game?room=" + roomId);
   };
 
   const isHost = user?.id === hostId;
