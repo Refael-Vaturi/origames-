@@ -499,7 +499,7 @@ const GameScreen = () => {
           <div className="font-display text-lg font-bold text-primary">{timer}s</div>
         )}
         <span className="font-display font-semibold text-sm text-muted-foreground">
-          {players.length} {t("general.players")}
+          {t("game.score")}: {myScore}
         </span>
       </header>
 
