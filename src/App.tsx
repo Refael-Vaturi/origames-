@@ -13,6 +13,9 @@ import MatchmakingScreen from "./pages/MatchmakingScreen";
 import TutorialScreen from "./pages/TutorialScreen";
 import GameScreen from "./pages/GameScreen";
 import ResultsScreen from "./pages/ResultsScreen";
+import AuthScreen from "./pages/AuthScreen";
+import ProfileScreen from "./pages/ProfileScreen";
+import SettingsScreen from "./pages/SettingsScreen";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +30,9 @@ const App = () => (
           <Routes>
             <Route path="/" element={<WelcomeScreen />} />
             <Route path="/home" element={<HomeScreen />} />
+            <Route path="/auth" element={<AuthScreen />} />
+            <Route path="/profile" element={<ProfileScreen />} />
+            <Route path="/settings" element={<SettingsScreen />} />
             <Route path="/join" element={<JoinByCodeScreen />} />
             <Route path="/create-room" element={<CreateRoomScreen />} />
             <Route path="/lobby" element={<LobbyScreen />} />

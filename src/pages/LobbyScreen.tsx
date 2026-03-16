@@ -3,7 +3,8 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Copy, Share2, Send, Crown } from "lucide-react";
+import { ArrowLeft, Copy, Share2, Send, Crown, Check } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 const mockPlayers = [
   { id: 1, name: "Player123", ready: true, isHost: true },
@@ -16,9 +17,58 @@ const LobbyScreen = () => {
   const { t } = useLanguage();
   const [chatInput, setChatInput] = useState("");
   const [isReady, setIsReady] = useState(false);
+  const [messages, setMessages] = useState<{ name: string; text: string }[]>([]);
+  const [copied, setCopied] = useState(false);
   const roomCode = "ABCD12";
+  const roomLink = `${window.location.origin}/join?code=${roomCode}`;
 
   const colors = ["hsl(267 84% 58%)", "hsl(340 82% 62%)", "hsl(174 72% 50%)", "hsl(38 100% 60%)"];
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(roomCode);
+      setCopied(true);
+      toast({ title: t("lobby.codeCopied") });
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast({ title: t("lobby.copyFailed"), variant: "destructive" });
+    }
+  };
+
+  const handleShare = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: "Fake It Fast",
+          text: `Join my room! Code: ${roomCode}`,
+          url: roomLink,
+        });
+      } else {
+        await navigator.clipboard.writeText(roomLink);
+        toast({ title: t("lobby.linkCopied") });
+      }
+    } catch {
+      // User cancelled share
+    }
+  };
+
+  const handleSendChat = () => {
+    if (chatInput.trim()) {
+      setMessages((prev) => [...prev, { name: "Player123", text: chatInput.trim() }]);
+      setChatInput("");
+    }
+  };
+
+  const handleReady = () => {
+    setIsReady(!isReady);
+    toast({
+      title: !isReady ? `✅ ${t("lobby.ready")}` : t("lobby.notReady"),
+    });
+  };
+
+  const handleStartGame = () => {
+    navigate("/game");
+  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -42,10 +92,16 @@ const LobbyScreen = () => {
           <div className="bg-muted rounded-xl px-3 py-2 font-display text-sm font-semibold tracking-wider text-foreground">
             {roomCode}
           </div>
-          <button className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground">
-            <Copy className="w-4 h-4" />
+          <button
+            onClick={handleCopy}
+            className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground"
+          >
+            {copied ? <Check className="w-4 h-4 text-game-green" /> : <Copy className="w-4 h-4" />}
           </button>
-          <button className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground">
+          <button
+            onClick={handleShare}
+            className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground"
+          >
             <Share2 className="w-4 h-4" />
           </button>
         </div>
@@ -88,6 +144,21 @@ const LobbyScreen = () => {
           ))}
         </motion.div>
 
+        {/* Chat messages */}
+        {messages.length > 0 && (
+          <div className="space-y-2 mb-4">
+            <h2 className="font-display text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+              {t("lobby.chat")}
+            </h2>
+            {messages.map((msg, i) => (
+              <div key={i} className="bg-card rounded-2xl p-3 shadow-card">
+                <span className="font-display font-semibold text-xs text-primary">{msg.name}</span>
+                <p className="text-sm font-body text-foreground">{msg.text}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Waiting text */}
         <motion.p
           className="text-center text-sm text-muted-foreground font-body animate-pulse"
@@ -107,10 +178,14 @@ const LobbyScreen = () => {
             type="text"
             value={chatInput}
             onChange={(e) => setChatInput(e.target.value)}
-            placeholder={t("lobby.chat")}
+            onKeyDown={(e) => e.key === "Enter" && handleSendChat()}
+            placeholder={t("lobby.chatPlaceholder")}
             className="flex-1 h-11 px-4 rounded-2xl border-2 border-input bg-background font-body text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
           />
-          <button className="h-11 w-11 rounded-2xl gradient-hero flex items-center justify-center text-primary-foreground">
+          <button
+            onClick={handleSendChat}
+            className="h-11 w-11 rounded-2xl gradient-hero flex items-center justify-center text-primary-foreground"
+          >
             <Send className="w-4 h-4" />
           </button>
         </div>
@@ -121,11 +196,11 @@ const LobbyScreen = () => {
             variant={isReady ? "secondary" : "game"}
             size="lg"
             className="flex-1"
-            onClick={() => setIsReady(!isReady)}
+            onClick={handleReady}
           >
             {isReady ? t("lobby.notReady") : t("lobby.ready")}
           </Button>
-          <Button variant="hero" size="lg" className="flex-1" onClick={() => navigate("/game")}>
+          <Button variant="hero" size="lg" className="flex-1" onClick={handleStartGame}>
             {t("lobby.startGame")}
           </Button>
         </div>
