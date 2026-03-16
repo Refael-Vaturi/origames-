@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -7,23 +7,62 @@ import { Eye, MessageSquare, Send, Vote, Sparkles } from "lucide-react";
 
 type GamePhase = "secret" | "hints" | "discussion" | "voting" | "reveal";
 
-const mockPlayers = [
-  { id: 1, name: "Player123", hint: "", voted: false },
-  { id: 2, name: "CoolGamer", hint: "It's round and bouncy", voted: false },
-  { id: 3, name: "QuickFox", hint: "You see it in sports", voted: false },
-  { id: 4, name: "SlyWolf", hint: "Kids love it", voted: false },
-  { id: 5, name: "BrightStar", hint: "It can be kicked", voted: false },
+// Word pairs: [real word, fake word]
+const wordPairsEn = [
+  ["Basketball", "Tennis"], ["Pizza", "Sushi"], ["Dog", "Cat"], ["Guitar", "Piano"],
+  ["Beach", "Mountain"], ["Coffee", "Tea"], ["Airplane", "Train"], ["Moon", "Sun"],
+  ["Doctor", "Teacher"], ["Chocolate", "Vanilla"], ["Football", "Baseball"],
+  ["Rain", "Snow"], ["Lion", "Tiger"], ["Bicycle", "Motorcycle"], ["Apple", "Banana"],
+];
+
+const wordPairsHe = [
+  ["כדורסל", "טניס"], ["פיצה", "סושי"], ["כלב", "חתול"], ["גיטרה", "פסנתר"],
+  ["חוף", "הר"], ["קפה", "תה"], ["מטוס", "רכבת"], ["ירח", "שמש"],
+  ["רופא", "מורה"], ["שוקולד", "וניל"], ["כדורגל", "בייסבול"],
+  ["גשם", "שלג"], ["אריה", "נמר"], ["אופניים", "אופנוע"], ["תפוח", "בננה"],
+];
+
+const hintsEn = [
+  "It's round and bouncy", "You see it in sports", "Kids love it", "It can be kicked",
+  "It's fun to play with", "You need skills for this", "It's popular worldwide",
+];
+
+const hintsHe = [
+  "זה עגול וקופצני", "רואים את זה בספורט", "ילדים אוהבים את זה", "אפשר לבעוט בזה",
+  "כיף לשחק עם זה", "צריך כישרון בשביל זה", "זה פופולרי בכל העולם",
 ];
 
 const GameScreen = () => {
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [phase, setPhase] = useState<GamePhase>("secret");
   const [timer, setTimer] = useState(5);
   const [hint, setHint] = useState("");
   const [selectedVote, setSelectedVote] = useState<number | null>(null);
   const [round, setRound] = useState(1);
   const totalRounds = 5;
+
+  // Pick random word pair per round
+  const wordPair = useMemo(() => {
+    const pairs = language === "he" ? wordPairsHe : wordPairsEn;
+    return pairs[Math.floor(Math.random() * pairs.length)];
+  }, [round, language]);
+
+  const currentHints = language === "he" ? hintsHe : hintsEn;
+
+  // Generate random hints for "other players"
+  const playerHints = useMemo(() => {
+    const shuffled = [...currentHints].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, 4);
+  }, [round, language]);
+
+  const mockPlayers = [
+    { id: 1, name: language === "he" ? "אתה" : "You", hint: "", voted: false },
+    { id: 2, name: "Player2", hint: playerHints[0], voted: false },
+    { id: 3, name: "Player3", hint: playerHints[1], voted: false },
+    { id: 4, name: "Player4", hint: playerHints[2], voted: false },
+    { id: 5, name: "Player5", hint: playerHints[3], voted: false },
+  ];
 
   const phaseTimes: Record<GamePhase, number> = {
     secret: 5,
@@ -101,7 +140,7 @@ const GameScreen = () => {
                 {t("game.yourSecret")}
               </h2>
               <div className="bg-card rounded-3xl p-6 shadow-card mb-4">
-                <p className="font-display text-3xl font-bold text-primary">🏀 Basketball</p>
+                <p className="font-display text-3xl font-bold text-primary">{wordPair[0]}</p>
               </div>
               <p className="text-sm text-muted-foreground font-body">
                 {t("game.dontExpose")}
@@ -122,7 +161,6 @@ const GameScreen = () => {
                 {t("game.giveHint")}
               </h2>
 
-              {/* Other players' hints */}
               <div className="space-y-2 mb-4">
                 {mockPlayers.slice(1).map((p, i) => (
                   <motion.div
@@ -143,7 +181,6 @@ const GameScreen = () => {
                 ))}
               </div>
 
-              {/* Your hint input */}
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -179,7 +216,6 @@ const GameScreen = () => {
                 {t("game.discuss")}
               </h2>
 
-              {/* All hints displayed */}
               <div className="space-y-2 mb-4">
                 {mockPlayers.map((p, i) => (
                   <div key={p.id} className="flex items-center gap-3 bg-card rounded-2xl p-3 shadow-card">
@@ -276,13 +312,13 @@ const GameScreen = () => {
                   className="w-14 h-14 mx-auto mb-3 rounded-full flex items-center justify-center text-primary-foreground font-display font-bold text-xl"
                   style={{ background: colors[2] }}
                 >
-                  Q
+                  P
                 </div>
                 <p className="font-display text-lg font-bold text-foreground mb-1">
-                  QuickFox {t("game.wasFake")}
+                  Player3 {t("game.wasFake")}
                 </p>
                 <p className="text-sm text-muted-foreground font-body">
-                  🎾 Tennis (≠ 🏀 Basketball)
+                  {wordPair[1]} (≠ {wordPair[0]})
                 </p>
               </div>
 

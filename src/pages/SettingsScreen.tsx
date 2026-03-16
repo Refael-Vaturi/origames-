@@ -1,11 +1,13 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Globe, Volume2, VolumeX, Moon, Sun, Vibrate, Info } from "lucide-react";
 import { useState } from "react";
 
 const SettingsScreen = () => {
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const { t, toggleLanguage, language } = useLanguage();
   const [sound, setSound] = useState(true);
@@ -83,7 +85,10 @@ const SettingsScreen = () => {
             </button>
           </div>
 
-          <Button variant="outline" size="lg" className="w-full mt-4" onClick={() => navigate("/")}>
+          <Button variant="outline" size="lg" className="w-full mt-4" onClick={async () => {
+            await signOut();
+            navigate("/");
+          }}>
             {t("settings.logout")}
           </Button>
         </div>

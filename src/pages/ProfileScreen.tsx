@@ -1,23 +1,52 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Camera, Edit2 } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 const ProfileScreen = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const [displayName, setDisplayName] = useState("Player123");
-  const [username, setUsername] = useState("@player123");
+  const { user, profile, refreshProfile } = useAuth();
+  const [displayName, setDisplayName] = useState(profile?.display_name || "Player");
+  const [username, setUsername] = useState(profile?.username || "");
   const [isEditing, setIsEditing] = useState(false);
 
+  useEffect(() => {
+    if (profile) {
+      setDisplayName(profile.display_name);
+      setUsername(profile.username || "");
+    }
+  }, [profile]);
+
   const stats = [
-    { label: t("profile.gamesPlayed"), value: 24 },
-    { label: t("profile.wins"), value: 8 },
-    { label: t("profile.caught"), value: 15 },
-    { label: t("profile.survived"), value: 6 },
+    { label: t("profile.gamesPlayed"), value: profile?.games_played || 0 },
+    { label: t("profile.wins"), value: profile?.wins || 0 },
+    { label: t("profile.caught"), value: profile?.fakes_caught || 0 },
+    { label: t("profile.survived"), value: profile?.survived || 0 },
   ];
+
+  const handleSave = async () => {
+    if (!user) {
+      toast({ title: "Login required", variant: "destructive" });
+      return;
+    }
+    const { error } = await supabase
+      .from("profiles")
+      .update({ display_name: displayName, username })
+      .eq("user_id", user.id);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: t("profile.save") + " ✅" });
+      await refreshProfile();
+      setIsEditing(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 py-8">
@@ -70,15 +99,17 @@ const ProfileScreen = () => {
                   placeholder="@username"
                   className="w-full h-11 px-4 rounded-2xl border-2 border-input bg-background font-body text-sm text-foreground text-center placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
                 />
-                <Button variant="game" size="lg" className="w-full" onClick={() => setIsEditing(false)}>
+                <Button variant="game" size="lg" className="w-full" onClick={handleSave}>
                   {t("profile.save")}
                 </Button>
               </div>
             ) : (
               <>
                 <h2 className="mt-3 font-display text-xl font-bold text-foreground">{displayName}</h2>
-                <p className="text-sm text-muted-foreground font-body">{username}</p>
-                <p className="text-xs text-muted-foreground font-body mt-1">Level 1 · 0 XP</p>
+                <p className="text-sm text-muted-foreground font-body">{username ? `@${username}` : ""}</p>
+                <p className="text-xs text-muted-foreground font-body mt-1">
+                  Level {profile?.level || 1} · {profile?.xp || 0} XP
+                </p>
               </>
             )}
           </div>
@@ -92,6 +123,12 @@ const ProfileScreen = () => {
               </div>
             ))}
           </div>
+
+          {!user && (
+            <Button variant="hero" size="lg" className="w-full mt-4" onClick={() => navigate("/auth")}>
+              {t("auth.loginBtn")}
+            </Button>
+          )}
         </div>
       </motion.div>
     </div>

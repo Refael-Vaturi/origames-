@@ -2,18 +2,50 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Hash } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 const JoinByCodeScreen = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const { user } = useAuth();
   const [code, setCode] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleJoin = () => {
-    if (code.trim().length >= 4) {
-      navigate("/lobby");
+  const handleJoin = async () => {
+    if (code.trim().length < 4) return;
+
+    if (!user) {
+      toast({ title: "Login required", variant: "destructive" });
+      navigate("/auth");
+      return;
     }
+
+    setLoading(true);
+    const { data: room } = await supabase
+      .from("rooms")
+      .select("id, code, status")
+      .eq("code", code.trim())
+      .single();
+
+    if (!room) {
+      toast({ title: t("join.notFound") || "Room not found", variant: "destructive" });
+      setLoading(false);
+      return;
+    }
+
+    // Join the room
+    await supabase.from("room_players").upsert({
+      room_id: room.id,
+      user_id: user.id,
+      is_ready: false,
+    }, { onConflict: "room_id,user_id" });
+
+    setLoading(false);
+    navigate(`/lobby?code=${room.code}`);
   };
 
   return (
@@ -52,9 +84,9 @@ const JoinByCodeScreen = () => {
             size="xl"
             className="w-full mb-4"
             onClick={handleJoin}
-            disabled={code.trim().length < 4}
+            disabled={code.trim().length < 4 || loading}
           >
-            {t("join.button")}
+            {loading ? "..." : t("join.button")}
           </Button>
 
           <p className="text-center text-sm text-muted-foreground font-body">
