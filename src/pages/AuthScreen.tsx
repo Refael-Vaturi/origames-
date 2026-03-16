@@ -4,6 +4,9 @@ import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
+import { toast } from "@/hooks/use-toast";
 
 const AuthScreen = () => {
   const navigate = useNavigate();
@@ -13,10 +16,65 @@ const AuthScreen = () => {
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = () => {
-    // For now navigate to home — real auth requires Lovable Cloud
-    navigate("/home");
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    try {
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin + "/home",
+      });
+      if (result.error) {
+        toast({ title: t("auth.error") || "Error", description: String(result.error), variant: "destructive" });
+      }
+    } catch (e) {
+      toast({ title: "Error", description: String(e), variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAppleSignIn = async () => {
+    setLoading(true);
+    try {
+      const result = await lovable.auth.signInWithOAuth("apple", {
+        redirect_uri: window.location.origin + "/home",
+      });
+      if (result.error) {
+        toast({ title: t("auth.error") || "Error", description: String(result.error), variant: "destructive" });
+      }
+    } catch (e) {
+      toast({ title: "Error", description: String(e), variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!email || !password) return;
+    setLoading(true);
+    try {
+      if (mode === "register") {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { display_name: displayName || "Player" },
+            emailRedirectTo: window.location.origin + "/home",
+          },
+        });
+        if (error) throw error;
+        toast({ title: t("auth.checkEmail") || "Check your email to confirm!" });
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        navigate("/home");
+      }
+    } catch (e: any) {
+      toast({ title: "Error", description: e.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -40,8 +98,9 @@ const AuthScreen = () => {
           {/* Google / Apple buttons */}
           <div className="space-y-3 mb-6">
             <button
-              onClick={handleSubmit}
-              className="w-full h-12 rounded-2xl border-2 border-input bg-background font-body text-sm text-foreground flex items-center justify-center gap-3 hover:bg-muted transition-colors"
+              onClick={handleGoogleSignIn}
+              disabled={loading}
+              className="w-full h-12 rounded-2xl border-2 border-input bg-background font-body text-sm text-foreground flex items-center justify-center gap-3 hover:bg-muted transition-colors disabled:opacity-50"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
@@ -53,8 +112,9 @@ const AuthScreen = () => {
             </button>
 
             <button
-              onClick={handleSubmit}
-              className="w-full h-12 rounded-2xl border-2 border-input bg-background font-body text-sm text-foreground flex items-center justify-center gap-3 hover:bg-muted transition-colors"
+              onClick={handleAppleSignIn}
+              disabled={loading}
+              className="w-full h-12 rounded-2xl border-2 border-input bg-background font-body text-sm text-foreground flex items-center justify-center gap-3 hover:bg-muted transition-colors disabled:opacity-50"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.32 2.32-2.12 4.52-3.74 4.25z"/>
@@ -109,8 +169,8 @@ const AuthScreen = () => {
             </div>
           </div>
 
-          <Button variant="hero" size="xl" className="w-full mb-4" onClick={handleSubmit}>
-            {mode === "login" ? t("auth.loginBtn") : t("auth.registerBtn")}
+          <Button variant="hero" size="xl" className="w-full mb-4" onClick={handleSubmit} disabled={loading}>
+            {loading ? "..." : mode === "login" ? t("auth.loginBtn") : t("auth.registerBtn")}
           </Button>
 
           <button
