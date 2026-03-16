@@ -38,7 +38,6 @@ const LobbyScreen = () => {
 
   const [isReady, setIsReady] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [copied, setCopied] = useState(false);
   const [players, setPlayers] = useState<RoomPlayer[]>([]);
   const [roomId, setRoomId] = useState<string | null>(null);
   const [roomCode, setRoomCode] = useState(searchParams.get("code") || "");
