@@ -146,6 +146,8 @@ const translations: Translations = {
   "game.discuss": { en: "Discussion", he: "דיון" },
   "game.nextRound": { en: "Next Round", he: "סיבוב הבא" },
   "game.results": { en: "Results", he: "תוצאות" },
+  "game.waitingForPlayers": { en: "Waiting for all players...", he: "...ממתין לכל השחקנים" },
+  "game.waitingForVotes": { en: "Waiting for all votes...", he: "...ממתין לכל ההצבעות" },
   "game.rematch": { en: "Rematch", he: "משחק חוזר" },
   "game.backToLobby": { en: "Back to Lobby", he: "חזרה ללובי" },
   "game.inviteFriends": { en: "Invite Friends", he: "הזמן חברים" },

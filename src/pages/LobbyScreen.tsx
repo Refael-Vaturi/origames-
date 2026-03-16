@@ -266,7 +266,7 @@ const LobbyScreen = () => {
       await supabase.from("rooms").update({ status: "playing" }).eq("id", roomId);
     }
 
-    navigate("/game");
+    navigate("/game?room=" + roomId);
   };
 
   const isHost = user?.id === hostId;
