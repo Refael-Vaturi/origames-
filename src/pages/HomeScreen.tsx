@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Globe, Users, Gamepad2, Hash, GraduationCap, Bell, Settings, UserCircle } from "lucide-react";
 import logoImage from "@/assets/logo.png";
@@ -9,7 +10,10 @@ import { useState } from "react";
 const HomeScreen = () => {
   const navigate = useNavigate();
   const { t, toggleLanguage } = useLanguage();
+  const { user, profile } = useAuth();
   const [showNotifications, setShowNotifications] = useState(false);
+
+  const displayName = profile?.display_name || (user ? "Player" : "Guest");
 
   const notifications = [
     { id: 1, text: "CoolGamer invited you to Room #42", time: "2m ago" },
@@ -39,18 +43,15 @@ const HomeScreen = () => {
             <UserCircle className="w-6 h-6 text-primary-foreground" />
           </div>
           <div className="text-start">
-            <p className="font-display font-semibold text-foreground text-sm">Player123</p>
-            <p className="text-xs text-muted-foreground">Level 1</p>
+            <p className="font-display font-semibold text-foreground text-sm">{displayName}</p>
+            <p className="text-xs text-muted-foreground">Level {profile?.level || 1}</p>
           </div>
         </button>
 
         <img src={logoImage} alt="Fake It Fast" className="h-10" />
 
         <div className="flex items-center gap-2">
-          <button
-            className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground"
-            onClick={toggleLanguage}
-          >
+          <button className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground" onClick={toggleLanguage}>
             <Globe className="w-5 h-5" />
           </button>
           <button
@@ -60,10 +61,7 @@ const HomeScreen = () => {
             <Bell className="w-5 h-5" />
             <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-game-pink" />
           </button>
-          <button
-            className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground"
-            onClick={() => navigate("/settings")}
-          >
+          <button className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground" onClick={() => navigate("/settings")}>
             <Settings className="w-5 h-5" />
           </button>
         </div>
@@ -88,37 +86,21 @@ const HomeScreen = () => {
 
       {/* Main content */}
       <div className="flex-1 flex flex-col items-center justify-center px-4 pb-8">
-        {/* Background blobs */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-20 left-5 w-32 h-32 rounded-full bg-game-purple/10 blur-2xl" />
           <div className="absolute bottom-20 right-5 w-40 h-40 rounded-full bg-game-pink/10 blur-2xl" />
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-60 h-60 rounded-full bg-game-cyan/5 blur-3xl" />
         </div>
 
-        {/* CTA buttons */}
         <motion.div
           className="flex flex-col gap-4 w-full max-w-sm relative z-10"
           initial="hidden"
           animate="visible"
-          variants={{
-            hidden: {},
-            visible: { transition: { staggerChildren: 0.1 } },
-          }}
+          variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.1 } } }}
         >
           {mainActions.map(({ key, icon: Icon, variant, path }) => (
-            <motion.div
-              key={key}
-              variants={{
-                hidden: { y: 20, opacity: 0 },
-                visible: { y: 0, opacity: 1 },
-              }}
-            >
-              <Button
-                variant={variant}
-                size="xl"
-                className="w-full"
-                onClick={() => navigate(path)}
-              >
+            <motion.div key={key} variants={{ hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1 } }}>
+              <Button variant={variant} size="xl" className="w-full" onClick={() => navigate(path)}>
                 <Icon className="w-6 h-6" />
                 {t(key)}
               </Button>
@@ -126,7 +108,6 @@ const HomeScreen = () => {
           ))}
         </motion.div>
 
-        {/* Secondary section */}
         <motion.div
           className="mt-8 grid grid-cols-2 gap-3 w-full max-w-sm relative z-10"
           initial={{ opacity: 0, y: 20 }}
@@ -138,11 +119,7 @@ const HomeScreen = () => {
             <p className="text-xs text-muted-foreground">3 {t("general.players")}</p>
             <div className="flex -space-x-2 mt-2">
               {[0, 1, 2].map((i) => (
-                <div
-                  key={i}
-                  className="w-8 h-8 rounded-full border-2 border-card"
-                  style={{ background: `hsl(${120 + i * 80} 60% 60%)` }}
-                />
+                <div key={i} className="w-8 h-8 rounded-full border-2 border-card" style={{ background: `hsl(${120 + i * 80} 60% 60%)` }} />
               ))}
             </div>
           </div>
