@@ -125,7 +125,7 @@ const LobbyScreen = () => {
           >
             {isReady ? t("lobby.notReady") : t("lobby.ready")}
           </Button>
-          <Button variant="hero" size="lg" className="flex-1">
+          <Button variant="hero" size="lg" className="flex-1" onClick={() => navigate("/game")}>
             {t("lobby.startGame")}
           </Button>
         </div>

@@ -13,7 +13,7 @@ const HomeScreen = () => {
     { key: "home.startGlobal", icon: Gamepad2, variant: "hero" as const, path: "/matchmaking" },
     { key: "home.playFriends", icon: Users, variant: "game" as const, path: "/create-room" },
     { key: "home.joinCode", icon: Hash, variant: "accent" as const, path: "/join" },
-    { key: "home.tutorial", icon: GraduationCap, variant: "outline" as const, path: "/" },
+    { key: "home.tutorial", icon: GraduationCap, variant: "outline" as const, path: "/tutorial" },
   ];
 
   return (

@@ -9,6 +9,10 @@ import HomeScreen from "./pages/HomeScreen";
 import JoinByCodeScreen from "./pages/JoinByCodeScreen";
 import CreateRoomScreen from "./pages/CreateRoomScreen";
 import LobbyScreen from "./pages/LobbyScreen";
+import MatchmakingScreen from "./pages/MatchmakingScreen";
+import TutorialScreen from "./pages/TutorialScreen";
+import GameScreen from "./pages/GameScreen";
+import ResultsScreen from "./pages/ResultsScreen";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +30,10 @@ const App = () => (
             <Route path="/join" element={<JoinByCodeScreen />} />
             <Route path="/create-room" element={<CreateRoomScreen />} />
             <Route path="/lobby" element={<LobbyScreen />} />
+            <Route path="/matchmaking" element={<MatchmakingScreen />} />
+            <Route path="/tutorial" element={<TutorialScreen />} />
+            <Route path="/game" element={<GameScreen />} />
+            <Route path="/results" element={<ResultsScreen />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
