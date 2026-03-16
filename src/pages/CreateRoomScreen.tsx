@@ -30,8 +30,8 @@ const CreateRoomScreen = () => {
 
   const handleCreate = async () => {
     if (!user) {
-      toast({ title: "Login required", variant: "destructive" });
-      navigate("/auth");
+      toast({ title: t("join.authOrGuestRequired") || "Login required", variant: "destructive" });
+      navigate("/auth?redirect=" + encodeURIComponent("/create-room"));
       return;
     }
 
