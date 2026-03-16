@@ -50,7 +50,7 @@ const LobbyScreen = () => {
   const fetchPlayers = async (rId: string, activeGuestSession: GuestSession | null) => {
     const { data } = await supabase
       .from("room_players")
-      .select("id, user_id, is_ready, is_guest, guest_name, guest_avatar")
+      .select("*")
       .eq("room_id", rId);
 
     if (!data) return;
