@@ -24,7 +24,7 @@ const WelcomeScreen = () => {
       <motion.button
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="absolute top-4 right-4 flex items-center gap-2 px-4 py-2 rounded-xl bg-card shadow-card text-foreground font-body text-sm hover:bg-muted transition-colors"
+        className="absolute top-4 end-4 flex items-center gap-2 px-4 py-2 rounded-xl bg-card shadow-card text-foreground font-body text-sm hover:bg-muted transition-colors"
         onClick={toggleLanguage}
       >
         <Globe className="w-4 h-4" />
@@ -68,7 +68,7 @@ const WelcomeScreen = () => {
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.6, duration: 0.5 }}
       >
-        <Button variant="hero" size="xl" onClick={() => navigate("/home")}>
+        <Button variant="hero" size="xl" onClick={() => navigate("/auth")}>
           {t("welcome.login")}
         </Button>
         <Button variant="game" size="lg" onClick={() => navigate("/home")}>
