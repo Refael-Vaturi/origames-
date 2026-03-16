@@ -391,7 +391,7 @@ const GameScreen = () => {
   const handleNextRound = async () => {
     const next = roundNumber + 1;
     if (next > totalRounds) {
-      navigate("/results");
+      navigate(`/results?room=${roomId}`);
       return;
     }
 
