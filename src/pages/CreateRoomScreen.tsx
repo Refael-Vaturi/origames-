@@ -2,12 +2,23 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Lock } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+
+const generateCode = () => {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let code = "";
+  for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  return code;
+};
 
 const CreateRoomScreen = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const { user } = useAuth();
   const [roomName, setRoomName] = useState("");
   const [rounds, setRounds] = useState(5);
   const [responseTime, setResponseTime] = useState(30);
@@ -15,9 +26,45 @@ const CreateRoomScreen = () => {
   const [voteTime, setVoteTime] = useState(20);
   const [maxPlayers, setMaxPlayers] = useState(8);
   const [isPrivate, setIsPrivate] = useState(true);
+  const [loading, setLoading] = useState(false);
 
-  const handleCreate = () => {
-    navigate("/lobby");
+  const handleCreate = async () => {
+    if (!user) {
+      toast({ title: "Login required", variant: "destructive" });
+      navigate("/auth");
+      return;
+    }
+
+    setLoading(true);
+    const code = generateCode();
+
+    const { data, error } = await supabase.from("rooms").insert({
+      code,
+      host_id: user.id,
+      name: roomName || "Game Room",
+      max_players: maxPlayers,
+      rounds,
+      response_time: responseTime,
+      discussion_time: discussionTime,
+      vote_time: voteTime,
+      is_private: isPrivate,
+    }).select().single();
+
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+      setLoading(false);
+      return;
+    }
+
+    // Join room as host
+    await supabase.from("room_players").insert({
+      room_id: data.id,
+      user_id: user.id,
+      is_ready: true,
+    });
+
+    setLoading(false);
+    navigate(`/lobby?code=${code}`);
   };
 
   const SettingRow = ({ label, value, onChange, min, max }: {
@@ -101,8 +148,9 @@ const CreateRoomScreen = () => {
             size="xl"
             className="w-full mt-4"
             onClick={handleCreate}
+            disabled={loading}
           >
-            {t("create.button")}
+            {loading ? "..." : t("create.button")}
           </Button>
         </div>
       </motion.div>
