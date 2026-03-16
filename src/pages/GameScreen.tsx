@@ -5,6 +5,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import RoomChat from "@/components/RoomChat";
 import { Eye, EyeOff, MessageSquare, Send, Vote, Sparkles, Loader2 } from "lucide-react";
 
 type Phase =
@@ -686,6 +687,18 @@ const GameScreen = () => {
                   );
                 })}
               </div>
+
+              {/* Real-time chat */}
+              {roomId && myPlayerId && (
+                <div className="mt-4">
+                  <RoomChat
+                    roomId={roomId}
+                    playerId={myPlayerId}
+                    playerName={getPlayerName(players.find((p) => p.id === myPlayerId)!)}
+                    maxHeight="150px"
+                  />
+                </div>
+              )}
             </motion.div>
           )}
 

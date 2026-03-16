@@ -5,7 +5,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Copy, Share2, Send, Crown, Check } from "lucide-react";
+import RoomChat from "@/components/RoomChat";
+import { ArrowLeft, Copy, Share2, Crown, Check } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
@@ -35,9 +36,7 @@ const LobbyScreen = () => {
   const { t } = useLanguage();
   const { user, profile } = useAuth();
 
-  const [chatInput, setChatInput] = useState("");
   const [isReady, setIsReady] = useState(false);
-  const [messages, setMessages] = useState<{ name: string; text: string }[]>([]);
   const [copied, setCopied] = useState(false);
   const [players, setPlayers] = useState<RoomPlayer[]>([]);
   const [roomId, setRoomId] = useState<string | null>(null);
@@ -212,15 +211,16 @@ const LobbyScreen = () => {
     }
   };
 
-  const handleSendChat = () => {
-    if (chatInput.trim()) {
-      setMessages((prev) => [
-        ...prev,
-        { name: profile?.display_name || guestSession?.name || "Player", text: chatInput.trim() },
-      ]);
-      setChatInput("");
-    }
-  };
+  const myPlayerId = (() => {
+    if (guestSession) return guestSession.playerId;
+    const me = players.find((p) => p.user_id === user?.id);
+    return me?.id || "";
+  })();
+
+  const myPlayerName = (() => {
+    if (guestSession) return guestSession.name;
+    return profile?.display_name || "Player";
+  })();
 
   const handleReady = async () => {
     if (!roomId) return;
@@ -346,15 +346,15 @@ const LobbyScreen = () => {
           })}
         </motion.div>
 
-        {messages.length > 0 && (
-          <div className="space-y-2 mb-4">
-            <h2 className="font-display text-sm font-semibold text-muted-foreground uppercase tracking-wider">{t("lobby.chat")}</h2>
-            {messages.map((msg, i) => (
-              <div key={i} className="bg-card rounded-2xl p-3 shadow-card">
-                <span className="font-display font-semibold text-xs text-primary">{msg.name}</span>
-                <p className="text-sm font-body text-foreground">{msg.text}</p>
-              </div>
-            ))}
+        {roomId && myPlayerId && (
+          <div className="mb-4">
+            <h2 className="font-display text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2">{t("lobby.chat")}</h2>
+            <RoomChat
+              roomId={roomId}
+              playerId={myPlayerId}
+              playerName={myPlayerName}
+              maxHeight="180px"
+            />
           </div>
         )}
 
@@ -369,20 +369,6 @@ const LobbyScreen = () => {
       </div>
 
       <div className="border-t border-border px-4 py-3 space-y-3">
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={chatInput}
-            onChange={(e) => setChatInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSendChat()}
-            placeholder={t("lobby.chatPlaceholder")}
-            className="flex-1 h-11 px-4 rounded-2xl border-2 border-input bg-background font-body text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
-          />
-          <button onClick={handleSendChat} className="h-11 w-11 rounded-2xl gradient-hero flex items-center justify-center text-primary-foreground">
-            <Send className="w-4 h-4" />
-          </button>
-        </div>
-
         <div className="flex gap-3">
           <Button variant={isReady ? "secondary" : "game"} size="lg" className="flex-1" onClick={handleReady}>
             {isReady ? t("lobby.notReady") : t("lobby.ready")}
