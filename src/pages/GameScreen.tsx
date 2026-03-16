@@ -51,6 +51,15 @@ interface GameVote {
   voted_player_id: string;
 }
 
+interface GameScore {
+  id: string;
+  room_id: string;
+  round_id: string;
+  player_id: string;
+  points: number;
+  reason: string;
+}
+
 const COLORS = [
   "hsl(267 84% 58%)",
   "hsl(340 82% 62%)",
@@ -78,6 +87,7 @@ const GameScreen = () => {
   const [roundNumber, setRoundNumber] = useState(1);
   const [hints, setHints] = useState<GameHint[]>([]);
   const [votes, setVotes] = useState<GameVote[]>([]);
+  const [scores, setScores] = useState<GameScore[]>([]);
 
   // UI state
   const [phase, setPhase] = useState<Phase>("loading");
@@ -212,7 +222,24 @@ const GameScreen = () => {
           }
         },
       )
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "game_scores", filter: `room_id=eq.${roomId}` },
+        (payload) => {
+          const score = payload.new as GameScore;
+          setScores((prev) => (prev.some((s) => s.id === score.id) ? prev : [...prev, score]));
+        },
+      )
       .subscribe();
+
+    // Fetch existing scores for this room
+    supabase
+      .from("game_scores")
+      .select("*")
+      .eq("room_id", roomId)
+      .then(({ data }) => {
+        if (data) setScores(data as unknown as GameScore[]);
+      });
 
     return () => {
       supabase.removeChannel(channel);
@@ -364,7 +391,7 @@ const GameScreen = () => {
   const handleNextRound = async () => {
     const next = roundNumber + 1;
     if (next > totalRounds) {
-      navigate("/results");
+      navigate(`/results?room=${roomId}`);
       return;
     }
 
@@ -426,6 +453,29 @@ const GameScreen = () => {
 
   const caughtFake = mostVotedPlayerId === currentRound?.fake_player_id;
 
+  // Cumulative scores per player
+  const cumulativeScores = useMemo(() => {
+    const totals: Record<string, number> = {};
+    scores.forEach((s) => {
+      totals[s.player_id] = (totals[s.player_id] || 0) + s.points;
+    });
+    return totals;
+  }, [scores]);
+
+  // Round-specific scores
+  const roundScores = useMemo(() => {
+    if (!currentRound) return {} as Record<string, number>;
+    const totals: Record<string, number> = {};
+    scores
+      .filter((s) => s.round_id === currentRound.id)
+      .forEach((s) => {
+        totals[s.player_id] = (totals[s.player_id] || 0) + s.points;
+      });
+    return totals;
+  }, [scores, currentRound]);
+
+  const myScore = myPlayerId ? cumulativeScores[myPlayerId] || 0 : 0;
+
   const hintsSubmittedCount = currentRoundHints.length;
   const votesSubmittedCount = currentRound ? votes.filter((v) => v.round_id === currentRound.id).length : 0;
 
@@ -449,7 +499,7 @@ const GameScreen = () => {
           <div className="font-display text-lg font-bold text-primary">{timer}s</div>
         )}
         <span className="font-display font-semibold text-sm text-muted-foreground">
-          {players.length} {t("general.players")}
+          {t("game.score")}: {myScore}
         </span>
       </header>
 
@@ -754,16 +804,32 @@ const GameScreen = () => {
                 })()}
               </div>
 
-              {/* Vote breakdown */}
-              <div className="space-y-1 mb-4">
-                {players.map((p, i) => (
-                  <div key={p.id} className="flex items-center justify-between text-sm px-2">
-                    <span className="font-body text-muted-foreground">{getPlayerName(p)}</span>
-                    <span className="font-display font-bold text-foreground">
-                      {voteResults[p.id] || 0} {t("game.vote")}
-                    </span>
-                  </div>
-                ))}
+              {/* Score + Vote breakdown */}
+              <div className="space-y-2 mb-4">
+                {players
+                  .slice()
+                  .sort((a, b) => (cumulativeScores[b.id] || 0) - (cumulativeScores[a.id] || 0))
+                  .map((p, i) => {
+                    const rs = roundScores[p.id] || 0;
+                    const total = cumulativeScores[p.id] || 0;
+                    return (
+                      <div key={p.id} className="flex items-center justify-between text-sm px-2 py-1 bg-background rounded-xl">
+                        <div className="flex items-center gap-2">
+                          <span className="font-display font-bold text-xs text-muted-foreground w-4">{i + 1}</span>
+                          <span className="font-body text-foreground">{getPlayerName(p)}</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          {rs > 0 && (
+                            <span className="text-xs font-display font-semibold text-game-green">+{rs}</span>
+                          )}
+                          <span className="font-display font-bold text-primary">{total}</span>
+                          <span className="text-xs text-muted-foreground">
+                            ({voteResults[p.id] || 0} {t("game.vote")})
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
               </div>
 
               <Button variant="hero" size="lg" className="w-full" onClick={handleNextRound}>
