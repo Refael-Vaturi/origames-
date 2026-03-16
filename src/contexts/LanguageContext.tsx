@@ -28,6 +28,8 @@ const translations: Translations = {
   "auth.registerBtn": { en: "Create Account", he: "צור חשבון" },
   "auth.switchRegister": { en: "Don't have an account? Register", he: "אין לך חשבון? הירשם" },
   "auth.switchLogin": { en: "Already have an account? Login", he: "יש לך חשבון? התחבר" },
+  "auth.emailNotConfirmed": { en: "Please confirm your email first", he: "קודם צריך לאשר את האימייל" },
+  "auth.invalidCredentials": { en: "Invalid email or password", he: "אימייל או סיסמה שגויים" },
 
   // Profile
   "profile.title": { en: "Profile", he: "פרופיל" },
@@ -61,8 +63,18 @@ const translations: Translations = {
   "join.title": { en: "Join a Room", he: "הצטרף לחדר" },
   "join.placeholder": { en: "Enter room code...", he: "...הכנס קוד חדר" },
   "join.button": { en: "Join", he: "הצטרף" },
+  "join.autoFlow": { en: "Continue", he: "המשך" },
   "join.orLink": { en: "Or open an invite link", he: "או פתח קישור הזמנה" },
   "join.back": { en: "Back", he: "חזור" },
+  "join.notFound": { en: "Room not found", he: "החדר לא נמצא" },
+  "join.invalidCode": { en: "Enter a valid room code", he: "צריך להזין קוד חדר תקין" },
+  "join.loginAndJoin": { en: "Login and join", he: "להתחבר ולהיכנס" },
+  "join.registerAndJoin": { en: "Register and join", he: "להירשם ולהיכנס" },
+  "join.playGuest": { en: "Play as guest", he: "לשחק כאורח" },
+  "join.continueAsGuest": { en: "Continue as guest", he: "המשך כאורח" },
+  "join.guestName": { en: "Guest name", he: "שם אורח" },
+  "join.guestDefault": { en: "Guest", he: "אורח" },
+  "join.authOrGuestRequired": { en: "Choose login or guest to enter", he: "צריך להתחבר או לבחור אורח כדי להיכנס" },
 
   // Create Room
   "create.title": { en: "Create Room", he: "צור חדר" },
@@ -156,7 +168,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       if (!entry) return key;
       return entry[language];
     },
-    [language]
+    [language],
   );
 
   const dir = language === "he" ? "rtl" : "ltr";

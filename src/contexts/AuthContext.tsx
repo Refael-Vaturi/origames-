@@ -33,39 +33,69 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchProfile = async (userId: string) => {
+  const fetchProfile = async (currentUser: User) => {
     const { data } = await supabase
       .from("profiles")
       .select("*")
-      .eq("user_id", userId)
-      .single();
-    if (data) setProfile(data as Profile);
+      .eq("user_id", currentUser.id)
+      .maybeSingle();
+
+    if (data) {
+      setProfile(data as Profile);
+      return;
+    }
+
+    const fallbackDisplayName =
+      (currentUser.user_metadata?.display_name as string | undefined) ||
+      (currentUser.user_metadata?.full_name as string | undefined) ||
+      "Player";
+
+    await supabase.from("profiles").insert({
+      user_id: currentUser.id,
+      display_name: fallbackDisplayName,
+    });
+
+    const { data: createdProfile } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("user_id", currentUser.id)
+      .maybeSingle();
+
+    setProfile((createdProfile as Profile) ?? null);
   };
 
   const refreshProfile = async () => {
-    if (user) await fetchProfile(user.id);
+    if (user) await fetchProfile(user);
   };
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          setTimeout(() => fetchProfile(session.user.id), 0);
-        } else {
-          setProfile(null);
-        }
-        setLoading(false);
-      }
-    );
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (_event, nextSession) => {
+      setSession(nextSession);
+      setUser(nextSession?.user ?? null);
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user.id);
+      if (nextSession?.user) {
+        setTimeout(() => {
+          void fetchProfile(nextSession.user);
+        }, 0);
+      } else {
+        setProfile(null);
       }
+
+      setLoading(false);
+    });
+
+    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
+      setSession(initialSession);
+      setUser(initialSession?.user ?? null);
+
+      if (initialSession?.user) {
+        void fetchProfile(initialSession.user);
+      } else {
+        setProfile(null);
+      }
+
       setLoading(false);
     });
 

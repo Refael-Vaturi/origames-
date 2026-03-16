@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,44 +8,147 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Hash } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
+type GuestSession = {
+  roomCode: string;
+  playerId: string;
+  token: string;
+  name: string;
+  avatar: string;
+};
+
+const avatarOptions = ["🦊", "🐼", "🐯", "🐸", "🐙", "🦄"];
+
 const JoinByCodeScreen = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { t } = useLanguage();
   const { user } = useAuth();
-  const [code, setCode] = useState("");
+
+  const initialCode = (searchParams.get("code") || "").toUpperCase();
+
+  const [code, setCode] = useState(initialCode);
   const [loading, setLoading] = useState(false);
+  const [showGuestSetup, setShowGuestSetup] = useState(false);
+  const [guestName, setGuestName] = useState("");
+  const [guestAvatar, setGuestAvatar] = useState(avatarOptions[0]);
 
-  const handleJoin = async () => {
-    if (code.trim().length < 4) return;
+  const autoJoinAttemptedRef = useRef(false);
 
-    if (!user) {
-      toast({ title: "Login required", variant: "destructive" });
-      navigate("/auth");
-      return;
+  useEffect(() => {
+    setCode(initialCode);
+    autoJoinAttemptedRef.current = false;
+  }, [initialCode]);
+
+  const normalizedCode = code.trim().toUpperCase();
+
+  const loadRoomByCode = async () => {
+    if (normalizedCode.length < 4) {
+      toast({ title: t("join.invalidCode"), variant: "destructive" });
+      return null;
     }
 
-    setLoading(true);
     const { data: room } = await supabase
       .from("rooms")
       .select("id, code, status")
-      .eq("code", code.trim())
+      .eq("code", normalizedCode)
       .single();
 
     if (!room) {
       toast({ title: t("join.notFound") || "Room not found", variant: "destructive" });
+      return null;
+    }
+
+    return room;
+  };
+
+  const joinAsAuthenticatedUser = async () => {
+    if (!user) return;
+
+    setLoading(true);
+    try {
+      const room = await loadRoomByCode();
+      if (!room) return;
+
+      await supabase.from("room_players").upsert(
+        {
+          room_id: room.id,
+          user_id: user.id,
+          is_ready: false,
+        },
+        { onConflict: "room_id,user_id" },
+      );
+
+      navigate(`/lobby?code=${room.code}`);
+    } finally {
       setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!user || normalizedCode.length < 4 || autoJoinAttemptedRef.current || !initialCode) return;
+    autoJoinAttemptedRef.current = true;
+    void joinAsAuthenticatedUser();
+  }, [user, normalizedCode, initialCode]);
+
+  const handleJoin = async () => {
+    if (!user) {
+      if (normalizedCode.length < 4) {
+        toast({ title: t("join.invalidCode"), variant: "destructive" });
+        return;
+      }
+      setShowGuestSetup(true);
       return;
     }
 
-    // Join the room
-    await supabase.from("room_players").upsert({
-      room_id: room.id,
-      user_id: user.id,
-      is_ready: false,
-    }, { onConflict: "room_id,user_id" });
+    await joinAsAuthenticatedUser();
+  };
 
-    setLoading(false);
-    navigate(`/lobby?code=${room.code}`);
+  const handleGuestJoin = async () => {
+    if (normalizedCode.length < 4) {
+      toast({ title: t("join.invalidCode"), variant: "destructive" });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("join-room-guest", {
+        body: {
+          code: normalizedCode,
+          name: guestName.trim() || t("join.guestDefault"),
+          avatar: guestAvatar,
+        },
+      });
+
+      if (error) throw error;
+      if (!data?.playerId || !data?.token || !data?.roomCode) {
+        throw new Error("Guest join failed");
+      }
+
+      const guestSession: GuestSession = {
+        roomCode: data.roomCode,
+        playerId: data.playerId,
+        token: data.token,
+        name: data.name,
+        avatar: data.avatar,
+      };
+
+      localStorage.setItem(`guest_room_${data.roomCode}`, JSON.stringify(guestSession));
+      navigate(`/lobby?code=${data.roomCode}`);
+    } catch (e) {
+      toast({ title: t("auth.error"), description: String((e as { message?: string })?.message || e), variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoToAuth = (mode: "login" | "register") => {
+    if (normalizedCode.length < 4) {
+      toast({ title: t("join.invalidCode"), variant: "destructive" });
+      return;
+    }
+
+    const redirect = `/join?code=${encodeURIComponent(normalizedCode)}`;
+    navigate(`/auth?mode=${mode}&redirect=${encodeURIComponent(redirect)}`);
   };
 
   return (
@@ -79,6 +182,50 @@ const JoinByCodeScreen = () => {
             />
           </div>
 
+          {!user && (
+            <div className="space-y-2 mb-4">
+              <Button variant="outline" size="default" className="w-full" onClick={() => handleGoToAuth("login")}>
+                {t("join.loginAndJoin")}
+              </Button>
+              <Button variant="outline" size="default" className="w-full" onClick={() => handleGoToAuth("register")}>
+                {t("join.registerAndJoin")}
+              </Button>
+              <Button variant="secondary" size="default" className="w-full" onClick={() => setShowGuestSetup((prev) => !prev)}>
+                {t("join.playGuest")}
+              </Button>
+            </div>
+          )}
+
+          {showGuestSetup && !user && (
+            <div className="mb-4 rounded-2xl border border-border bg-background p-4 space-y-3">
+              <input
+                type="text"
+                value={guestName}
+                onChange={(e) => setGuestName(e.target.value)}
+                placeholder={t("join.guestName")}
+                maxLength={20}
+                className="w-full h-11 px-4 rounded-xl border border-input bg-background font-body text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
+              />
+              <div className="grid grid-cols-6 gap-2">
+                {avatarOptions.map((avatar) => (
+                  <button
+                    key={avatar}
+                    type="button"
+                    onClick={() => setGuestAvatar(avatar)}
+                    className={`h-10 rounded-xl border text-lg transition-colors ${
+                      guestAvatar === avatar ? "border-primary bg-primary/10" : "border-input bg-muted"
+                    }`}
+                  >
+                    {avatar}
+                  </button>
+                ))}
+              </div>
+              <Button variant="hero" size="default" className="w-full" onClick={handleGuestJoin} disabled={loading}>
+                {loading ? "..." : t("join.continueAsGuest")}
+              </Button>
+            </div>
+          )}
+
           <Button
             variant="hero"
             size="xl"
@@ -86,12 +233,10 @@ const JoinByCodeScreen = () => {
             onClick={handleJoin}
             disabled={code.trim().length < 4 || loading}
           >
-            {loading ? "..." : t("join.button")}
+            {loading ? "..." : user ? t("join.button") : t("join.autoFlow")}
           </Button>
 
-          <p className="text-center text-sm text-muted-foreground font-body">
-            {t("join.orLink")}
-          </p>
+          <p className="text-center text-sm text-muted-foreground font-body">{t("join.orLink")}</p>
         </div>
       </motion.div>
     </div>
