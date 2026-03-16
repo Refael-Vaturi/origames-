@@ -19,6 +19,8 @@ const translations: Translations = {
   "auth.google": { en: "Continue with Google", he: "המשך עם Google" },
   "auth.apple": { en: "Continue with Apple", he: "המשך עם Apple" },
   "auth.or": { en: "or", he: "או" },
+  "auth.error": { en: "Login failed", he: "ההתחברות נכשלה" },
+  "auth.checkEmail": { en: "Check your email to confirm!", he: "!בדוק את האימייל שלך לאישור" },
   "auth.email": { en: "Email", he: "אימייל" },
   "auth.password": { en: "Password", he: "סיסמה" },
   "auth.displayName": { en: "Display Name", he: "שם תצוגה" },

@@ -85,7 +85,10 @@ const SettingsScreen = () => {
             </button>
           </div>
 
-          <Button variant="outline" size="lg" className="w-full mt-4" onClick={() => navigate("/")}>
+          <Button variant="outline" size="lg" className="w-full mt-4" onClick={async () => {
+            await signOut();
+            navigate("/");
+          }}>
             {t("settings.logout")}
           </Button>
         </div>
