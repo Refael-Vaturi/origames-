@@ -132,9 +132,6 @@ const LobbyScreen = () => {
             room_id: room.id,
             user_id: user.id,
             is_ready: false,
-            is_guest: false,
-            guest_name: null,
-            guest_avatar: null,
           },
           { onConflict: "room_id,user_id" },
         );
