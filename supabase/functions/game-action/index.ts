@@ -238,10 +238,16 @@ Deno.serve(async (req) => {
             await admin.from("game_scores").insert(scores);
           }
 
-          // ─── Update profile stats (only for authenticated users) ───
-          // Per-round: fakes_caught / survived
+          // ─── Update profile stats + XP (only for authenticated users) ───
+          // XP for voting (all auth voters)
+          for (const v of allVotes) {
+            const voterUid = getAuthUserId(v.voter_id);
+            if (voterUid) {
+              await admin.rpc("increment_profile_stat", { p_user_id: voterUid, p_field: "xp", p_amount: 5 });
+            }
+          }
+
           if (caughtFake) {
-            // Increment fakes_caught for each auth user who voted correctly
             const correctVoterUserIds = allVotes
               .filter((v) => v.voted_player_id === fakeId)
               .map((v) => getAuthUserId(v.voter_id))
@@ -249,12 +255,13 @@ Deno.serve(async (req) => {
 
             for (const uid of correctVoterUserIds) {
               await admin.rpc("increment_profile_stat", { p_user_id: uid, p_field: "fakes_caught", p_amount: 1 });
+              await admin.rpc("increment_profile_stat", { p_user_id: uid, p_field: "xp", p_amount: 15 });
             }
           } else {
-            // Increment survived for fake player if authenticated
             const fakeUserId = getAuthUserId(fakeId);
             if (fakeUserId) {
               await admin.rpc("increment_profile_stat", { p_user_id: fakeUserId, p_field: "survived", p_amount: 1 });
+              await admin.rpc("increment_profile_stat", { p_user_id: fakeUserId, p_field: "xp", p_amount: 20 });
             }
           }
 
