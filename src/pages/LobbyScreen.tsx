@@ -149,7 +149,7 @@ const LobbyScreen = () => {
       await fetchPlayers(room.id, guestSession);
 
       if (room.status === "playing") {
-        navigate("/game");
+        navigate("/game?room=" + room.id);
       }
     };
 
