@@ -87,6 +87,7 @@ const GameScreen = () => {
   const [roundNumber, setRoundNumber] = useState(1);
   const [hints, setHints] = useState<GameHint[]>([]);
   const [votes, setVotes] = useState<GameVote[]>([]);
+  const [scores, setScores] = useState<GameScore[]>([]);
 
   // UI state
   const [phase, setPhase] = useState<Phase>("loading");
