@@ -212,15 +212,16 @@ const LobbyScreen = () => {
     }
   };
 
-  const handleSendChat = () => {
-    if (chatInput.trim()) {
-      setMessages((prev) => [
-        ...prev,
-        { name: profile?.display_name || guestSession?.name || "Player", text: chatInput.trim() },
-      ]);
-      setChatInput("");
-    }
-  };
+  const myPlayerId = (() => {
+    if (guestSession) return guestSession.playerId;
+    const me = players.find((p) => p.user_id === user?.id);
+    return me?.id || "";
+  })();
+
+  const myPlayerName = (() => {
+    if (guestSession) return guestSession.name;
+    return profile?.display_name || "Player";
+  })();
 
   const handleReady = async () => {
     if (!roomId) return;
