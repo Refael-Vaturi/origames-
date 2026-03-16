@@ -55,17 +55,26 @@ const LobbyScreen = () => {
 
     if (!data) return;
 
-    const authenticatedUserIds = data.filter((p) => !p.is_guest).map((p) => p.user_id);
+    const rows = (data as Array<Partial<RoomPlayer>>).map((row) => ({
+      id: String(row.id || ""),
+      user_id: String(row.user_id || ""),
+      is_ready: Boolean(row.is_ready),
+      is_guest: Boolean(row.is_guest),
+      guest_name: row.guest_name ?? null,
+      guest_avatar: row.guest_avatar ?? null,
+    }));
+
+    const authenticatedUserIds = rows.filter((p) => !p.is_guest).map((p) => p.user_id);
     const { data: profiles } = authenticatedUserIds.length
       ? await supabase.from("profiles").select("user_id, display_name").in("user_id", authenticatedUserIds)
       : { data: [] as { user_id: string; display_name: string }[] };
 
-    const enriched = data.map((p) => ({
+    const enriched: RoomPlayer[] = rows.map((p) => ({
       ...p,
       profile: profiles?.find((pr) => pr.user_id === p.user_id),
     }));
 
-    setPlayers(enriched as RoomPlayer[]);
+    setPlayers(enriched);
 
     if (user) {
       const me = enriched.find((p) => p.user_id === user.id);
