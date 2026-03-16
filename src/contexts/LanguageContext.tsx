@@ -71,6 +71,24 @@ const translations: Translations = {
   "game.backToLobby": { en: "Back to Lobby", he: "חזרה ללובי" },
   "game.inviteFriends": { en: "Invite Friends", he: "הזמן חברים" },
 
+  // Matchmaking
+  "matchmaking.searching": { en: "Searching", he: "מחפש" },
+  "matchmaking.finding": { en: "Finding players around the world...", he: "...מחפש שחקנים ברחבי העולם" },
+  "matchmaking.cancel": { en: "Cancel", he: "ביטול" },
+
+  // Tutorial
+  "tutorial.title": { en: "How to Play", he: "איך משחקים" },
+  "tutorial.next": { en: "Next", he: "הבא" },
+  "tutorial.done": { en: "Got It!", he: "!הבנתי" },
+  "tutorial.step1Title": { en: "Get Your Secret Word", he: "קבל את המילה הסודית" },
+  "tutorial.step1Desc": { en: "Everyone gets the same word — except the Fake, who gets a different one. Don't reveal too much!", he: "כולם מקבלים את אותה מילה — חוץ מה-Fake, שמקבל מילה שונה. אל תחשוף יותר מדי!" },
+  "tutorial.step2Title": { en: "Give a Clever Hint", he: "תן רמז חכם" },
+  "tutorial.step2Desc": { en: "Each player gives a short hint about their word. Be clever — too obvious and you help the Fake!", he: "כל שחקן נותן רמז קצר על המילה שלו. תהיה חכם — רמז ברור מדי עוזר ל-Fake!" },
+  "tutorial.step3Title": { en: "Vote for the Fake", he: "הצבע נגד ה-Fake" },
+  "tutorial.step3Desc": { en: "Discuss the hints and vote who you think got a different word. Catch the Fake to score points!", he: "דונו על הרמזים והצביעו מי לדעתכם קיבל מילה שונה. תפסו את ה-Fake כדי לצבור נקודות!" },
+  "tutorial.step4Title": { en: "The Reveal!", he: "!החשיפה" },
+  "tutorial.step4Desc": { en: "Find out who was the Fake! If caught, the majority scores. If not — the Fake wins bonus points!", he: "גלו מי היה ה-Fake! אם נתפס — הרוב מרוויח. אם לא — ה-Fake מקבל בונוס!" },
+
   // General
   "general.language": { en: "עברית", he: "English" },
   "general.players": { en: "Players", he: "שחקנים" },
