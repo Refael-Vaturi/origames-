@@ -122,7 +122,7 @@ const TutorialScreen = () => {
                 variant="hero"
                 size="lg"
                 className="flex-1"
-                onClick={() => navigate("/home")}
+                onClick={() => navigate("/")}
               >
                 {t("tutorial.done")}
               </Button>
