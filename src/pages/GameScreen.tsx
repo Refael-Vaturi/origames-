@@ -351,6 +351,7 @@ const GameScreen = () => {
 
     setMyHintSubmitted(true);
     setPhase("waiting_hints");
+    playClick();
 
     const body: Record<string, unknown> = {
       action: "submit-hint",
