@@ -93,6 +93,11 @@ Deno.serve(async (req) => {
     // Pick random fake player
     const fakePlayer = players[Math.floor(Math.random() * players.length)];
 
+    // Set room status to playing on first round
+    if (round_number === 1) {
+      await admin.from("rooms").update({ status: "playing" }).eq("id", room_id);
+    }
+
     const { data: round, error } = await admin
       .from("game_rounds")
       .insert({
