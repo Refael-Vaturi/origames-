@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import RoomChat from "@/components/RoomChat";
 import { Eye, EyeOff, MessageSquare, Send, Vote, Sparkles, Loader2 } from "lucide-react";
+import { playWhoosh, playClick, playSuccess, playError, playTick, playReveal, playVote, playPop } from "@/hooks/useSound";
 
 type Phase =
   | "loading"
