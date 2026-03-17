@@ -738,7 +738,7 @@ const GameScreen = () => {
                       <motion.button
                         key={player.id}
                         whileTap={{ scale: 0.95 }}
-                        onClick={() => setSelectedVote(player.id)}
+                        onClick={() => { setSelectedVote(player.id); playPop(); }}
                         className={`w-full flex items-center gap-3 rounded-2xl p-3 transition-all border-2 ${
                           selectedVote === player.id
                             ? "border-primary bg-primary/10 shadow-card"

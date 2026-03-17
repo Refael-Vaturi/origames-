@@ -66,6 +66,7 @@ const LevelUpCelebration = ({ level }: LevelUpCelebrationProps) => {
   useEffect(() => {
     if (level > prevLevel && prevLevel > 0) {
       setShowCelebration(true);
+      playLevelUp();
       const timer = setTimeout(() => setShowCelebration(false), 4000);
       return () => clearTimeout(timer);
     }
