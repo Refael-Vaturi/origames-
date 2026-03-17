@@ -1,0 +1,1 @@
+ALTER TABLE public.rooms DROP CONSTRAINT rooms_host_id_fkey;
