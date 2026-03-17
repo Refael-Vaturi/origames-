@@ -293,11 +293,13 @@ const GameScreen = () => {
     if (phase !== "secret" && phase !== "discussion" && phase !== "hint_reveal") return;
     if (timer <= 0) {
       if (phase === "secret") {
+        playWhoosh();
         setPhase("hint");
         setCurrentHintRound(1);
         setMyHintSubmitted(false);
         setHintInput("");
       } else if (phase === "discussion") {
+        playWhoosh();
         setPhase("voting");
         setMyVoteSubmitted(false);
       } else if (phase === "hint_reveal") {
