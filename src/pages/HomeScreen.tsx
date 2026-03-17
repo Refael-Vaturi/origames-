@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNotifications } from "@/hooks/useNotifications";
 import { Button } from "@/components/ui/button";
 import { Users, Gamepad2, Hash, GraduationCap, Settings, UserCircle } from "lucide-react";
 import NotificationBell from "@/components/NotificationBell";
@@ -15,6 +16,7 @@ const HomeScreen = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const { user, profile } = useAuth();
+  const { pendingInvites } = useNotifications();
 
   // First visit → redirect to tutorial
   useEffect(() => {
@@ -111,11 +113,23 @@ const HomeScreen = () => {
             </div>
           </button>
           <div className="bg-card rounded-2xl p-4 shadow-card">
-            <h3 className="font-display font-semibold text-sm text-foreground mb-1">{t("home.invites")}</h3>
-            <p className="text-xs text-muted-foreground">2 pending</p>
-            <div className="mt-2 flex gap-1">
-              <span className="px-2 py-1 rounded-lg bg-game-yellow/20 text-xs font-body text-foreground">Room #42</span>
-              <span className="px-2 py-1 rounded-lg bg-game-purple/20 text-xs font-body text-foreground">Room #7</span>
+            <h3 className="font-display font-semibold text-sm text-foreground mb-1">{t("notifications.pendingInvites")}</h3>
+            <p className="text-xs text-muted-foreground">
+              {pendingInvites.length > 0 ? `${pendingInvites.length} ${t("friends.pending")}` : t("notifications.noInvites")}
+            </p>
+            <div className="mt-2 flex gap-1 flex-wrap">
+              {pendingInvites.slice(0, 3).map((inv) => {
+                const code = (inv.data as Record<string, string>)?.roomCode;
+                return code ? (
+                  <button
+                    key={inv.id}
+                    onClick={() => navigate(`/join?code=${code}`)}
+                    className="px-2 py-1 rounded-lg bg-primary/20 text-xs font-body text-foreground hover:bg-primary/30 transition-colors"
+                  >
+                    {code}
+                  </button>
+                ) : null;
+              })}
             </div>
           </div>
         </motion.div>

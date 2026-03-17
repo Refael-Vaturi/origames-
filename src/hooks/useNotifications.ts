@@ -25,7 +25,7 @@ export function useNotifications() {
       .select("*")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
-      .limit(20);
+      .limit(50);
 
     if (data) {
       const typed = data as unknown as Notification[];
@@ -34,7 +34,6 @@ export function useNotifications() {
     }
   }, [user]);
 
-  // Initial fetch
   useEffect(() => {
     fetchNotifications();
   }, [fetchNotifications]);
@@ -55,7 +54,7 @@ export function useNotifications() {
         },
         (payload) => {
           const newNotif = payload.new as unknown as Notification;
-          setNotifications((prev) => [newNotif, ...prev].slice(0, 20));
+          setNotifications((prev) => [newNotif, ...prev].slice(0, 50));
           setUnreadCount((prev) => prev + 1);
 
           // Browser notification
@@ -100,17 +99,48 @@ export function useNotifications() {
     setUnreadCount(0);
   }, [user]);
 
+  const deleteNotification = useCallback(
+    async (id: string) => {
+      if (!user) return;
+      await supabase.from("notifications").delete().eq("id", id);
+      setNotifications((prev) => {
+        const notif = prev.find((n) => n.id === id);
+        const updated = prev.filter((n) => n.id !== id);
+        if (notif && !notif.is_read) {
+          setUnreadCount((c) => Math.max(0, c - 1));
+        }
+        return updated;
+      });
+    },
+    [user]
+  );
+
+  const clearAll = useCallback(async () => {
+    if (!user) return;
+    await supabase.from("notifications").delete().eq("user_id", user.id);
+    setNotifications([]);
+    setUnreadCount(0);
+  }, [user]);
+
   const requestPushPermission = useCallback(async () => {
     if (!("Notification" in window)) return false;
     const result = await window.Notification.requestPermission();
     return result === "granted";
   }, []);
 
+  // Get pending game invites (unread game_invite notifications)
+  const pendingInvites = notifications.filter(
+    (n) => n.type === "game_invite" && !n.is_read
+  );
+
   return {
     notifications,
     unreadCount,
+    pendingInvites,
     markAsRead,
     markAllRead,
+    deleteNotification,
+    clearAll,
     requestPushPermission,
     refetch: fetchNotifications,
   };

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bell, Check, CheckCheck, Gamepad2, UserPlus, Info, X } from "lucide-react";
+import { Bell, Check, CheckCheck, Gamepad2, UserPlus, Info, X, Trash2 } from "lucide-react";
 import { useNotifications, type Notification } from "@/hooks/useNotifications";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
@@ -9,6 +9,7 @@ import { playPop } from "@/hooks/useSound";
 const typeIcons: Record<string, typeof Bell> = {
   game_invite: Gamepad2,
   friend_request: UserPlus,
+  friend_accepted: UserPlus,
   info: Info,
 };
 
@@ -23,21 +24,19 @@ function timeAgo(dateStr: string): string {
 }
 
 const NotificationBell = () => {
-  const { notifications, unreadCount, markAsRead, markAllRead, requestPushPermission } =
+  const { notifications, unreadCount, markAsRead, markAllRead, deleteNotification, clearAll, requestPushPermission } =
     useNotifications();
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  // Ask for push permission on first interaction
   useEffect(() => {
     if (open && "Notification" in window && window.Notification.permission === "default") {
       requestPushPermission();
     }
   }, [open, requestPushPermission]);
 
-  // Close on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
@@ -54,10 +53,16 @@ const NotificationBell = () => {
     if (notif.type === "game_invite" && data?.roomCode) {
       navigate(`/join?code=${data.roomCode}`);
       setOpen(false);
-    } else if (notif.type === "friend_request") {
+    } else if (notif.type === "friend_request" || notif.type === "friend_accepted") {
       navigate("/friends");
       setOpen(false);
     }
+  };
+
+  const handleDelete = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    deleteNotification(id);
+    playPop();
   };
 
   return (
@@ -99,6 +104,15 @@ const NotificationBell = () => {
                 {t("notifications.title")}
               </h3>
               <div className="flex items-center gap-2">
+                {notifications.length > 0 && (
+                  <button
+                    onClick={clearAll}
+                    className="text-xs text-destructive font-body hover:underline flex items-center gap-1"
+                    title={t("notifications.clearAll")}
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
                 {unreadCount > 0 && (
                   <button
                     onClick={markAllRead}
@@ -130,14 +144,14 @@ const NotificationBell = () => {
                 notifications.map((notif) => {
                   const Icon = typeIcons[notif.type] || Bell;
                   return (
-                    <motion.button
+                    <motion.div
                       key={notif.id}
-                      onClick={() => handleNotificationClick(notif)}
-                      className={`w-full flex items-start gap-3 px-4 py-3 text-start hover:bg-muted/50 transition-colors border-b border-border/50 last:border-0 ${
+                      className={`group w-full flex items-start gap-3 px-4 py-3 text-start hover:bg-muted/50 transition-colors border-b border-border/50 last:border-0 cursor-pointer ${
                         !notif.is_read ? "bg-primary/5" : ""
                       }`}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
+                      onClick={() => handleNotificationClick(notif)}
                     >
                       <div
                         className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${
@@ -167,10 +181,18 @@ const NotificationBell = () => {
                           {timeAgo(notif.created_at)}
                         </p>
                       </div>
-                      {!notif.is_read && (
-                        <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0" />
-                      )}
-                    </motion.button>
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        {!notif.is_read && (
+                          <div className="w-2 h-2 rounded-full bg-primary mt-2" />
+                        )}
+                        <button
+                          onClick={(e) => handleDelete(e, notif.id)}
+                          className="p-1 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive transition-all text-muted-foreground"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </motion.div>
                   );
                 })
               )}
