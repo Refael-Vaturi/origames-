@@ -11,7 +11,7 @@ const SettingsScreen = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const { t, toggleLanguage, language } = useLanguage();
-  const [sound, setSound] = useState(true);
+  const [sound, setSound] = useState(isSoundEnabled());
   const [vibration, setVibration] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
 
