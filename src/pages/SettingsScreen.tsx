@@ -4,7 +4,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Globe, Volume2, VolumeX, Moon, Sun, Vibrate, Info } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { playClick, setSoundEnabled, isSoundEnabled } from "@/hooks/useSound";
 
 const SettingsScreen = () => {
   const { user, signOut } = useAuth();
