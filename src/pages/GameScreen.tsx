@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -6,8 +6,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import RoomChat from "@/components/RoomChat";
-import { Eye, EyeOff, MessageSquare, Send, Vote, Sparkles, Loader2 } from "lucide-react";
-import { playWhoosh, playClick, playSuccess, playError, playTick, playReveal, playVote, playPop } from "@/hooks/useSound";
+import { Eye, EyeOff, MessageSquare, Send, Vote, Sparkles, Loader2, Shield, Skull } from "lucide-react";
+import { playWhoosh, playClick, playSuccess, playError, playTick, playReveal, playVote, playPop, playDrumroll, playCaught, playEscaped } from "@/hooks/useSound";
 
 type Phase =
   | "loading"
@@ -18,6 +18,7 @@ type Phase =
   | "discussion"
   | "voting"
   | "waiting_votes"
+  | "suspense"
   | "reveal";
 
 interface Player {
@@ -99,6 +100,11 @@ const GameScreen = () => {
   const [currentHintRound, setCurrentHintRound] = useState(1);
   const [myHintSubmitted, setMyHintSubmitted] = useState(false);
   const [myVoteSubmitted, setMyVoteSubmitted] = useState(false);
+
+  // Suspense animation state
+  const [suspenseHighlight, setSuspenseHighlight] = useState<string | null>(null);
+  const [showRevealResult, setShowRevealResult] = useState(false);
+  const suspenseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Derived
   const iAmFake = currentRound?.fake_player_id === myPlayerId;
@@ -252,7 +258,6 @@ const GameScreen = () => {
   useEffect(() => {
     if (!currentRound) return;
 
-    // Fetch existing data first
     const fetchExisting = async () => {
       const [hintsRes, votesRes] = await Promise.all([
         supabase.from("game_hints").select("*").eq("round_id", currentRound.id),
@@ -324,7 +329,7 @@ const GameScreen = () => {
     return () => clearInterval(interval);
   }, [phase, timer, currentHintRound, room]);
 
-  // ─── Check: all hints submitted? ───
+  // ─── Check: all hints submitted? (with timeout fallback) ───
   useEffect(() => {
     if (phase !== "waiting_hints" || !currentRound) return;
     const count = hints.filter((h) => h.round_id === currentRound.id && h.hint_round === currentHintRound).length;
@@ -335,15 +340,83 @@ const GameScreen = () => {
     }
   }, [phase, hints, currentRound, currentHintRound, totalPlayers]);
 
-  // ─── Check: all votes submitted? ───
+  // Timeout fallback for waiting_hints
+  useEffect(() => {
+    if (phase !== "waiting_hints") return;
+    const timeout = setTimeout(() => {
+      playPop();
+      setPhase("hint_reveal");
+      setTimer(4);
+    }, (room?.response_time || 30) * 1000);
+    return () => clearTimeout(timeout);
+  }, [phase, room]);
+
+  // ─── Check: all votes submitted? (with timeout fallback) ───
   useEffect(() => {
     if (phase !== "waiting_votes" || !currentRound) return;
     const count = votes.filter((v) => v.round_id === currentRound.id).length;
     if (count >= totalPlayers) {
-      playReveal();
-      setPhase("reveal");
+      startSuspensePhase();
     }
   }, [phase, votes, currentRound, totalPlayers]);
+
+  // Timeout fallback for waiting_votes
+  useEffect(() => {
+    if (phase !== "waiting_votes") return;
+    const timeout = setTimeout(() => {
+      startSuspensePhase();
+    }, (room?.vote_time || 20) * 1000 + 5000);
+    return () => clearTimeout(timeout);
+  }, [phase, room]);
+
+  // ─── Suspense phase animation ───
+  const startSuspensePhase = useCallback(() => {
+    setPhase("suspense");
+    setShowRevealResult(false);
+    playDrumroll();
+
+    // Cycle through players rapidly
+    let i = 0;
+    const cycleInterval = setInterval(() => {
+      const randomPlayer = players[Math.floor(Math.random() * players.length)];
+      setSuspenseHighlight(randomPlayer?.id || null);
+      i++;
+      if (i > 12) {
+        clearInterval(cycleInterval);
+      }
+    }, 150);
+
+    // After 2.5s of suspense, reveal
+    suspenseTimerRef.current = setTimeout(() => {
+      clearInterval(cycleInterval);
+      setSuspenseHighlight(null);
+      playReveal();
+      setPhase("reveal");
+      setShowRevealResult(false);
+      // Stagger the reveal result
+      setTimeout(() => {
+        setShowRevealResult(true);
+      }, 600);
+    }, 2800);
+  }, [players]);
+
+  // Cleanup suspense timer
+  useEffect(() => {
+    return () => {
+      if (suspenseTimerRef.current) clearTimeout(suspenseTimerRef.current);
+    };
+  }, []);
+
+  // Play caught/escaped sound when reveal result shows
+  useEffect(() => {
+    if (phase === "reveal" && showRevealResult && currentRound) {
+      const caught = mostVotedPlayerId === currentRound.fake_player_id;
+      setTimeout(() => {
+        if (caught) playCaught();
+        else playEscaped();
+      }, 300);
+    }
+  }, [phase, showRevealResult, currentRound]);
 
   // ─── Submit hint ───
   const handleSubmitHint = async () => {
@@ -495,8 +568,9 @@ const GameScreen = () => {
   // ─── Loading state ───
   if (phase === "loading") {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-3">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <p className="text-sm text-muted-foreground font-body">{t("game.loading") || "Loading..."}</p>
       </div>
     );
   }
@@ -509,7 +583,15 @@ const GameScreen = () => {
           {t("game.round")} {roundNumber}/{totalRounds}
         </span>
         {(phase === "secret" || phase === "discussion" || phase === "hint_reveal") && (
-          <div className="font-display text-lg font-bold text-primary">{timer}s</div>
+          <motion.div
+            className="font-display text-lg font-bold text-primary"
+            key={timer}
+            initial={{ scale: 1.3 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 0.2 }}
+          >
+            {timer}s
+          </motion.div>
         )}
         <span className="font-display font-semibold text-sm text-muted-foreground">
           {t("game.score")}: {myScore}
@@ -530,9 +612,13 @@ const GameScreen = () => {
             >
               {iAmFake ? (
                 <>
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-destructive flex items-center justify-center">
-                    <EyeOff className="w-8 h-8 text-destructive-foreground" />
-                  </div>
+                  <motion.div
+                    className="w-20 h-20 mx-auto mb-4 rounded-full bg-destructive flex items-center justify-center"
+                    animate={{ rotate: [0, -5, 5, -5, 0] }}
+                    transition={{ duration: 0.5, delay: 0.3 }}
+                  >
+                    <EyeOff className="w-10 h-10 text-destructive-foreground" />
+                  </motion.div>
                   <h2 className="font-display text-xl font-bold text-foreground mb-2">{t("game.youAreFake")}</h2>
                   <div className="bg-card rounded-3xl p-6 shadow-card mb-4">
                     <p className="font-display text-2xl font-bold text-destructive">{t("game.noWordForYou")}</p>
@@ -541,13 +627,22 @@ const GameScreen = () => {
                 </>
               ) : (
                 <>
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-full gradient-hero flex items-center justify-center">
-                    <Eye className="w-8 h-8 text-primary-foreground" />
-                  </div>
+                  <motion.div
+                    className="w-20 h-20 mx-auto mb-4 rounded-full gradient-hero flex items-center justify-center"
+                    animate={{ scale: [1, 1.1, 1] }}
+                    transition={{ duration: 0.6, delay: 0.2 }}
+                  >
+                    <Eye className="w-10 h-10 text-primary-foreground" />
+                  </motion.div>
                   <h2 className="font-display text-xl font-bold text-foreground mb-2">{t("game.yourSecret")}</h2>
-                  <div className="bg-card rounded-3xl p-6 shadow-card mb-4">
+                  <motion.div
+                    className="bg-card rounded-3xl p-6 shadow-card mb-4"
+                    initial={{ rotateY: 90 }}
+                    animate={{ rotateY: 0 }}
+                    transition={{ duration: 0.5, delay: 0.3 }}
+                  >
                     <p className="font-display text-3xl font-bold text-primary">{word}</p>
-                  </div>
+                  </motion.div>
                   <p className="text-sm text-muted-foreground font-body">{t("game.dontExpose")}</p>
                 </>
               )}
@@ -603,6 +698,24 @@ const GameScreen = () => {
               <h2 className="font-display text-lg font-bold text-foreground mb-2">
                 {t("game.waitingForPlayers")}
               </h2>
+              <div className="flex justify-center gap-1 mb-2">
+                {players.map((p, i) => {
+                  const submitted = hints.some(
+                    (h) => h.round_id === currentRound?.id && h.hint_round === currentHintRound && h.player_id === p.id
+                  );
+                  return (
+                    <motion.div
+                      key={p.id}
+                      className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
+                        submitted ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                      }`}
+                      animate={submitted ? { scale: [1, 1.2, 1] } : {}}
+                    >
+                      {getPlayerInitial(p)}
+                    </motion.div>
+                  );
+                })}
+              </div>
               <p className="text-sm text-muted-foreground font-body">
                 {hintsSubmittedCount}/{totalPlayers}
               </p>
@@ -775,9 +888,73 @@ const GameScreen = () => {
             >
               <Loader2 className="w-10 h-10 mx-auto mb-4 animate-spin text-primary" />
               <h2 className="font-display text-lg font-bold text-foreground mb-2">{t("game.waitingForVotes")}</h2>
+              <div className="flex justify-center gap-1 mb-2">
+                {players.map((p) => {
+                  const voted = votes.some(
+                    (v) => v.round_id === currentRound?.id && v.voter_id === p.id
+                  );
+                  return (
+                    <motion.div
+                      key={p.id}
+                      className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
+                        voted ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                      }`}
+                      animate={voted ? { scale: [1, 1.2, 1] } : {}}
+                    >
+                      {getPlayerInitial(p)}
+                    </motion.div>
+                  );
+                })}
+              </div>
               <p className="text-sm text-muted-foreground font-body">
                 {votesSubmittedCount}/{totalPlayers}
               </p>
+            </motion.div>
+          )}
+
+          {/* SUSPENSE PHASE */}
+          {phase === "suspense" && (
+            <motion.div
+              key="suspense"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="text-center w-full max-w-sm"
+            >
+              <motion.h2
+                className="font-display text-2xl font-bold text-foreground mb-6"
+                animate={{ opacity: [1, 0.5, 1] }}
+                transition={{ duration: 0.8, repeat: Infinity }}
+              >
+                {t("game.whoIsIt") || "Who is the fake...?"}
+              </motion.h2>
+              <div className="grid grid-cols-2 gap-3">
+                {players.map((player, i) => {
+                  const isHighlighted = suspenseHighlight === player.id;
+                  return (
+                    <motion.div
+                      key={player.id}
+                      className={`flex flex-col items-center gap-2 rounded-2xl p-4 transition-all ${
+                        isHighlighted
+                          ? "bg-destructive/20 ring-2 ring-destructive shadow-lg"
+                          : "bg-card shadow-card"
+                      }`}
+                      animate={isHighlighted ? { scale: 1.08 } : { scale: 1 }}
+                      transition={{ duration: 0.1 }}
+                    >
+                      <div
+                        className="w-14 h-14 rounded-full flex items-center justify-center text-primary-foreground font-display font-bold text-xl"
+                        style={{ background: COLORS[i % COLORS.length] }}
+                      >
+                        {getPlayerInitial(player)}
+                      </div>
+                      <span className="font-display font-semibold text-xs text-foreground">
+                        {getPlayerName(player)}
+                      </span>
+                    </motion.div>
+                  );
+                })}
+              </div>
             </motion.div>
           )}
 
@@ -787,79 +964,145 @@ const GameScreen = () => {
               key="reveal"
               initial={{ scale: 0.3, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 200, damping: 15 }}
               className="text-center w-full max-w-sm"
             >
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-accent flex items-center justify-center">
-                <Sparkles className="w-8 h-8 text-accent-foreground" />
-              </div>
-              <h2 className="font-display text-2xl font-bold text-foreground mb-2">{t("game.reveal")}</h2>
-              <div className="bg-card rounded-3xl p-6 shadow-card mb-4">
-                {(() => {
-                  const fakePlayer = players.find((p) => p.id === currentRound.fake_player_id);
-                  const fakeName = fakePlayer ? getPlayerName(fakePlayer) : "?";
-                  const fakeIdx = fakePlayer ? players.indexOf(fakePlayer) : 0;
-                  return (
-                    <>
-                      <div
-                        className="w-14 h-14 mx-auto mb-3 rounded-full flex items-center justify-center text-primary-foreground font-display font-bold text-xl"
-                        style={{ background: COLORS[fakeIdx % COLORS.length] }}
-                      >
-                        {fakePlayer ? getPlayerInitial(fakePlayer) : "?"}
-                      </div>
-                      <p className="font-display text-lg font-bold text-foreground mb-1">
+              {(() => {
+                const fakePlayer = players.find((p) => p.id === currentRound.fake_player_id);
+                const fakeName = fakePlayer ? getPlayerName(fakePlayer) : "?";
+                const fakeIdx = fakePlayer ? players.indexOf(fakePlayer) : 0;
+                const caught = mostVotedPlayerId === currentRound.fake_player_id;
+                return (
+                  <>
+                    {/* Fake player card */}
+                    <motion.div
+                      className={`w-24 h-24 mx-auto mb-4 rounded-full flex items-center justify-center text-3xl font-display font-bold border-4 ${
+                        caught ? "border-primary" : "border-destructive"
+                      }`}
+                      style={{ background: COLORS[fakeIdx % COLORS.length] }}
+                      initial={{ rotateY: 180 }}
+                      animate={{ rotateY: 0 }}
+                      transition={{ duration: 0.6, delay: 0.2 }}
+                    >
+                      {fakePlayer ? getPlayerInitial(fakePlayer) : "?"}
+                    </motion.div>
+
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.4 }}
+                    >
+                      <p className="font-display text-xl font-bold text-foreground mb-1">
                         {fakeName} {t("game.wasFake")}
                       </p>
-                      <p className="text-sm text-muted-foreground font-body mb-2">
-                        {t("game.theWordWas")}:{" "}
-                        <span className="font-semibold text-primary">
-                          {language === "he" ? currentRound.word_he : currentRound.word_en}
-                        </span>
-                      </p>
-                      {caughtFake ? (
-                        <p className="text-sm font-display font-bold text-game-green">
-                          🎉 {t("game.youCaughtFake")}
-                        </p>
-                      ) : (
-                        <p className="text-sm font-display font-bold text-destructive">
-                          😈 {t("game.fakeSurvived")}
-                        </p>
+                    </motion.div>
+
+                    <AnimatePresence>
+                      {showRevealResult && (
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ type: "spring", stiffness: 300 }}
+                        >
+                          {/* Result badge */}
+                          <motion.div
+                            className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-display font-bold mb-4 ${
+                              caught
+                                ? "bg-primary/20 text-primary"
+                                : "bg-destructive/20 text-destructive"
+                            }`}
+                            animate={{ scale: [1, 1.1, 1] }}
+                            transition={{ duration: 0.4 }}
+                          >
+                            {caught ? (
+                              <>
+                                <Shield className="w-5 h-5" />
+                                🎉 {t("game.youCaughtFake")}
+                              </>
+                            ) : (
+                              <>
+                                <Skull className="w-5 h-5" />
+                                😈 {t("game.fakeSurvived")}
+                              </>
+                            )}
+                          </motion.div>
+
+                          {/* Word reveal */}
+                          <motion.div
+                            className="bg-card rounded-2xl p-4 shadow-card mb-4"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.3 }}
+                          >
+                            <p className="text-xs text-muted-foreground font-body mb-1">
+                              {t("game.theWordWas")}
+                            </p>
+                            <p className="font-display text-2xl font-bold text-primary">
+                              {language === "he" ? currentRound.word_he : currentRound.word_en}
+                            </p>
+                          </motion.div>
+
+                          {/* Score breakdown */}
+                          <div className="space-y-1.5 mb-4">
+                            {players
+                              .slice()
+                              .sort((a, b) => (cumulativeScores[b.id] || 0) - (cumulativeScores[a.id] || 0))
+                              .map((p, i) => {
+                                const rs = roundScores[p.id] || 0;
+                                const total = cumulativeScores[p.id] || 0;
+                                return (
+                                  <motion.div
+                                    key={p.id}
+                                    initial={{ x: -20, opacity: 0 }}
+                                    animate={{ x: 0, opacity: 1 }}
+                                    transition={{ delay: 0.4 + i * 0.1 }}
+                                    className="flex items-center justify-between text-sm px-3 py-2 bg-background rounded-xl"
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      <span className="font-display font-bold text-xs text-muted-foreground w-4">{i + 1}</span>
+                                      <div
+                                        className="w-6 h-6 rounded-full flex items-center justify-center text-primary-foreground font-bold text-[10px]"
+                                        style={{ background: COLORS[players.indexOf(p) % COLORS.length] }}
+                                      >
+                                        {getPlayerInitial(p)}
+                                      </div>
+                                      <span className="font-body text-foreground">{getPlayerName(p)}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      {rs > 0 && (
+                                        <motion.span
+                                          className="text-xs font-display font-bold text-primary"
+                                          initial={{ scale: 0 }}
+                                          animate={{ scale: 1 }}
+                                          transition={{ type: "spring", delay: 0.6 + i * 0.1 }}
+                                        >
+                                          +{rs}
+                                        </motion.span>
+                                      )}
+                                      <span className="font-display font-bold text-foreground">{total}</span>
+                                    </div>
+                                  </motion.div>
+                                );
+                              })}
+                          </div>
+                        </motion.div>
                       )}
-                    </>
-                  );
-                })()}
-              </div>
+                    </AnimatePresence>
 
-              {/* Score + Vote breakdown */}
-              <div className="space-y-2 mb-4">
-                {players
-                  .slice()
-                  .sort((a, b) => (cumulativeScores[b.id] || 0) - (cumulativeScores[a.id] || 0))
-                  .map((p, i) => {
-                    const rs = roundScores[p.id] || 0;
-                    const total = cumulativeScores[p.id] || 0;
-                    return (
-                      <div key={p.id} className="flex items-center justify-between text-sm px-2 py-1 bg-background rounded-xl">
-                        <div className="flex items-center gap-2">
-                          <span className="font-display font-bold text-xs text-muted-foreground w-4">{i + 1}</span>
-                          <span className="font-body text-foreground">{getPlayerName(p)}</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          {rs > 0 && (
-                            <span className="text-xs font-display font-semibold text-game-green">+{rs}</span>
-                          )}
-                          <span className="font-display font-bold text-primary">{total}</span>
-                          <span className="text-xs text-muted-foreground">
-                            ({voteResults[p.id] || 0} {t("game.vote")})
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-              </div>
-
-              <Button variant="hero" size="lg" className="w-full" onClick={handleNextRound}>
-                {roundNumber < totalRounds ? t("game.nextRound") : t("game.results")}
-              </Button>
+                    {showRevealResult && (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 1 }}
+                      >
+                        <Button variant="hero" size="lg" className="w-full" onClick={handleNextRound}>
+                          {roundNumber < totalRounds ? t("game.nextRound") : t("game.results")}
+                        </Button>
+                      </motion.div>
+                    )}
+                  </>
+                );
+              })()}
             </motion.div>
           )}
         </AnimatePresence>
