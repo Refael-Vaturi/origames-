@@ -148,10 +148,35 @@ export function useFriends() {
   };
 
   const acceptRequest = async (friendshipId: string) => {
+    // Find the friendship to get requester_id
+    const friendship = pendingReceived.find((f) => f.id === friendshipId);
+    
     await supabase
       .from("friendships")
       .update({ status: "accepted" } as any)
       .eq("id", friendshipId);
+
+    // Notify the requester that their request was accepted
+    if (friendship && user) {
+      try {
+        const { data: myProfile } = await supabase
+          .from("profiles")
+          .select("display_name")
+          .eq("user_id", user.id)
+          .single();
+        
+        await supabase.functions.invoke("send-notification", {
+          body: {
+            target_user_id: friendship.requester_id,
+            type: "friend_accepted",
+            title: `🎉 ${myProfile?.display_name || "Someone"} accepted your friend request!`,
+            body: null,
+            data: { sender_id: user.id },
+          },
+        });
+      } catch {}
+    }
+
     await fetchFriendships();
   };
 
