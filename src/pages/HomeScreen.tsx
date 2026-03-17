@@ -1,11 +1,12 @@
 import { useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNotifications } from "@/hooks/useNotifications";
+import { useReconnect } from "@/hooks/useReconnect";
 import { Button } from "@/components/ui/button";
-import { Users, Gamepad2, Hash, GraduationCap, Settings, UserCircle } from "lucide-react";
+import { Users, Gamepad2, Hash, GraduationCap, Settings, UserCircle, RefreshCw, X } from "lucide-react";
 import NotificationBell from "@/components/NotificationBell";
 import LanguageSelector from "@/components/LanguageSelector";
 import logoImage from "@/assets/logo.png";
