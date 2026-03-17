@@ -4,8 +4,19 @@ import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useFriends, isOnline } from "@/hooks/useFriends";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, UserPlus, Check, X, Trash2, Search, Users, Clock } from "lucide-react";
+import { ArrowLeft, UserPlus, Check, X, Trash2, Search, Users, Clock, Send, Gamepad2, Loader2 } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+import { playClick, playPop } from "@/hooks/useSound";
+import type { Friendship } from "@/hooks/useFriends";
+
+const generateCode = () => {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let code = "";
+  for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  return code;
+};
 
 const FriendsScreen = () => {
   const navigate = useNavigate();
@@ -28,6 +39,7 @@ const FriendsScreen = () => {
   const [addError, setAddError] = useState<string | null>(null);
   const [addSuccess, setAddSuccess] = useState(false);
   const [sending, setSending] = useState(false);
+  const [invitingId, setInvitingId] = useState<string | null>(null);
 
   if (!user) {
     return (
@@ -54,6 +66,76 @@ const FriendsScreen = () => {
       setTimeout(() => setAddSuccess(false), 3000);
     }
     setSending(false);
+  };
+
+  const handleInvite = async (friendUserId: string, friendName: string) => {
+    if (!user) return;
+    setInvitingId(friendUserId);
+    playClick();
+
+    try {
+      // Check if user has an existing waiting room
+      const { data: existingRooms } = await supabase
+        .from("rooms")
+        .select("id, code")
+        .eq("host_id", user.id)
+        .eq("status", "waiting")
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      let roomCode: string;
+
+      if (existingRooms && existingRooms.length > 0) {
+        roomCode = existingRooms[0].code;
+      } else {
+        // Create a new room
+        const code = generateCode();
+        const { data: newRoom, error } = await supabase.from("rooms").insert({
+          code,
+          host_id: user.id,
+          name: "Game Room",
+          max_players: 8,
+          rounds: 5,
+          response_time: 30,
+          discussion_time: 45,
+          vote_time: 20,
+          is_private: true,
+        }).select().single();
+
+        if (error || !newRoom) throw error || new Error("Failed to create room");
+
+        // Join as host
+        await supabase.from("room_players").insert({
+          room_id: newRoom.id,
+          user_id: user.id,
+          is_ready: true,
+        });
+
+        roomCode = code;
+      }
+
+      const inviteLink = `${window.location.origin}/join?code=${roomCode}`;
+
+      // Try Web Share API first
+      if (navigator.share) {
+        await navigator.share({
+          title: "Fake It Fast",
+          text: `${t("friends.inviteMessage")} ${friendName}! Code: ${roomCode}`,
+          url: inviteLink,
+        });
+      } else {
+        await navigator.clipboard.writeText(inviteLink);
+        toast({ title: `${t("friends.inviteCopied")} ${friendName}! 🎮` });
+      }
+
+      playPop();
+    } catch (e: any) {
+      if (e?.name !== "AbortError") {
+        toast({ title: t("auth.error"), description: String(e?.message || e), variant: "destructive" });
+      }
+    } finally {
+      setInvitingId(null);
+    }
   };
 
   const filteredFriends = friends.filter((f) =>
@@ -156,7 +238,15 @@ const FriendsScreen = () => {
                         {t("friends.online")} ({onlineFriends.length})
                       </p>
                       {onlineFriends.map((f) => (
-                        <FriendCard key={f.id} friendship={f} online onRemove={() => removeFriend(f.id)} t={t} />
+                        <FriendCard
+                          key={f.id}
+                          friendship={f}
+                          online
+                          onRemove={() => removeFriend(f.id)}
+                          onInvite={() => handleInvite(f.friend?.user_id || "", f.friend?.display_name || "Friend")}
+                          inviting={invitingId === f.friend?.user_id}
+                          t={t}
+                        />
                       ))}
                     </>
                   )}
@@ -167,7 +257,15 @@ const FriendsScreen = () => {
                         {t("friends.offline")} ({offlineFriends.length})
                       </p>
                       {offlineFriends.map((f) => (
-                        <FriendCard key={f.id} friendship={f} online={false} onRemove={() => removeFriend(f.id)} t={t} />
+                        <FriendCard
+                          key={f.id}
+                          friendship={f}
+                          online={false}
+                          onRemove={() => removeFriend(f.id)}
+                          onInvite={() => handleInvite(f.friend?.user_id || "", f.friend?.display_name || "Friend")}
+                          inviting={invitingId === f.friend?.user_id}
+                          t={t}
+                        />
                       ))}
                     </>
                   )}
@@ -333,21 +431,25 @@ function FriendCard({
   friendship,
   online,
   onRemove,
+  onInvite,
+  inviting,
   t,
 }: {
   friendship: Friendship;
   online: boolean;
   onRemove: () => void;
+  onInvite: () => void;
+  inviting: boolean;
   t: (key: string) => string;
 }) {
-  const [showRemove, setShowRemove] = useState(false);
+  const [showActions, setShowActions] = useState(false);
 
   return (
     <motion.div
       className="flex items-center gap-3 bg-card rounded-2xl p-3 shadow-card"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      onClick={() => setShowRemove(!showRemove)}
+      onClick={() => setShowActions(!showActions)}
     >
       <div className="relative">
         <div className="w-10 h-10 rounded-full gradient-hero flex items-center justify-center text-primary-foreground font-display font-bold text-sm">
@@ -367,8 +469,20 @@ function FriendCard({
           Lv. {friendship.friend?.level || 1} · {online ? t("friends.online") : t("friends.offline")}
         </p>
       </div>
+
+      {/* Invite button - always visible */}
+      <motion.button
+        whileTap={{ scale: 0.9 }}
+        onClick={(e) => { e.stopPropagation(); onInvite(); }}
+        disabled={inviting}
+        className="p-2 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors disabled:opacity-50"
+        title={t("friends.invite")}
+      >
+        {inviting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Gamepad2 className="w-4 h-4" />}
+      </motion.button>
+
       <AnimatePresence>
-        {showRemove && (
+        {showActions && (
           <motion.button
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
@@ -383,8 +497,5 @@ function FriendCard({
     </motion.div>
   );
 }
-
-// Re-export the type for the FriendCard
-import type { Friendship } from "@/hooks/useFriends";
 
 export default FriendsScreen;
