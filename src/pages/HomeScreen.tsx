@@ -18,6 +18,7 @@ const HomeScreen = () => {
   const { t } = useLanguage();
   const { user, profile } = useAuth();
   const { pendingInvites } = useNotifications();
+  const { activeRoom, reconnect, dismiss } = useReconnect();
 
   // First visit → redirect to tutorial
   useEffect(() => {
