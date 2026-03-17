@@ -3,13 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Globe, Users, Gamepad2, Hash, GraduationCap, Bell, Settings, UserCircle } from "lucide-react";
+import { Users, Gamepad2, Hash, GraduationCap, Bell, Settings, UserCircle } from "lucide-react";
+import LanguageSelector from "@/components/LanguageSelector";
 import logoImage from "@/assets/logo.png";
 import { useState } from "react";
 
 const HomeScreen = () => {
   const navigate = useNavigate();
-  const { t, toggleLanguage } = useLanguage();
+  const { t } = useLanguage();
   const { user, profile } = useAuth();
   const [showNotifications, setShowNotifications] = useState(false);
 
@@ -57,9 +58,7 @@ const HomeScreen = () => {
         <img src={logoImage} alt="Fake It Fast" className="h-10" />
 
         <div className="flex items-center gap-2">
-          <button className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground" onClick={toggleLanguage}>
-            <Globe className="w-5 h-5" />
-          </button>
+          <LanguageSelector />
           <button
             className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground relative"
             onClick={() => setShowNotifications(!showNotifications)}
