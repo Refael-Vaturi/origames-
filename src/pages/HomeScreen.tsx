@@ -1,11 +1,12 @@
 import { useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNotifications } from "@/hooks/useNotifications";
+import { useReconnect } from "@/hooks/useReconnect";
 import { Button } from "@/components/ui/button";
-import { Users, Gamepad2, Hash, GraduationCap, Settings, UserCircle } from "lucide-react";
+import { Users, Gamepad2, Hash, GraduationCap, Settings, UserCircle, RefreshCw, X } from "lucide-react";
 import NotificationBell from "@/components/NotificationBell";
 import LanguageSelector from "@/components/LanguageSelector";
 import logoImage from "@/assets/logo.png";
@@ -17,6 +18,7 @@ const HomeScreen = () => {
   const { t } = useLanguage();
   const { user, profile } = useAuth();
   const { pendingInvites } = useNotifications();
+  const { activeRoom, reconnect, dismiss } = useReconnect();
 
   // First visit → redirect to tutorial
   useEffect(() => {
@@ -72,6 +74,34 @@ const HomeScreen = () => {
           </button>
         </div>
       </motion.header>
+
+      {/* Reconnect Banner */}
+      <AnimatePresence>
+        {activeRoom && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="mx-4 mt-2 p-3 rounded-2xl bg-primary/10 border border-primary/20 flex items-center gap-3">
+              <RefreshCw className="w-5 h-5 text-primary animate-spin" />
+              <div className="flex-1">
+                <p className="font-display text-sm font-semibold text-foreground">
+                  {activeRoom.status === "playing" ? "🎮 Game in progress!" : "🕐 Room still open!"}
+                </p>
+                <p className="text-xs text-muted-foreground">Code: {activeRoom.code}</p>
+              </div>
+              <Button size="sm" variant="game" onClick={reconnect}>
+                Rejoin
+              </Button>
+              <button onClick={dismiss} className="p-1 rounded-lg hover:bg-muted transition-colors text-muted-foreground">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Main content */}
       <div className="flex-1 flex flex-col items-center justify-center px-4 pb-8">
