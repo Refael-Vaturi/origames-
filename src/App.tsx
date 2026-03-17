@@ -30,8 +30,8 @@ const App = () => (
         <AuthProvider>
           <BrowserRouter>
             <Routes>
-              <Route path="/" element={<WelcomeScreen />} />
-              <Route path="/home" element={<HomeScreen />} />
+              <Route path="/" element={<HomeScreen />} />
+              <Route path="/welcome" element={<WelcomeScreen />} />
               <Route path="/auth" element={<AuthScreen />} />
               <Route path="/profile" element={<ProfileScreen />} />
               <Route path="/settings" element={<SettingsScreen />} />
