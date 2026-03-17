@@ -22,7 +22,10 @@ import SettingsScreen from "./pages/SettingsScreen";
 import FriendsScreen from "./pages/FriendsScreen";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+const LevelUpWrapper = () => {
+  const { profile } = useAuth();
+  return <LevelUpCelebration level={profile?.level || 0} />;
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
