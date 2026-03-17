@@ -138,14 +138,14 @@ const GameScreen = () => {
   // ─── Init: fetch room + players + find my ID ───
   useEffect(() => {
     if (!roomId) {
-      navigate("/home");
+      navigate("/");
       return;
     }
 
     const init = async () => {
       const { data: roomData } = await supabase.from("rooms").select("*").eq("id", roomId).single();
       if (!roomData) {
-        navigate("/home");
+        navigate("/");
         return;
       }
       setRoom(roomData);

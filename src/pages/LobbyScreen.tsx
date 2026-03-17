@@ -127,7 +127,7 @@ const LobbyScreen = () => {
 
       if (!room) {
         toast({ title: "Room not found", variant: "destructive" });
-        navigate("/home");
+        navigate("/");
         return;
       }
 
@@ -254,7 +254,7 @@ const LobbyScreen = () => {
     }
   };
 
-  const allReady = players.length >= 3 && players.every((p) => p.is_ready);
+  const allReady = players.length >= 2 && players.every((p) => p.is_ready);
 
   const handleStartGame = async () => {
     if (!allReady) {

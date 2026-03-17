@@ -64,7 +64,7 @@ const ResultsScreen = () => {
 
   useEffect(() => {
     if (!roomId) {
-      navigate("/home");
+      navigate("/");
       return;
     }
 
@@ -201,7 +201,7 @@ const ResultsScreen = () => {
               <ArrowLeft className="w-5 h-5" />
               {t("game.backToLobby")}
             </Button>
-            <Button variant="outline" size="lg" className="w-full" onClick={() => navigate("/home")}>
+            <Button variant="outline" size="lg" className="w-full" onClick={() => navigate("/")}>
               <Users className="w-5 h-5" />
               {t("game.inviteFriends")}
             </Button>
