@@ -269,7 +269,14 @@ const LobbyScreen = () => {
     navigate("/game?room=" + roomId);
   };
 
-  const isHost = user?.id === hostId;
+  const isHost = (() => {
+    if (user?.id === hostId) return true;
+    if (guestSession) {
+      const me = players.find((p) => p.id === guestSession.playerId);
+      return me?.user_id === hostId;
+    }
+    return false;
+  })();
 
   const readyCount = useMemo(() => players.filter((p) => p.is_ready).length, [players]);
 
