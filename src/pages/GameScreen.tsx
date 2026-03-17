@@ -329,6 +329,7 @@ const GameScreen = () => {
     if (phase !== "waiting_hints" || !currentRound) return;
     const count = hints.filter((h) => h.round_id === currentRound.id && h.hint_round === currentHintRound).length;
     if (count >= totalPlayers) {
+      playPop();
       setPhase("hint_reveal");
       setTimer(4);
     }
