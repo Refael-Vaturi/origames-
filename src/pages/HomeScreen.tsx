@@ -15,7 +15,6 @@ const HomeScreen = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const { user, profile } = useAuth();
-  const [showNotifications, setShowNotifications] = useState(false);
 
   // First visit → redirect to tutorial
   useEffect(() => {
@@ -26,11 +25,6 @@ const HomeScreen = () => {
   }, [navigate]);
 
   const displayName = profile?.display_name || (user ? "Player" : "Guest");
-
-  const notifications = [
-    { id: 1, text: "CoolGamer invited you to Room #42", time: "2m ago" },
-    { id: 2, text: "QuickFox sent you a friend request", time: "10m ago" },
-  ];
 
   const mainActions = [
     { key: "home.startGlobal", icon: Gamepad2, variant: "hero" as const, path: "/matchmaking" },
