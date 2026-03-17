@@ -64,7 +64,7 @@ const ResultsScreen = () => {
 
   useEffect(() => {
     if (!roomId) {
-      navigate("/home");
+      navigate("/");
       return;
     }
 
