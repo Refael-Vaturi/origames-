@@ -196,3 +196,58 @@ export const playPlayerJoined = () =>
       o.stop(ctx.currentTime + i * 0.08 + 0.2);
     });
   });
+
+/** Drumroll – suspense before reveal */
+export const playDrumroll = () =>
+  play((ctx) => {
+    const duration = 2.5;
+    const hits = 30;
+    for (let i = 0; i < hits; i++) {
+      const t = (i / hits) * duration;
+      const volume = 0.05 + (i / hits) * 0.15;
+      const bufLen = ctx.sampleRate * 0.04;
+      const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let j = 0; j < bufLen; j++) d[j] = (Math.random() * 2 - 1) * (1 - j / bufLen);
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(volume, ctx.currentTime + t);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + 0.04);
+      src.connect(g).connect(ctx.destination);
+      src.start(ctx.currentTime + t);
+      src.stop(ctx.currentTime + t + 0.05);
+    }
+  });
+
+/** Caught / busted – dramatic descending */
+export const playCaught = () =>
+  play((ctx) => {
+    [784, 659, 523, 392].forEach((freq, i) => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = "sawtooth";
+      o.frequency.value = freq;
+      g.gain.setValueAtTime(0.1, ctx.currentTime + i * 0.12);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.12 + 0.3);
+      o.connect(g).connect(ctx.destination);
+      o.start(ctx.currentTime + i * 0.12);
+      o.stop(ctx.currentTime + i * 0.12 + 0.3);
+    });
+  });
+
+/** Escaped / survived – sneaky ascending */
+export const playEscaped = () =>
+  play((ctx) => {
+    [262, 330, 392, 523, 659].forEach((freq, i) => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = "sine";
+      o.frequency.value = freq;
+      g.gain.setValueAtTime(0.12, ctx.currentTime + i * 0.1);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.1 + 0.3);
+      o.connect(g).connect(ctx.destination);
+      o.start(ctx.currentTime + i * 0.1);
+      o.stop(ctx.currentTime + i * 0.1 + 0.3);
+    });
+  });
