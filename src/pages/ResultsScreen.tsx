@@ -99,6 +99,7 @@ const ResultsScreen = () => {
 
       if (scoresData) setScores(scoresData as ScoreRow[]);
       setLoading(false);
+      playSuccess();
     };
 
     load();

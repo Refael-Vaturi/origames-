@@ -106,7 +106,7 @@ const HomeScreen = () => {
         >
           {mainActions.map(({ key, icon: Icon, variant, path }) => (
             <motion.div key={key} variants={{ hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1 } }}>
-              <Button variant={variant} size="xl" className="w-full" onClick={() => navigate(path === "/home" ? "/" : path)}>
+              <Button variant={variant} size="xl" className="w-full" onClick={() => { playClick(); navigate(path === "/home" ? "/" : path); }}>
                 <Icon className="w-6 h-6" />
                 {t(key)}
               </Button>

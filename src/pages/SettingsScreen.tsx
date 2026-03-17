@@ -61,7 +61,7 @@ const SettingsScreen = () => {
             </SettingRow>
 
             <SettingRow icon={sound ? Volume2 : VolumeX} label={t("settings.sound")}>
-              <Toggle value={sound} onChange={setSound} />
+              <Toggle value={sound} onChange={(v) => { setSound(v); setSoundEnabled(v); if (v) playClick(); }} />
             </SettingRow>
 
             <SettingRow icon={Vibrate} label={t("settings.vibration")}>
