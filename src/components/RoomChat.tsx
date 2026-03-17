@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Send } from "lucide-react";
-import { motion } from "framer-motion";
+import { Send, Smile } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface ChatMessage {
   id: string;
@@ -20,14 +20,31 @@ interface RoomChatProps {
   maxHeight?: string;
 }
 
+const QUICK_REACTIONS = [
+  { emoji: "👍", label: "like" },
+  { emoji: "😂", label: "laugh" },
+  { emoji: "🤔", label: "think" },
+  { emoji: "🕵️", label: "suspect" },
+  { emoji: "😱", label: "shock" },
+  { emoji: "🔥", label: "fire" },
+];
+
+const EMOJI_PICKER = [
+  "😀", "😂", "🤣", "😎", "🤩", "😈",
+  "🤔", "🧐", "🕵️", "👀", "😱", "🤯",
+  "👍", "👎", "👏", "🔥", "💀", "🎯",
+  "❤️", "💔", "🤝", "✅", "❌", "⚡",
+];
+
 const RoomChat = ({ roomId, playerId, playerName, maxHeight = "200px" }: RoomChatProps) => {
   const { t } = useLanguage();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
+  const [showEmojis, setShowEmojis] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    // Fetch existing messages
     supabase
       .from("chat_messages")
       .select("*")
@@ -38,7 +55,6 @@ const RoomChat = ({ roomId, playerId, playerName, maxHeight = "200px" }: RoomCha
         if (data) setMessages(data as unknown as ChatMessage[]);
       });
 
-    // Subscribe to new messages
     const channel = supabase
       .channel(`chat-${roomId}`)
       .on(
@@ -60,21 +76,49 @@ const RoomChat = ({ roomId, playerId, playerName, maxHeight = "200px" }: RoomCha
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages]);
 
-  const handleSend = async () => {
-    const text = input.trim();
-    if (!text) return;
+  const sendMessage = async (text: string) => {
+    if (!text.trim()) return;
     setInput("");
-
+    setShowEmojis(false);
     await supabase.from("chat_messages").insert({
       room_id: roomId,
       player_id: playerId,
       player_name: playerName,
-      message: text,
+      message: text.trim(),
     } as any);
+  };
+
+  const handleSend = () => sendMessage(input);
+
+  const handleQuickReaction = (emoji: string) => sendMessage(emoji);
+
+  const handleEmojiInsert = (emoji: string) => {
+    setInput((prev) => prev + emoji);
+    inputRef.current?.focus();
+  };
+
+  const isEmojiOnly = (text: string) => {
+    const emojiRegex = /^[\p{Emoji}\p{Emoji_Presentation}\p{Emoji_Modifier}\p{Emoji_Modifier_Base}\p{Emoji_Component}\s]+$/u;
+    return emojiRegex.test(text) && text.trim().length <= 6;
   };
 
   return (
     <div className="flex flex-col">
+      {/* Quick reactions bar */}
+      <div className="flex gap-1.5 mb-2 overflow-x-auto pb-1">
+        {QUICK_REACTIONS.map(({ emoji, label }) => (
+          <button
+            key={label}
+            onClick={() => handleQuickReaction(emoji)}
+            className="flex-shrink-0 w-9 h-9 rounded-xl bg-card shadow-card hover:bg-muted hover:scale-110 active:scale-95 transition-all duration-150 flex items-center justify-center text-lg"
+            title={label}
+          >
+            {emoji}
+          </button>
+        ))}
+      </div>
+
+      {/* Messages */}
       <div
         ref={scrollRef}
         className="overflow-y-auto space-y-2 mb-2"
@@ -87,6 +131,7 @@ const RoomChat = ({ roomId, playerId, playerName, maxHeight = "200px" }: RoomCha
         )}
         {messages.map((msg) => {
           const isMe = msg.player_id === playerId;
+          const emojiMsg = isEmojiOnly(msg.message);
           return (
             <motion.div
               key={msg.id}
@@ -94,27 +139,73 @@ const RoomChat = ({ roomId, playerId, playerName, maxHeight = "200px" }: RoomCha
               animate={{ opacity: 1, y: 0 }}
               className={`flex ${isMe ? "justify-end" : "justify-start"}`}
             >
-              <div
-                className={`max-w-[80%] rounded-2xl px-3 py-2 ${
-                  isMe
-                    ? "bg-primary text-primary-foreground rounded-br-sm"
-                    : "bg-card text-foreground shadow-card rounded-bl-sm"
-                }`}
-              >
-                {!isMe && (
-                  <span className="text-[10px] font-display font-bold text-primary block mb-0.5">
-                    {msg.player_name}
-                  </span>
-                )}
-                <p className="text-sm font-body">{msg.message}</p>
-              </div>
+              {emojiMsg ? (
+                <motion.span
+                  className="text-4xl"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 15 }}
+                >
+                  {msg.message}
+                </motion.span>
+              ) : (
+                <div
+                  className={`max-w-[80%] rounded-2xl px-3 py-2 ${
+                    isMe
+                      ? "bg-primary text-primary-foreground rounded-br-sm"
+                      : "bg-card text-foreground shadow-card rounded-bl-sm"
+                  }`}
+                >
+                  {!isMe && (
+                    <span className="text-[10px] font-display font-bold text-primary block mb-0.5">
+                      {msg.player_name}
+                    </span>
+                  )}
+                  <p className="text-sm font-body">{msg.message}</p>
+                </div>
+              )}
             </motion.div>
           );
         })}
       </div>
 
+      {/* Emoji picker */}
+      <AnimatePresence>
+        {showEmojis && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="grid grid-cols-8 gap-1 p-2 mb-2 bg-card rounded-2xl shadow-card">
+              {EMOJI_PICKER.map((emoji) => (
+                <button
+                  key={emoji}
+                  onClick={() => handleEmojiInsert(emoji)}
+                  className="w-8 h-8 rounded-lg hover:bg-muted active:scale-90 transition-all duration-100 flex items-center justify-center text-lg"
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Input bar */}
       <div className="flex gap-2">
+        <button
+          onClick={() => setShowEmojis(!showEmojis)}
+          className={`h-11 w-11 rounded-2xl flex items-center justify-center transition-colors ${
+            showEmojis ? "bg-primary text-primary-foreground" : "bg-card shadow-card text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <Smile className="w-5 h-5" />
+        </button>
         <input
+          ref={inputRef}
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
