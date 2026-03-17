@@ -77,6 +77,19 @@ const LobbyScreen = () => {
       profile: profiles?.find((pr) => pr.user_id === p.user_id),
     }));
 
+    // Detect new players
+    const currentIds = new Set(enriched.map((p) => p.id));
+    if (!initialLoadRef.current) {
+      const justJoined = enriched.filter((p) => !prevPlayerIdsRef.current.has(p.id));
+      if (justJoined.length > 0) {
+        playPlayerJoined();
+        setNewPlayerIds(new Set(justJoined.map((p) => p.id)));
+        setTimeout(() => setNewPlayerIds(new Set()), 1500);
+      }
+    }
+    initialLoadRef.current = false;
+    prevPlayerIdsRef.current = currentIds;
+
     setPlayers(enriched);
 
     if (user) {
