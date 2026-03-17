@@ -379,6 +379,7 @@ const GameScreen = () => {
 
     setMyVoteSubmitted(true);
     setPhase("waiting_votes");
+    playVote();
 
     const body: Record<string, unknown> = {
       action: "submit-vote",
