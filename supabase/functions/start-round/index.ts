@@ -72,8 +72,8 @@ Deno.serve(async (req) => {
       .select("id")
       .eq("room_id", room_id);
 
-    if (!players || players.length < 3) {
-      return new Response(JSON.stringify({ error: "Not enough players" }), {
+    if (!players || players.length < 2) {
+      return new Response(JSON.stringify({ error: "Not enough players (minimum 2)" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
