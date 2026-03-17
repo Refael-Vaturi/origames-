@@ -1,6 +1,8 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
+import LevelUpCelebration from "@/components/LevelUpCelebration";
+import { useAuth } from "@/contexts/AuthContext";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { LanguageProvider } from "@/contexts/LanguageContext";
@@ -22,6 +24,11 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+const LevelUpWrapper = () => {
+  const { profile } = useAuth();
+  return <LevelUpCelebration level={profile?.level || 0} />;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -29,6 +36,7 @@ const App = () => (
       <Sonner />
       <LanguageProvider>
         <AuthProvider>
+          <LevelUpWrapper />
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<HomeScreen />} />
