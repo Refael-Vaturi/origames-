@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Globe, Users, Gamepad2, Hash, GraduationCap, Bell, Settings, UserCircle } from "lucide-react";
+import { Users, Gamepad2, Hash, GraduationCap, Bell, Settings, UserCircle } from "lucide-react";
+import LanguageSelector from "@/components/LanguageSelector";
 import logoImage from "@/assets/logo.png";
 import { useState } from "react";
 
