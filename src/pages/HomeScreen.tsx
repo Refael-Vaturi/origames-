@@ -10,7 +10,7 @@ import { useState } from "react";
 
 const HomeScreen = () => {
   const navigate = useNavigate();
-  const { t, toggleLanguage } = useLanguage();
+  const { t } = useLanguage();
   const { user, profile } = useAuth();
   const [showNotifications, setShowNotifications] = useState(false);
 
