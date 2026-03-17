@@ -10,6 +10,7 @@ import { ArrowLeft, Copy, Share2, Crown, Check } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { playPlayerJoined } from "@/hooks/useSound";
+import AvatarPicker from "@/components/AvatarPicker";
 
 interface RoomPlayer {
   id: string;
@@ -310,6 +311,43 @@ const LobbyScreen = () => {
     return player.profile?.display_name || "Player";
   };
 
+  const getPlayerAvatar = (player: RoomPlayer, index: number): string => {
+    if (player.guest_avatar) return player.guest_avatar;
+    return getPlayerName(player)[0];
+  };
+
+  const isMe = (player: RoomPlayer) => {
+    if (guestSession) return player.id === guestSession.playerId;
+    return user ? player.user_id === user.id : false;
+  };
+
+  const handleAvatarChange = async (emoji: string) => {
+    if (!roomId) return;
+
+    if (guestSession) {
+      // Update guest avatar via edge function or direct update
+      await supabase
+        .from("room_players")
+        .update({ guest_avatar: emoji } as Record<string, unknown>)
+        .eq("id", guestSession.playerId);
+      
+      // Update local session
+      const updated = { ...guestSession, avatar: emoji };
+      setGuestSession(updated);
+      localStorage.setItem(`guest_room_${roomCode}`, JSON.stringify(updated));
+    } else if (user) {
+      // For authenticated users, update guest_avatar on room_players for this room
+      await supabase
+        .from("room_players")
+        .update({ guest_avatar: emoji } as Record<string, unknown>)
+        .eq("room_id", roomId)
+        .eq("user_id", user.id);
+    }
+
+    // Refetch to sync
+    if (roomId) void fetchPlayers(roomId, guestSession);
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <motion.header
@@ -372,16 +410,32 @@ const LobbyScreen = () => {
                     transition={{ duration: 1.2 }}
                   />
                 )}
-                <motion.div
-                  className={cn(
-                    "w-10 h-10 rounded-full flex items-center justify-center text-primary-foreground font-display font-bold",
-                    avatarBackgrounds[i % avatarBackgrounds.length],
-                  )}
-                  animate={isNew ? { scale: [1, 1.3, 1] } : {}}
-                  transition={{ duration: 0.4, delay: 0.1 }}
-                >
-                  {player.guest_avatar || playerName[0]}
-                </motion.div>
+                {isMe(player) ? (
+                  <motion.div
+                    className={cn(
+                      "rounded-full flex items-center justify-center font-display font-bold",
+                      avatarBackgrounds[i % avatarBackgrounds.length],
+                    )}
+                    animate={isNew ? { scale: [1, 1.3, 1] } : {}}
+                    transition={{ duration: 0.4, delay: 0.1 }}
+                  >
+                    <AvatarPicker
+                      currentAvatar={getPlayerAvatar(player, i)}
+                      onSelect={handleAvatarChange}
+                    />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    className={cn(
+                      "w-10 h-10 rounded-full flex items-center justify-center text-primary-foreground font-display font-bold",
+                      avatarBackgrounds[i % avatarBackgrounds.length],
+                    )}
+                    animate={isNew ? { scale: [1, 1.3, 1] } : {}}
+                    transition={{ duration: 0.4, delay: 0.1 }}
+                  >
+                    {getPlayerAvatar(player, i)}
+                  </motion.div>
+                )}
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <span className="font-display font-semibold text-sm text-foreground">{playerName}</span>
