@@ -340,6 +340,7 @@ const GameScreen = () => {
     if (phase !== "waiting_votes" || !currentRound) return;
     const count = votes.filter((v) => v.round_id === currentRound.id).length;
     if (count >= totalPlayers) {
+      playReveal();
       setPhase("reveal");
     }
   }, [phase, votes, currentRound, totalPlayers]);
