@@ -36,6 +36,7 @@ const App = () => (
               <Route path="/auth" element={<AuthScreen />} />
               <Route path="/profile" element={<ProfileScreen />} />
               <Route path="/settings" element={<SettingsScreen />} />
+              <Route path="/friends" element={<FriendsScreen />} />
               <Route path="/join" element={<JoinByCodeScreen />} />
               <Route path="/create-room" element={<CreateRoomScreen />} />
               <Route path="/lobby" element={<LobbyScreen />} />
