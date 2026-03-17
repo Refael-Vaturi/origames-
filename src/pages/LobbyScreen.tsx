@@ -44,6 +44,9 @@ const LobbyScreen = () => {
   const [roomCode, setRoomCode] = useState(searchParams.get("code") || "");
   const [hostId, setHostId] = useState<string | null>(null);
   const [guestSession, setGuestSession] = useState<GuestSession | null>(null);
+  const [newPlayerIds, setNewPlayerIds] = useState<Set<string>>(new Set());
+  const prevPlayerIdsRef = useRef<Set<string>>(new Set());
+  const initialLoadRef = useRef(true);
 
   const roomLink = `${window.location.origin}/join?code=${roomCode}`;
 
