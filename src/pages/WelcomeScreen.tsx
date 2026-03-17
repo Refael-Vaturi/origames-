@@ -21,15 +21,13 @@ const WelcomeScreen = () => {
       </div>
 
       {/* Language toggle */}
-      <motion.button
+      <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="absolute top-4 end-4 flex items-center gap-2 px-4 py-2 rounded-xl bg-card shadow-card text-foreground font-body text-sm hover:bg-muted transition-colors"
-        onClick={toggleLanguage}
+        className="absolute top-4 end-4 z-10"
       >
-        <Globe className="w-4 h-4" />
-        {t("general.language")}
-      </motion.button>
+        <LanguageSelector />
+      </motion.div>
 
       {/* Logo */}
       <motion.img

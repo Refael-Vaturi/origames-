@@ -58,9 +58,7 @@ const HomeScreen = () => {
         <img src={logoImage} alt="Fake It Fast" className="h-10" />
 
         <div className="flex items-center gap-2">
-          <button className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground" onClick={toggleLanguage}>
-            <Globe className="w-5 h-5" />
-          </button>
+          <LanguageSelector />
           <button
             className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground relative"
             onClick={() => setShowNotifications(!showNotifications)}
