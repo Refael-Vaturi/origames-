@@ -204,10 +204,29 @@ const AuthScreen = () => {
 
           <button
             onClick={() => setMode(mode === "login" ? "register" : "login")}
-            className="w-full text-center text-sm text-primary font-body hover:underline"
+            className="w-full text-center text-sm text-primary font-body hover:underline mb-4"
           >
             {mode === "login" ? t("auth.switchRegister") : t("auth.switchLogin")}
           </button>
+
+          <div className="flex items-center gap-3 mb-4">
+            <div className="flex-1 h-px bg-border" />
+            <span className="text-xs text-muted-foreground font-body">{t("auth.or")}</span>
+            <div className="flex-1 h-px bg-border" />
+          </div>
+
+          <Button
+            variant="outline"
+            size="lg"
+            className="w-full"
+            onClick={() => {
+              playClick();
+              navigate(redirectPath, { replace: true });
+            }}
+          >
+            <UserCircle className="w-5 h-5" />
+            {t("auth.guest")}
+          </Button>
         </div>
       </motion.div>
     </div>

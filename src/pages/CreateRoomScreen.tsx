@@ -5,8 +5,9 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Lock } from "lucide-react";
+import { ArrowLeft, Lock, User } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { playClick } from "@/hooks/useSound";
 
 const generateCode = () => {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -14,6 +15,8 @@ const generateCode = () => {
   for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
   return code;
 };
+
+const GUEST_AVATARS = ["🎮", "🕹️", "🎯", "🎪", "🎭", "🎨", "🦊", "🐱", "🐶", "🦄", "🐸", "🐼"];
 
 const CreateRoomScreen = () => {
   const navigate = useNavigate();
@@ -28,43 +31,80 @@ const CreateRoomScreen = () => {
   const [isPrivate, setIsPrivate] = useState(true);
   const [loading, setLoading] = useState(false);
 
+  // Guest fields
+  const [guestName, setGuestName] = useState("");
+  const [selectedAvatar, setSelectedAvatar] = useState("🎮");
+
   const handleCreate = async () => {
-    if (!user) {
-      toast({ title: t("join.authOrGuestRequired") || "Login required", variant: "destructive" });
-      navigate("/auth?redirect=" + encodeURIComponent("/create-room"));
-      return;
-    }
-
+    playClick();
     setLoading(true);
-    const code = generateCode();
 
-    const { data, error } = await supabase.from("rooms").insert({
-      code,
-      host_id: user.id,
-      name: roomName || "Game Room",
-      max_players: maxPlayers,
-      rounds,
-      response_time: responseTime,
-      discussion_time: discussionTime,
-      vote_time: voteTime,
-      is_private: isPrivate,
-    }).select().single();
+    if (user) {
+      // Authenticated user creates room
+      const code = generateCode();
+      const { data, error } = await supabase.from("rooms").insert({
+        code,
+        host_id: user.id,
+        name: roomName || "Game Room",
+        max_players: maxPlayers,
+        rounds,
+        response_time: responseTime,
+        discussion_time: discussionTime,
+        vote_time: voteTime,
+        is_private: isPrivate,
+      }).select().single();
 
-    if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      if (error) {
+        toast({ title: "Error", description: error.message, variant: "destructive" });
+        setLoading(false);
+        return;
+      }
+
+      await supabase.from("room_players").insert({
+        room_id: data.id,
+        user_id: user.id,
+        is_ready: true,
+      });
+
       setLoading(false);
-      return;
+      navigate(`/lobby?code=${code}`);
+    } else {
+      // Guest creates room via edge function
+      const finalName = guestName.trim() || "Guest";
+      try {
+        const { data, error } = await supabase.functions.invoke("create-room-guest", {
+          body: {
+            name: finalName,
+            avatar: selectedAvatar,
+            roomName: roomName || "Game Room",
+            rounds,
+            responseTime,
+            discussionTime,
+            voteTime,
+            maxPlayers,
+            isPrivate,
+          },
+        });
+
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+
+        // Store guest session
+        localStorage.setItem(`guest_room_${data.roomCode}`, JSON.stringify({
+          roomCode: data.roomCode,
+          playerId: data.playerId,
+          token: data.token,
+          name: finalName,
+          avatar: selectedAvatar,
+        }));
+
+        setLoading(false);
+        navigate(`/lobby?code=${data.roomCode}`);
+      } catch (e) {
+        toast({ title: "Error", description: String((e as any)?.message || e), variant: "destructive" });
+        setLoading(false);
+      }
     }
-
-    // Join room as host
-    await supabase.from("room_players").insert({
-      room_id: data.id,
-      user_id: user.id,
-      is_ready: true,
-    });
-
-    setLoading(false);
-    navigate(`/lobby?code=${code}`);
   };
 
   const SettingRow = ({ label, value, onChange, min, max }: {
@@ -108,6 +148,39 @@ const CreateRoomScreen = () => {
             </button>
             <h1 className="font-display text-2xl font-bold text-foreground">{t("create.title")}</h1>
           </div>
+
+          {/* Guest identity section */}
+          {!user && (
+            <div className="mb-4 p-4 bg-muted/50 rounded-2xl">
+              <div className="flex items-center gap-2 mb-3">
+                <User className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm font-display font-semibold text-foreground">{t("join.guestName")}</span>
+              </div>
+              <input
+                type="text"
+                value={guestName}
+                onChange={(e) => setGuestName(e.target.value)}
+                placeholder={t("join.guestDefault")}
+                maxLength={24}
+                className="w-full h-10 px-4 rounded-xl border-2 border-input bg-background font-body text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors mb-3"
+              />
+              <div className="flex flex-wrap gap-2">
+                {GUEST_AVATARS.map((emoji) => (
+                  <button
+                    key={emoji}
+                    onClick={() => setSelectedAvatar(emoji)}
+                    className={`w-10 h-10 rounded-xl text-lg flex items-center justify-center transition-all ${
+                      selectedAvatar === emoji
+                        ? "bg-primary/20 border-2 border-primary scale-110"
+                        : "bg-background border-2 border-transparent hover:bg-muted"
+                    }`}
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Room name */}
           <input
