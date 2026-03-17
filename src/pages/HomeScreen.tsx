@@ -70,35 +70,12 @@ const HomeScreen = () => {
 
         <div className="flex items-center gap-2">
           <LanguageSelector />
-          <button
-            className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground relative"
-            onClick={() => setShowNotifications(!showNotifications)}
-          >
-            <Bell className="w-5 h-5" />
-            <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-game-pink" />
-          </button>
+          {user && <NotificationBell />}
           <button className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground" onClick={() => navigate("/settings")}>
             <Settings className="w-5 h-5" />
           </button>
         </div>
       </motion.header>
-
-      {/* Notifications dropdown */}
-      {showNotifications && (
-        <motion.div
-          className="absolute top-16 end-4 z-50 w-72 bg-card rounded-2xl p-4 shadow-card border border-border"
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <h3 className="font-display font-semibold text-sm text-foreground mb-3">{t("home.notifications")}</h3>
-          {notifications.map((n) => (
-            <div key={n.id} className="py-2 border-b border-border last:border-0">
-              <p className="text-sm font-body text-foreground">{n.text}</p>
-              <p className="text-xs text-muted-foreground font-body">{n.time}</p>
-            </div>
-          ))}
-        </motion.div>
-      )}
 
       {/* Main content */}
       <div className="flex-1 flex flex-col items-center justify-center px-4 pb-8">
