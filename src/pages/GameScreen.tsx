@@ -138,7 +138,7 @@ const GameScreen = () => {
   // ─── Init: fetch room + players + find my ID ───
   useEffect(() => {
     if (!roomId) {
-      navigate("/home");
+      navigate("/");
       return;
     }
 
