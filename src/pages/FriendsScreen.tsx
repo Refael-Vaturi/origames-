@@ -21,7 +21,7 @@ const generateCode = () => {
 const FriendsScreen = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const {
     friends,
     pendingReceived,
