@@ -1,6 +1,7 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Star, Sparkles, Trophy } from "lucide-react";
+import { playLevelUp } from "@/hooks/useSound";
 
 interface LevelUpCelebrationProps {
   level: number;
