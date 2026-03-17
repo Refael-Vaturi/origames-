@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
-import { Globe } from "lucide-react";
+import LanguageSelector from "@/components/LanguageSelector";
 import logoImage from "@/assets/logo.png";
 import heroImage from "@/assets/hero-characters.png";
 
