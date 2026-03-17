@@ -123,6 +123,26 @@ export function useFriends() {
     } as any);
 
     if (error) return { error: error.message };
+
+    // Send notification to target user
+    try {
+      const { data: myProfile } = await supabase
+        .from("profiles")
+        .select("display_name")
+        .eq("user_id", user.id)
+        .single();
+      
+      await supabase.functions.invoke("send-notification", {
+        body: {
+          target_user_id: target.user_id,
+          type: "friend_request",
+          title: `👋 ${myProfile?.display_name || "Someone"} sent you a friend request!`,
+          body: null,
+          data: { sender_id: user.id },
+        },
+      });
+    } catch {}
+
     await fetchFriendships();
     return { error: null };
   };
