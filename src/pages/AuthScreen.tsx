@@ -15,7 +15,7 @@ const AuthScreen = () => {
   const { t } = useLanguage();
 
   const redirectPath = useMemo(() => {
-    const target = searchParams.get("redirect") || "/home";
+    const target = searchParams.get("redirect") || "/";
     if (!target.startsWith("/") || target.startsWith("//")) return "/home";
     return target;
   }, [searchParams]);
