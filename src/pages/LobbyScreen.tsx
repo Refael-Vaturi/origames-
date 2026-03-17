@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { motion } from "framer-motion";
+import { useEffect, useMemo, useState, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -9,6 +9,7 @@ import RoomChat from "@/components/RoomChat";
 import { ArrowLeft, Copy, Share2, Crown, Check } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { playPlayerJoined } from "@/hooks/useSound";
 
 interface RoomPlayer {
   id: string;
@@ -43,6 +44,9 @@ const LobbyScreen = () => {
   const [roomCode, setRoomCode] = useState(searchParams.get("code") || "");
   const [hostId, setHostId] = useState<string | null>(null);
   const [guestSession, setGuestSession] = useState<GuestSession | null>(null);
+  const [newPlayerIds, setNewPlayerIds] = useState<Set<string>>(new Set());
+  const prevPlayerIdsRef = useRef<Set<string>>(new Set());
+  const initialLoadRef = useRef(true);
 
   const roomLink = `${window.location.origin}/join?code=${roomCode}`;
 
@@ -72,6 +76,19 @@ const LobbyScreen = () => {
       ...p,
       profile: profiles?.find((pr) => pr.user_id === p.user_id),
     }));
+
+    // Detect new players
+    const currentIds = new Set(enriched.map((p) => p.id));
+    if (!initialLoadRef.current) {
+      const justJoined = enriched.filter((p) => !prevPlayerIdsRef.current.has(p.id));
+      if (justJoined.length > 0) {
+        playPlayerJoined();
+        setNewPlayerIds(new Set(justJoined.map((p) => p.id)));
+        setTimeout(() => setNewPlayerIds(new Set()), 1500);
+      }
+    }
+    initialLoadRef.current = false;
+    prevPlayerIdsRef.current = currentIds;
 
     setPlayers(enriched);
 
@@ -330,26 +347,55 @@ const LobbyScreen = () => {
           {players.length === 0 && (
             <p className="text-sm text-muted-foreground font-body text-center py-4">{t("lobby.waiting")}</p>
           )}
+          <AnimatePresence mode="popLayout">
           {players.map((player, i) => {
             const playerName = getPlayerName(player);
+            const isNew = newPlayerIds.has(player.id);
             return (
               <motion.div
                 key={player.id}
-                variants={{ hidden: { x: -20, opacity: 0 }, visible: { x: 0, opacity: 1 } }}
-                className="flex items-center gap-3 bg-card rounded-2xl p-3 shadow-card"
+                layout
+                initial={isNew ? { x: 80, opacity: 0, scale: 0.6, rotate: -5 } : { x: -20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1, scale: 1, rotate: 0 }}
+                exit={{ x: -80, opacity: 0, scale: 0.8 }}
+                transition={isNew ? { type: "spring", stiffness: 400, damping: 20 } : { duration: 0.3 }}
+                className={cn(
+                  "flex items-center gap-3 bg-card rounded-2xl p-3 shadow-card relative overflow-hidden",
+                  isNew && "ring-2 ring-primary/50"
+                )}
               >
-                <div
+                {isNew && (
+                  <motion.div
+                    className="absolute inset-0 bg-primary/10 rounded-2xl"
+                    initial={{ opacity: 1 }}
+                    animate={{ opacity: 0 }}
+                    transition={{ duration: 1.2 }}
+                  />
+                )}
+                <motion.div
                   className={cn(
                     "w-10 h-10 rounded-full flex items-center justify-center text-primary-foreground font-display font-bold",
                     avatarBackgrounds[i % avatarBackgrounds.length],
                   )}
+                  animate={isNew ? { scale: [1, 1.3, 1] } : {}}
+                  transition={{ duration: 0.4, delay: 0.1 }}
                 >
                   {player.guest_avatar || playerName[0]}
-                </div>
+                </motion.div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <span className="font-display font-semibold text-sm text-foreground">{playerName}</span>
                     {!player.is_guest && player.user_id === hostId && <Crown className="w-4 h-4 text-game-yellow" />}
+                    {isNew && (
+                      <motion.span
+                        className="text-xs font-body text-primary font-semibold"
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0 }}
+                      >
+                        ✨ Joined!
+                      </motion.span>
+                    )}
                   </div>
                   <span className={`text-xs font-body ${player.is_ready ? "text-game-green" : "text-muted-foreground"}`}>
                     {player.is_ready ? t("lobby.ready") : t("lobby.notReady")}
@@ -359,6 +405,7 @@ const LobbyScreen = () => {
               </motion.div>
             );
           })}
+          </AnimatePresence>
         </motion.div>
 
         {roomId && myPlayerId && (

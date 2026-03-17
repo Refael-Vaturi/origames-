@@ -180,3 +180,19 @@ export const playVote = () =>
     o.start();
     o.stop(ctx.currentTime + 0.15);
   });
+
+/** Player joined – cheerful ascending arpeggio */
+export const playPlayerJoined = () =>
+  play((ctx) => {
+    [660, 880, 1100].forEach((freq, i) => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = "sine";
+      o.frequency.value = freq;
+      g.gain.setValueAtTime(0.18, ctx.currentTime + i * 0.08);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.08 + 0.2);
+      o.connect(g).connect(ctx.destination);
+      o.start(ctx.currentTime + i * 0.08);
+      o.stop(ctx.currentTime + i * 0.08 + 0.2);
+    });
+  });
