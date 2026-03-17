@@ -1,165 +1,242 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
 
-type Language = "en" | "he";
+export type Language = "en" | "he" | "ar" | "es" | "fr" | "de" | "pt" | "ru" | "zh" | "ja" | "ko" | "hi" | "tr" | "it" | "pl" | "nl" | "sv" | "th" | "vi" | "uk";
+
+export interface LanguageOption {
+  code: Language;
+  name: string;
+  nativeName: string;
+  flag: string;
+  dir: "ltr" | "rtl";
+}
+
+export const LANGUAGES: LanguageOption[] = [
+  { code: "en", name: "English", nativeName: "English", flag: "🇬🇧", dir: "ltr" },
+  { code: "he", name: "Hebrew", nativeName: "עברית", flag: "🇮🇱", dir: "rtl" },
+  { code: "ar", name: "Arabic", nativeName: "العربية", flag: "🇸🇦", dir: "rtl" },
+  { code: "es", name: "Spanish", nativeName: "Español", flag: "🇪🇸", dir: "ltr" },
+  { code: "fr", name: "French", nativeName: "Français", flag: "🇫🇷", dir: "ltr" },
+  { code: "de", name: "German", nativeName: "Deutsch", flag: "🇩🇪", dir: "ltr" },
+  { code: "pt", name: "Portuguese", nativeName: "Português", flag: "🇧🇷", dir: "ltr" },
+  { code: "ru", name: "Russian", nativeName: "Русский", flag: "🇷🇺", dir: "ltr" },
+  { code: "zh", name: "Chinese", nativeName: "中文", flag: "🇨🇳", dir: "ltr" },
+  { code: "ja", name: "Japanese", nativeName: "日本語", flag: "🇯🇵", dir: "ltr" },
+  { code: "ko", name: "Korean", nativeName: "한국어", flag: "🇰🇷", dir: "ltr" },
+  { code: "hi", name: "Hindi", nativeName: "हिन्दी", flag: "🇮🇳", dir: "ltr" },
+  { code: "tr", name: "Turkish", nativeName: "Türkçe", flag: "🇹🇷", dir: "ltr" },
+  { code: "it", name: "Italian", nativeName: "Italiano", flag: "🇮🇹", dir: "ltr" },
+  { code: "pl", name: "Polish", nativeName: "Polski", flag: "🇵🇱", dir: "ltr" },
+  { code: "nl", name: "Dutch", nativeName: "Nederlands", flag: "🇳🇱", dir: "ltr" },
+  { code: "sv", name: "Swedish", nativeName: "Svenska", flag: "🇸🇪", dir: "ltr" },
+  { code: "th", name: "Thai", nativeName: "ไทย", flag: "🇹🇭", dir: "ltr" },
+  { code: "vi", name: "Vietnamese", nativeName: "Tiếng Việt", flag: "🇻🇳", dir: "ltr" },
+  { code: "uk", name: "Ukrainian", nativeName: "Українська", flag: "🇺🇦", dir: "ltr" },
+];
 
 type Translations = {
-  [key: string]: { en: string; he: string };
+  [key: string]: Partial<Record<Language, string>>;
 };
 
 const translations: Translations = {
   // Welcome
-  "welcome.tagline": { en: "Find the fake before it fools everyone!", he: "!מצא את המזויף לפני שהוא עובד על כולם" },
-  "welcome.login": { en: "Login / Register", he: "התחבר / הירשם" },
-  "welcome.guest": { en: "Continue as Guest", he: "המשך כאורח" },
-  "welcome.joinCode": { en: "Join with Code", he: "הצטרף עם קוד" },
+  "welcome.tagline": {
+    en: "Find the fake before it fools everyone!",
+    he: "!מצא את המזויף לפני שהוא עובד על כולם",
+    ar: "!اعثر على المزيف قبل أن يخدع الجميع",
+    es: "¡Encuentra al impostor antes de que engañe a todos!",
+    fr: "Trouvez l'imposteur avant qu'il ne trompe tout le monde !",
+    de: "Finde den Faker, bevor er alle täuscht!",
+    pt: "Encontre o impostor antes que ele engane todos!",
+    ru: "Найди фейка, пока он не обманул всех!",
+    zh: "在骗子欺骗所有人之前找到他！",
+    ja: "みんなを騙す前にフェイクを見つけよう！",
+    ko: "모두를 속이기 전에 가짜를 찾아라!",
+    hi: "सबको बेवकूफ बनाने से पहले नकली को ढूंढो!",
+    tr: "Sahtekarı herkesi kandırmadan önce bul!",
+    it: "Trova l'impostore prima che inganni tutti!",
+    pl: "Znajdź oszusta, zanim oszuka wszystkich!",
+    nl: "Vind de nepperd voordat hij iedereen voor de gek houdt!",
+    sv: "Hitta bedragaren innan alla luras!",
+    th: "หาของปลอมก่อนที่จะหลอกทุกคน!",
+    vi: "Tìm kẻ giả mạo trước khi lừa được mọi người!",
+    uk: "Знайди фейка, поки він не обдурив усіх!",
+  },
+  "welcome.login": {
+    en: "Login / Register", he: "התחבר / הירשם",
+    ar: "تسجيل الدخول / التسجيل", es: "Iniciar / Registrarse", fr: "Connexion / Inscription",
+    de: "Anmelden / Registrieren", pt: "Entrar / Registrar", ru: "Войти / Регистрация",
+    zh: "登录 / 注册", ja: "ログイン / 登録", ko: "로그인 / 회원가입",
+    hi: "लॉगिन / रजिस्टर", tr: "Giriş / Kayıt", it: "Accedi / Registrati",
+    pl: "Zaloguj / Zarejestruj", nl: "Inloggen / Registreren", sv: "Logga in / Registrera",
+    th: "เข้าสู่ระบบ / สมัคร", vi: "Đăng nhập / Đăng ký", uk: "Увійти / Реєстрація",
+  },
+  "welcome.guest": {
+    en: "Continue as Guest", he: "המשך כאורח",
+    ar: "المتابعة كضيف", es: "Continuar como invitado", fr: "Continuer en tant qu'invité",
+    de: "Als Gast fortfahren", pt: "Continuar como convidado", ru: "Продолжить как гость",
+    zh: "以访客身份继续", ja: "ゲストとして続ける", ko: "게스트로 계속",
+    hi: "अतिथि के रूप में जारी रखें", tr: "Misafir olarak devam et", it: "Continua come ospite",
+    pl: "Kontynuuj jako gość", nl: "Ga verder als gast", sv: "Fortsätt som gäst",
+    th: "ดำเนินการต่อในฐานะแขก", vi: "Tiếp tục với tư cách khách", uk: "Продовжити як гість",
+  },
+  "welcome.joinCode": {
+    en: "Join with Code", he: "הצטרף עם קוד",
+    ar: "انضم بالرمز", es: "Unirse con código", fr: "Rejoindre avec un code",
+    de: "Mit Code beitreten", pt: "Entrar com código", ru: "Войти по коду",
+    zh: "用代码加入", ja: "コードで参加", ko: "코드로 참가",
+    hi: "कोड से जुड़ें", tr: "Kodla katıl", it: "Unisciti con codice",
+    pl: "Dołącz kodem", nl: "Deelnemen met code", sv: "Gå med med kod",
+    th: "เข้าร่วมด้วยรหัส", vi: "Tham gia bằng mã", uk: "Приєднатися за кодом",
+  },
 
   // Auth
-  "auth.login": { en: "Login", he: "התחברות" },
-  "auth.register": { en: "Register", he: "הרשמה" },
-  "auth.google": { en: "Continue with Google", he: "המשך עם Google" },
-  "auth.apple": { en: "Continue with Apple", he: "המשך עם Apple" },
-  "auth.or": { en: "or", he: "או" },
-  "auth.error": { en: "Login failed", he: "ההתחברות נכשלה" },
-  "auth.checkEmail": { en: "Check your email to confirm!", he: "!בדוק את האימייל שלך לאישור" },
-  "auth.email": { en: "Email", he: "אימייל" },
-  "auth.password": { en: "Password", he: "סיסמה" },
-  "auth.displayName": { en: "Display Name", he: "שם תצוגה" },
-  "auth.loginBtn": { en: "Login", he: "התחבר" },
-  "auth.registerBtn": { en: "Create Account", he: "צור חשבון" },
-  "auth.switchRegister": { en: "Don't have an account? Register", he: "אין לך חשבון? הירשם" },
-  "auth.switchLogin": { en: "Already have an account? Login", he: "יש לך חשבון? התחבר" },
-  "auth.emailNotConfirmed": { en: "Please confirm your email first", he: "קודם צריך לאשר את האימייל" },
-  "auth.invalidCredentials": { en: "Invalid email or password", he: "אימייל או סיסמה שגויים" },
+  "auth.login": { en: "Login", he: "התחברות", ar: "تسجيل الدخول", es: "Iniciar sesión", fr: "Connexion", de: "Anmelden", pt: "Entrar", ru: "Вход", zh: "登录", ja: "ログイン", ko: "로그인", hi: "लॉगिन", tr: "Giriş", it: "Accedi", pl: "Logowanie", nl: "Inloggen", sv: "Logga in", th: "เข้าสู่ระบบ", vi: "Đăng nhập", uk: "Вхід" },
+  "auth.register": { en: "Register", he: "הרשמה", ar: "التسجيل", es: "Registrarse", fr: "Inscription", de: "Registrieren", pt: "Registrar", ru: "Регистрация", zh: "注册", ja: "登録", ko: "회원가입", hi: "रजिस्टर", tr: "Kayıt", it: "Registrati", pl: "Rejestracja", nl: "Registreren", sv: "Registrera", th: "สมัคร", vi: "Đăng ký", uk: "Реєстрація" },
+  "auth.google": { en: "Continue with Google", he: "המשך עם Google", ar: "المتابعة مع Google", es: "Continuar con Google", fr: "Continuer avec Google", de: "Weiter mit Google", pt: "Continuar com Google", ru: "Войти через Google", zh: "通过Google继续", ja: "Googleで続ける", ko: "Google로 계속", hi: "Google से जारी रखें", tr: "Google ile devam et", it: "Continua con Google", pl: "Kontynuuj z Google", nl: "Doorgaan met Google", sv: "Fortsätt med Google", th: "ดำเนินการต่อด้วย Google", vi: "Tiếp tục với Google", uk: "Увійти через Google" },
+  "auth.apple": { en: "Continue with Apple", he: "המשך עם Apple", ar: "المتابعة مع Apple", es: "Continuar con Apple", fr: "Continuer avec Apple", de: "Weiter mit Apple", pt: "Continuar com Apple", ru: "Войти через Apple", zh: "通过Apple继续", ja: "Appleで続ける", ko: "Apple로 계속", hi: "Apple से जारी रखें", tr: "Apple ile devam et", it: "Continua con Apple", pl: "Kontynuuj z Apple", nl: "Doorgaan met Apple", sv: "Fortsätt med Apple", th: "ดำเนินการต่อด้วย Apple", vi: "Tiếp tục với Apple", uk: "Увійти через Apple" },
+  "auth.or": { en: "or", he: "או", ar: "أو", es: "o", fr: "ou", de: "oder", pt: "ou", ru: "или", zh: "或", ja: "または", ko: "또는", hi: "या", tr: "veya", it: "o", pl: "lub", nl: "of", sv: "eller", th: "หรือ", vi: "hoặc", uk: "або" },
+  "auth.error": { en: "Login failed", he: "ההתחברות נכשלה", ar: "فشل تسجيل الدخول", es: "Error de inicio de sesión", fr: "Échec de connexion", de: "Anmeldung fehlgeschlagen", pt: "Falha no login", ru: "Ошибка входа", zh: "登录失败", ja: "ログイン失敗", ko: "로그인 실패", hi: "लॉगिन विफल", tr: "Giriş başarısız", it: "Accesso fallito", pl: "Logowanie nie powiodło się", nl: "Inloggen mislukt", sv: "Inloggning misslyckades", th: "เข้าสู่ระบบล้มเหลว", vi: "Đăng nhập thất bại", uk: "Помилка входу" },
+  "auth.checkEmail": { en: "Check your email to confirm!", he: "!בדוק את האימייל שלך לאישור", ar: "!تحقق من بريدك الإلكتروني للتأكيد", es: "¡Revisa tu email para confirmar!", fr: "Vérifiez votre email pour confirmer !", de: "Überprüfe deine E-Mail zur Bestätigung!", pt: "Verifique seu email para confirmar!", ru: "Проверьте почту для подтверждения!", zh: "请查看邮箱确认！", ja: "確認メールを確認してください！", ko: "확인 이메일을 확인하세요!", hi: "पुष्टि के लिए अपना ईमेल जाँचें!", tr: "Onaylamak için e-postanızı kontrol edin!", it: "Controlla la tua email per confermare!", pl: "Sprawdź email, aby potwierdzić!", nl: "Controleer je email om te bevestigen!", sv: "Kolla din e-post för att bekräfta!", th: "ตรวจสอบอีเมลเพื่อยืนยัน!", vi: "Kiểm tra email để xác nhận!", uk: "Перевірте пошту для підтвердження!" },
+  "auth.email": { en: "Email", he: "אימייל", ar: "البريد الإلكتروني", es: "Correo", fr: "Email", de: "E-Mail", pt: "Email", ru: "Email", zh: "邮箱", ja: "メール", ko: "이메일", hi: "ईमेल", tr: "E-posta", it: "Email", pl: "Email", nl: "E-mail", sv: "E-post", th: "อีเมล", vi: "Email", uk: "Email" },
+  "auth.password": { en: "Password", he: "סיסמה", ar: "كلمة المرور", es: "Contraseña", fr: "Mot de passe", de: "Passwort", pt: "Senha", ru: "Пароль", zh: "密码", ja: "パスワード", ko: "비밀번호", hi: "पासवर्ड", tr: "Şifre", it: "Password", pl: "Hasło", nl: "Wachtwoord", sv: "Lösenord", th: "รหัสผ่าน", vi: "Mật khẩu", uk: "Пароль" },
+  "auth.displayName": { en: "Display Name", he: "שם תצוגה", ar: "اسم العرض", es: "Nombre", fr: "Pseudo", de: "Anzeigename", pt: "Nome", ru: "Имя", zh: "显示名称", ja: "表示名", ko: "닉네임", hi: "प्रदर्शन नाम", tr: "Görünen ad", it: "Nome", pl: "Nazwa", nl: "Naam", sv: "Visningsnamn", th: "ชื่อที่แสดง", vi: "Tên hiển thị", uk: "Ім'я" },
+  "auth.loginBtn": { en: "Login", he: "התחבר", ar: "تسجيل الدخول", es: "Entrar", fr: "Se connecter", de: "Anmelden", pt: "Entrar", ru: "Войти", zh: "登录", ja: "ログイン", ko: "로그인", hi: "लॉगिन", tr: "Giriş", it: "Accedi", pl: "Zaloguj", nl: "Inloggen", sv: "Logga in", th: "เข้าสู่ระบบ", vi: "Đăng nhập", uk: "Увійти" },
+  "auth.registerBtn": { en: "Create Account", he: "צור חשבון", ar: "إنشاء حساب", es: "Crear cuenta", fr: "Créer un compte", de: "Konto erstellen", pt: "Criar conta", ru: "Создать аккаунт", zh: "创建账号", ja: "アカウント作成", ko: "계정 만들기", hi: "खाता बनाएं", tr: "Hesap oluştur", it: "Crea account", pl: "Utwórz konto", nl: "Account aanmaken", sv: "Skapa konto", th: "สร้างบัญชี", vi: "Tạo tài khoản", uk: "Створити акаунт" },
+  "auth.switchRegister": { en: "Don't have an account? Register", he: "אין לך חשבון? הירשם", ar: "ليس لديك حساب؟ سجل", es: "¿No tienes cuenta? Regístrate", fr: "Pas de compte ? Inscrivez-vous", de: "Kein Konto? Registrieren", pt: "Não tem conta? Registre-se", ru: "Нет аккаунта? Регистрация", zh: "没有账号？注册", ja: "アカウントがない？登録", ko: "계정이 없나요? 가입", hi: "खाता नहीं है? रजिस्टर करें", tr: "Hesabın yok mu? Kayıt ol", it: "Non hai un account? Registrati", pl: "Nie masz konta? Zarejestruj się", nl: "Geen account? Registreer", sv: "Inget konto? Registrera", th: "ยังไม่มีบัญชี? สมัคร", vi: "Chưa có tài khoản? Đăng ký", uk: "Немає акаунту? Реєстрація" },
+  "auth.switchLogin": { en: "Already have an account? Login", he: "יש לך חשבון? התחבר", ar: "لديك حساب بالفعل؟ سجل الدخول", es: "¿Ya tienes cuenta? Inicia sesión", fr: "Déjà un compte ? Connectez-vous", de: "Schon ein Konto? Anmelden", pt: "Já tem conta? Entre", ru: "Есть аккаунт? Войти", zh: "已有账号？登录", ja: "アカウントをお持ちですか？ログイン", ko: "계정이 있나요? 로그인", hi: "पहले से खाता है? लॉगिन करें", tr: "Hesabın var mı? Giriş yap", it: "Hai un account? Accedi", pl: "Masz konto? Zaloguj się", nl: "Al een account? Inloggen", sv: "Har du ett konto? Logga in", th: "มีบัญชีแล้ว? เข้าสู่ระบบ", vi: "Đã có tài khoản? Đăng nhập", uk: "Вже є акаунт? Увійти" },
+  "auth.emailNotConfirmed": { en: "Please confirm your email first", he: "קודם צריך לאשר את האימייל", ar: "يرجى تأكيد بريدك الإلكتروني أولاً", es: "Confirma tu email primero", fr: "Confirmez d'abord votre email", de: "Bitte bestätige zuerst deine E-Mail", pt: "Confirme seu email primeiro", ru: "Сначала подтвердите email", zh: "请先确认邮箱", ja: "まずメールを確認してください", ko: "먼저 이메일을 확인하세요", hi: "पहले अपना ईमेल पुष्टि करें", tr: "Önce e-postanızı onaylayın", it: "Conferma prima la tua email", pl: "Najpierw potwierdź email", nl: "Bevestig eerst je email", sv: "Bekräfta din e-post först", th: "กรุณายืนยันอีเมลก่อน", vi: "Vui lòng xác nhận email trước", uk: "Спочатку підтвердіть email" },
+  "auth.invalidCredentials": { en: "Invalid email or password", he: "אימייל או סיסמה שגויים", ar: "بريد إلكتروني أو كلمة مرور غير صحيحة", es: "Email o contraseña inválidos", fr: "Email ou mot de passe invalide", de: "Ungültige E-Mail oder Passwort", pt: "Email ou senha inválidos", ru: "Неверный email или пароль", zh: "邮箱或密码无效", ja: "メールまたはパスワードが無効です", ko: "이메일 또는 비밀번호가 잘못되었습니다", hi: "अमान्य ईमेल या पासवर्ड", tr: "Geçersiz e-posta veya şifre", it: "Email o password non validi", pl: "Nieprawidłowy email lub hasło", nl: "Ongeldig email of wachtwoord", sv: "Ogiltig e-post eller lösenord", th: "อีเมลหรือรหัสผ่านไม่ถูกต้อง", vi: "Email hoặc mật khẩu không hợp lệ", uk: "Невірний email або пароль" },
 
   // Profile
-  "profile.title": { en: "Profile", he: "פרופיל" },
-  "profile.displayName": { en: "Display Name", he: "שם תצוגה" },
-  "profile.save": { en: "Save", he: "שמור" },
-  "profile.gamesPlayed": { en: "Games Played", he: "משחקים ששוחקו" },
-  "profile.wins": { en: "Wins", he: "ניצחונות" },
-  "profile.caught": { en: "Fakes Caught", he: "Fakes שנתפסו" },
-  "profile.survived": { en: "Survived", he: "שרדו" },
-  "profile.toNextLevel": { en: "to next level", he: "לרמה הבאה" },
+  "profile.title": { en: "Profile", he: "פרופיל", ar: "الملف الشخصي", es: "Perfil", fr: "Profil", de: "Profil", pt: "Perfil", ru: "Профиль", zh: "个人资料", ja: "プロフィール", ko: "프로필", hi: "प्रोफ़ाइल", tr: "Profil", it: "Profilo", pl: "Profil", nl: "Profiel", sv: "Profil", th: "โปรไฟล์", vi: "Hồ sơ", uk: "Профіль" },
+  "profile.displayName": { en: "Display Name", he: "שם תצוגה", ar: "اسم العرض", es: "Nombre", fr: "Pseudo", de: "Name", pt: "Nome", ru: "Имя", zh: "名称", ja: "名前", ko: "이름", hi: "नाम", tr: "Ad", it: "Nome", pl: "Nazwa", nl: "Naam", sv: "Namn", th: "ชื่อ", vi: "Tên", uk: "Ім'я" },
+  "profile.save": { en: "Save", he: "שמור", ar: "حفظ", es: "Guardar", fr: "Sauvegarder", de: "Speichern", pt: "Salvar", ru: "Сохранить", zh: "保存", ja: "保存", ko: "저장", hi: "सेव करें", tr: "Kaydet", it: "Salva", pl: "Zapisz", nl: "Opslaan", sv: "Spara", th: "บันทึก", vi: "Lưu", uk: "Зберегти" },
+  "profile.gamesPlayed": { en: "Games Played", he: "משחקים ששוחקו", ar: "ألعاب لُعبت", es: "Partidas jugadas", fr: "Parties jouées", de: "Gespielte Spiele", pt: "Jogos jogados", ru: "Игр сыграно", zh: "已玩游戏", ja: "プレイ回数", ko: "플레이 횟수", hi: "खेले गए गेम", tr: "Oynanan oyunlar", it: "Partite giocate", pl: "Rozegrane gry", nl: "Gespeelde spellen", sv: "Spelade spel", th: "เกมที่เล่น", vi: "Số ván đã chơi", uk: "Зіграно ігор" },
+  "profile.wins": { en: "Wins", he: "ניצחונות", ar: "انتصارات", es: "Victorias", fr: "Victoires", de: "Siege", pt: "Vitórias", ru: "Побед", zh: "胜利", ja: "勝利", ko: "승리", hi: "जीत", tr: "Galibiyet", it: "Vittorie", pl: "Wygrane", nl: "Overwinningen", sv: "Vinster", th: "ชนะ", vi: "Thắng", uk: "Перемог" },
+  "profile.caught": { en: "Fakes Caught", he: "Fakes שנתפסו", ar: "مزيفون تم القبض عليهم", es: "Impostores atrapados", fr: "Imposteurs attrapés", de: "Faker gefangen", pt: "Impostores pegos", ru: "Фейков поймано", zh: "抓到假冒者", ja: "フェイク逮捕", ko: "가짜 적발", hi: "पकड़े गए फेक", tr: "Yakalanan sahtekarlar", it: "Impostori catturati", pl: "Złapani oszuści", nl: "Valsspelers gevangen", sv: "Bedragare fångade", th: "จับได้ของปลอม", vi: "Bắt được kẻ giả", uk: "Фейків спіймано" },
+  "profile.survived": { en: "Survived", he: "שרדו", ar: "نجا", es: "Sobrevivió", fr: "Survécu", de: "Überlebt", pt: "Sobreviveu", ru: "Выжил", zh: "存活", ja: "生存", ko: "생존", hi: "बचे", tr: "Hayatta kaldı", it: "Sopravvissuto", pl: "Przetrwano", nl: "Overleefd", sv: "Överlevt", th: "รอดชีวิต", vi: "Sống sót", uk: "Вижив" },
+  "profile.toNextLevel": { en: "to next level", he: "לרמה הבאה", ar: "إلى المستوى التالي", es: "al siguiente nivel", fr: "au prochain niveau", de: "zum nächsten Level", pt: "para o próximo nível", ru: "до следующего уровня", zh: "到下一级", ja: "次のレベルまで", ko: "다음 레벨까지", hi: "अगले स्तर तक", tr: "sonraki seviyeye", it: "al prossimo livello", pl: "do następnego poziomu", nl: "naar volgend level", sv: "till nästa nivå", th: "ถึงเลเวลถัดไป", vi: "đến cấp tiếp theo", uk: "до наступного рівня" },
 
   // Settings
-  "settings.title": { en: "Settings", he: "הגדרות" },
-  "settings.language": { en: "Language", he: "שפה" },
-  "settings.sound": { en: "Sound Effects", he: "אפקטי קול" },
-  "settings.vibration": { en: "Vibration", he: "רטט" },
-  "settings.darkMode": { en: "Dark Mode", he: "מצב כהה" },
-  "settings.about": { en: "About Fake It Fast", he: "אודות Fake It Fast" },
-  "settings.logout": { en: "Logout", he: "התנתק" },
+  "settings.title": { en: "Settings", he: "הגדרות", ar: "الإعدادات", es: "Ajustes", fr: "Paramètres", de: "Einstellungen", pt: "Configurações", ru: "Настройки", zh: "设置", ja: "設定", ko: "설정", hi: "सेटिंग्स", tr: "Ayarlar", it: "Impostazioni", pl: "Ustawienia", nl: "Instellingen", sv: "Inställningar", th: "ตั้งค่า", vi: "Cài đặt", uk: "Налаштування" },
+  "settings.language": { en: "Language", he: "שפה", ar: "اللغة", es: "Idioma", fr: "Langue", de: "Sprache", pt: "Idioma", ru: "Язык", zh: "语言", ja: "言語", ko: "언어", hi: "भाषा", tr: "Dil", it: "Lingua", pl: "Język", nl: "Taal", sv: "Språk", th: "ภาษา", vi: "Ngôn ngữ", uk: "Мова" },
+  "settings.sound": { en: "Sound Effects", he: "אפקטי קול", ar: "المؤثرات الصوتية", es: "Efectos de sonido", fr: "Effets sonores", de: "Soundeffekte", pt: "Efeitos sonoros", ru: "Звуковые эффекты", zh: "音效", ja: "効果音", ko: "효과음", hi: "ध्वनि प्रभाव", tr: "Ses efektleri", it: "Effetti sonori", pl: "Efekty dźwiękowe", nl: "Geluidseffecten", sv: "Ljudeffekter", th: "เอฟเฟกต์เสียง", vi: "Hiệu ứng âm thanh", uk: "Звукові ефекти" },
+  "settings.vibration": { en: "Vibration", he: "רטט", ar: "الاهتزاز", es: "Vibración", fr: "Vibration", de: "Vibration", pt: "Vibração", ru: "Вибрация", zh: "振动", ja: "振動", ko: "진동", hi: "कंपन", tr: "Titreşim", it: "Vibrazione", pl: "Wibracje", nl: "Trillingen", sv: "Vibration", th: "การสั่น", vi: "Rung", uk: "Вібрація" },
+  "settings.darkMode": { en: "Dark Mode", he: "מצב כהה", ar: "الوضع الداكن", es: "Modo oscuro", fr: "Mode sombre", de: "Dunkelmodus", pt: "Modo escuro", ru: "Тёмный режим", zh: "深色模式", ja: "ダークモード", ko: "다크 모드", hi: "डार्क मोड", tr: "Karanlık mod", it: "Modalità scura", pl: "Tryb ciemny", nl: "Donkere modus", sv: "Mörkt läge", th: "โหมดมืด", vi: "Chế độ tối", uk: "Темний режим" },
+  "settings.about": { en: "About Fake It Fast", he: "אודות Fake It Fast", ar: "حول Fake It Fast", es: "Acerca de Fake It Fast", fr: "À propos de Fake It Fast", de: "Über Fake It Fast", pt: "Sobre Fake It Fast", ru: "О Fake It Fast", zh: "关于 Fake It Fast", ja: "Fake It Fast について", ko: "Fake It Fast 소개", hi: "Fake It Fast के बारे में", tr: "Fake It Fast Hakkında", it: "Informazioni su Fake It Fast", pl: "O Fake It Fast", nl: "Over Fake It Fast", sv: "Om Fake It Fast", th: "เกี่ยวกับ Fake It Fast", vi: "Giới thiệu Fake It Fast", uk: "Про Fake It Fast" },
+  "settings.logout": { en: "Logout", he: "התנתק", ar: "تسجيل الخروج", es: "Cerrar sesión", fr: "Déconnexion", de: "Abmelden", pt: "Sair", ru: "Выйти", zh: "退出", ja: "ログアウト", ko: "로그아웃", hi: "लॉगआउट", tr: "Çıkış", it: "Esci", pl: "Wyloguj", nl: "Uitloggen", sv: "Logga ut", th: "ออกจากระบบ", vi: "Đăng xuất", uk: "Вийти" },
 
   // Home
-  "home.startGlobal": { en: "Start Global Game", he: "התחל משחק עולמי" },
-  "home.playFriends": { en: "Play with Friends", he: "שחק עם חברים" },
-  "home.joinCode": { en: "Join with Code", he: "הצטרף עם קוד" },
-  "home.tutorial": { en: "Tutorial", he: "אימון" },
-  "home.onlineFriends": { en: "Online Friends", he: "חברים אונליין" },
-  "home.invites": { en: "Invites", he: "הזמנות" },
-  "home.settings": { en: "Settings", he: "הגדרות" },
-  "home.notifications": { en: "Notifications", he: "התראות" },
+  "home.startGlobal": { en: "Start Global Game", he: "התחל משחק עולמי", ar: "ابدأ لعبة عالمية", es: "Partida global", fr: "Partie mondiale", de: "Globales Spiel", pt: "Jogo global", ru: "Глобальная игра", zh: "全球对战", ja: "グローバルゲーム", ko: "글로벌 게임", hi: "ग्लोबल गेम", tr: "Global oyun", it: "Partita globale", pl: "Gra globalna", nl: "Globaal spel", sv: "Globalt spel", th: "เกมระดับโลก", vi: "Chơi toàn cầu", uk: "Глобальна гра" },
+  "home.playFriends": { en: "Play with Friends", he: "שחק עם חברים", ar: "العب مع الأصدقاء", es: "Jugar con amigos", fr: "Jouer entre amis", de: "Mit Freunden spielen", pt: "Jogar com amigos", ru: "Играть с друзьями", zh: "和朋友玩", ja: "友達と遊ぶ", ko: "친구와 플레이", hi: "दोस्तों के साथ खेलें", tr: "Arkadaşlarla oyna", it: "Gioca con amici", pl: "Graj ze znajomymi", nl: "Speel met vrienden", sv: "Spela med vänner", th: "เล่นกับเพื่อน", vi: "Chơi với bạn bè", uk: "Грати з друзями" },
+  "home.joinCode": { en: "Join with Code", he: "הצטרף עם קוד", ar: "انضم بالرمز", es: "Unirse con código", fr: "Rejoindre avec un code", de: "Mit Code beitreten", pt: "Entrar com código", ru: "Войти по коду", zh: "用代码加入", ja: "コードで参加", ko: "코드로 참가", hi: "कोड से जुड़ें", tr: "Kodla katıl", it: "Unisciti con codice", pl: "Dołącz kodem", nl: "Deelnemen met code", sv: "Gå med med kod", th: "เข้าร่วมด้วยรหัส", vi: "Tham gia bằng mã", uk: "Приєднатися за кодом" },
+  "home.tutorial": { en: "Tutorial", he: "אימון", ar: "تعليمي", es: "Tutorial", fr: "Tutoriel", de: "Tutorial", pt: "Tutorial", ru: "Обучение", zh: "教程", ja: "チュートリアル", ko: "튜토리얼", hi: "ट्यूटोरियल", tr: "Eğitim", it: "Tutorial", pl: "Samouczek", nl: "Tutorial", sv: "Handledning", th: "สอนเล่น", vi: "Hướng dẫn", uk: "Навчання" },
+  "home.onlineFriends": { en: "Online Friends", he: "חברים אונליין", ar: "أصدقاء متصلون", es: "Amigos en línea", fr: "Amis en ligne", de: "Online Freunde", pt: "Amigos online", ru: "Друзья онлайн", zh: "在线好友", ja: "オンラインの友達", ko: "온라인 친구", hi: "ऑनलाइन दोस्त", tr: "Çevrimiçi arkadaşlar", it: "Amici online", pl: "Znajomi online", nl: "Online vrienden", sv: "Vänner online", th: "เพื่อนออนไลน์", vi: "Bạn bè trực tuyến", uk: "Друзі онлайн" },
+  "home.invites": { en: "Invites", he: "הזמנות", ar: "دعوات", es: "Invitaciones", fr: "Invitations", de: "Einladungen", pt: "Convites", ru: "Приглашения", zh: "邀请", ja: "招待", ko: "초대", hi: "आमंत्रण", tr: "Davetler", it: "Inviti", pl: "Zaproszenia", nl: "Uitnodigingen", sv: "Inbjudningar", th: "คำเชิญ", vi: "Lời mời", uk: "Запрошення" },
+  "home.settings": { en: "Settings", he: "הגדרות", ar: "الإعدادات", es: "Ajustes", fr: "Paramètres", de: "Einstellungen", pt: "Configurações", ru: "Настройки", zh: "设置", ja: "設定", ko: "설정", hi: "सेटिंग्स", tr: "Ayarlar", it: "Impostazioni", pl: "Ustawienia", nl: "Instellingen", sv: "Inställningar", th: "ตั้งค่า", vi: "Cài đặt", uk: "Налаштування" },
+  "home.notifications": { en: "Notifications", he: "התראות", ar: "إشعارات", es: "Notificaciones", fr: "Notifications", de: "Benachrichtigungen", pt: "Notificações", ru: "Уведомления", zh: "通知", ja: "通知", ko: "알림", hi: "सूचनाएं", tr: "Bildirimler", it: "Notifiche", pl: "Powiadomienia", nl: "Meldingen", sv: "Aviseringar", th: "การแจ้งเตือน", vi: "Thông báo", uk: "Сповіщення" },
 
   // Join
-  "join.title": { en: "Join a Room", he: "הצטרף לחדר" },
-  "join.placeholder": { en: "Enter room code...", he: "...הכנס קוד חדר" },
-  "join.button": { en: "Join", he: "הצטרף" },
-  "join.autoFlow": { en: "Continue", he: "המשך" },
-  "join.orLink": { en: "Or open an invite link", he: "או פתח קישור הזמנה" },
-  "join.back": { en: "Back", he: "חזור" },
-  "join.notFound": { en: "Room not found", he: "החדר לא נמצא" },
-  "join.invalidCode": { en: "Enter a valid room code", he: "צריך להזין קוד חדר תקין" },
-  "join.loginAndJoin": { en: "Login and join", he: "להתחבר ולהיכנס" },
-  "join.registerAndJoin": { en: "Register and join", he: "להירשם ולהיכנס" },
-  "join.playGuest": { en: "Play as guest", he: "לשחק כאורח" },
-  "join.continueAsGuest": { en: "Continue as guest", he: "המשך כאורח" },
-  "join.guestName": { en: "Guest name", he: "שם אורח" },
-  "join.guestDefault": { en: "Guest", he: "אורח" },
-  "join.authOrGuestRequired": { en: "Choose login or guest to enter", he: "צריך להתחבר או לבחור אורח כדי להיכנס" },
+  "join.title": { en: "Join a Room", he: "הצטרף לחדר", ar: "انضم إلى غرفة", es: "Unirse a una sala", fr: "Rejoindre une salle", de: "Raum beitreten", pt: "Entrar em uma sala", ru: "Войти в комнату", zh: "加入房间", ja: "ルームに参加", ko: "방 참가", hi: "कमरे में शामिल हों", tr: "Odaya katıl", it: "Entra in una stanza", pl: "Dołącz do pokoju", nl: "Kamer betreden", sv: "Gå med i rum", th: "เข้าร่วมห้อง", vi: "Vào phòng", uk: "Увійти в кімнату" },
+  "join.placeholder": { en: "Enter room code...", he: "...הכנס קוד חדר", ar: "...أدخل رمز الغرفة", es: "Ingresa el código...", fr: "Entrez le code...", de: "Raumcode eingeben...", pt: "Digite o código...", ru: "Введите код...", zh: "输入房间代码...", ja: "ルームコードを入力...", ko: "방 코드 입력...", hi: "रूम कोड दर्ज करें...", tr: "Oda kodunu girin...", it: "Inserisci il codice...", pl: "Wpisz kod pokoju...", nl: "Voer kamercode in...", sv: "Ange rumskod...", th: "ใส่รหัสห้อง...", vi: "Nhập mã phòng...", uk: "Введіть код кімнати..." },
+  "join.button": { en: "Join", he: "הצטרף", ar: "انضم", es: "Unirse", fr: "Rejoindre", de: "Beitreten", pt: "Entrar", ru: "Войти", zh: "加入", ja: "参加", ko: "참가", hi: "जुड़ें", tr: "Katıl", it: "Entra", pl: "Dołącz", nl: "Deelnemen", sv: "Gå med", th: "เข้าร่วม", vi: "Tham gia", uk: "Увійти" },
+  "join.autoFlow": { en: "Continue", he: "המשך", ar: "متابعة", es: "Continuar", fr: "Continuer", de: "Weiter", pt: "Continuar", ru: "Далее", zh: "继续", ja: "続ける", ko: "계속", hi: "जारी रखें", tr: "Devam", it: "Continua", pl: "Kontynuuj", nl: "Doorgaan", sv: "Fortsätt", th: "ดำเนินการต่อ", vi: "Tiếp tục", uk: "Далі" },
+  "join.orLink": { en: "Or open an invite link", he: "או פתח קישור הזמנה", ar: "أو افتح رابط دعوة", es: "O abre un enlace de invitación", fr: "Ou ouvrez un lien d'invitation", de: "Oder öffne einen Einladungslink", pt: "Ou abra um link de convite", ru: "Или откройте ссылку-приглашение", zh: "或打开邀请链接", ja: "または招待リンクを開く", ko: "또는 초대 링크 열기", hi: "या आमंत्रण लिंक खोलें", tr: "Veya davet bağlantısı açın", it: "O apri un link di invito", pl: "Lub otwórz link z zaproszeniem", nl: "Of open een uitnodigingslink", sv: "Eller öppna en inbjudningslänk", th: "หรือเปิดลิงก์เชิญ", vi: "Hoặc mở liên kết mời", uk: "Або відкрийте посилання-запрошення" },
+  "join.back": { en: "Back", he: "חזור", ar: "رجوع", es: "Volver", fr: "Retour", de: "Zurück", pt: "Voltar", ru: "Назад", zh: "返回", ja: "戻る", ko: "뒤로", hi: "वापस", tr: "Geri", it: "Indietro", pl: "Wstecz", nl: "Terug", sv: "Tillbaka", th: "กลับ", vi: "Quay lại", uk: "Назад" },
+  "join.notFound": { en: "Room not found", he: "החדר לא נמצא", ar: "الغرفة غير موجودة", es: "Sala no encontrada", fr: "Salle introuvable", de: "Raum nicht gefunden", pt: "Sala não encontrada", ru: "Комната не найдена", zh: "未找到房间", ja: "ルームが見つかりません", ko: "방을 찾을 수 없습니다", hi: "कमरा नहीं मिला", tr: "Oda bulunamadı", it: "Stanza non trovata", pl: "Pokój nie znaleziony", nl: "Kamer niet gevonden", sv: "Rum hittades inte", th: "ไม่พบห้อง", vi: "Không tìm thấy phòng", uk: "Кімнату не знайдено" },
+  "join.invalidCode": { en: "Enter a valid room code", he: "צריך להזין קוד חדר תקין", ar: "أدخل رمز غرفة صالح", es: "Ingresa un código válido", fr: "Entrez un code valide", de: "Gib einen gültigen Code ein", pt: "Digite um código válido", ru: "Введите правильный код", zh: "请输入有效代码", ja: "有効なコードを入力してください", ko: "유효한 코드를 입력하세요", hi: "वैध कोड दर्ज करें", tr: "Geçerli bir kod girin", it: "Inserisci un codice valido", pl: "Wpisz prawidłowy kod", nl: "Voer een geldige code in", sv: "Ange en giltig kod", th: "ใส่รหัสที่ถูกต้อง", vi: "Nhập mã hợp lệ", uk: "Введіть дійсний код" },
+  "join.loginAndJoin": { en: "Login and join", he: "להתחבר ולהיכנס", ar: "تسجيل الدخول والانضمام", es: "Iniciar sesión y unirse", fr: "Se connecter et rejoindre", de: "Anmelden und beitreten", pt: "Entrar e participar", ru: "Войти и присоединиться", zh: "登录并加入", ja: "ログインして参加", ko: "로그인 후 참가", hi: "लॉगिन करें और जुड़ें", tr: "Giriş yap ve katıl", it: "Accedi e unisciti", pl: "Zaloguj i dołącz", nl: "Inloggen en deelnemen", sv: "Logga in och gå med", th: "เข้าสู่ระบบและเข้าร่วม", vi: "Đăng nhập và tham gia", uk: "Увійти і приєднатися" },
+  "join.registerAndJoin": { en: "Register and join", he: "להירשם ולהיכנס", ar: "التسجيل والانضمام", es: "Registrarse y unirse", fr: "S'inscrire et rejoindre", de: "Registrieren und beitreten", pt: "Registrar e participar", ru: "Зарегистрироваться и присоединиться", zh: "注册并加入", ja: "登録して参加", ko: "가입 후 참가", hi: "रजिस्टर करें और जुड़ें", tr: "Kayıt ol ve katıl", it: "Registrati e unisciti", pl: "Zarejestruj i dołącz", nl: "Registreren en deelnemen", sv: "Registrera och gå med", th: "สมัครและเข้าร่วม", vi: "Đăng ký và tham gia", uk: "Зареєструватися і приєднатися" },
+  "join.playGuest": { en: "Play as guest", he: "לשחק כאורח", ar: "العب كضيف", es: "Jugar como invitado", fr: "Jouer en tant qu'invité", de: "Als Gast spielen", pt: "Jogar como convidado", ru: "Играть как гость", zh: "以访客身份玩", ja: "ゲストとしてプレイ", ko: "게스트로 플레이", hi: "अतिथि के रूप में खेलें", tr: "Misafir olarak oyna", it: "Gioca come ospite", pl: "Graj jako gość", nl: "Speel als gast", sv: "Spela som gäst", th: "เล่นในฐานะแขก", vi: "Chơi với tư cách khách", uk: "Грати як гість" },
+  "join.continueAsGuest": { en: "Continue as guest", he: "המשך כאורח", ar: "المتابعة كضيف", es: "Continuar como invitado", fr: "Continuer en tant qu'invité", de: "Als Gast fortfahren", pt: "Continuar como convidado", ru: "Продолжить как гость", zh: "以访客身份继续", ja: "ゲストとして続行", ko: "게스트로 계속", hi: "अतिथि के रूप में जारी रखें", tr: "Misafir olarak devam et", it: "Continua come ospite", pl: "Kontynuuj jako gość", nl: "Ga verder als gast", sv: "Fortsätt som gäst", th: "ดำเนินการต่อในฐานะแขก", vi: "Tiếp tục với tư cách khách", uk: "Продовжити як гість" },
+  "join.guestName": { en: "Guest name", he: "שם אורח", ar: "اسم الضيف", es: "Nombre de invitado", fr: "Nom d'invité", de: "Gastname", pt: "Nome de convidado", ru: "Имя гостя", zh: "访客名称", ja: "ゲスト名", ko: "게스트 이름", hi: "अतिथि नाम", tr: "Misafir adı", it: "Nome ospite", pl: "Nazwa gościa", nl: "Gastnaam", sv: "Gästnamn", th: "ชื่อแขก", vi: "Tên khách", uk: "Ім'я гостя" },
+  "join.guestDefault": { en: "Guest", he: "אורח", ar: "ضيف", es: "Invitado", fr: "Invité", de: "Gast", pt: "Convidado", ru: "Гость", zh: "访客", ja: "ゲスト", ko: "게스트", hi: "अतिथि", tr: "Misafir", it: "Ospite", pl: "Gość", nl: "Gast", sv: "Gäst", th: "แขก", vi: "Khách", uk: "Гість" },
+  "join.authOrGuestRequired": { en: "Choose login or guest to enter", he: "צריך להתחבר או לבחור אורח כדי להיכנס", ar: "اختر تسجيل الدخول أو الضيف للدخول", es: "Elige iniciar sesión o invitado", fr: "Choisissez connexion ou invité", de: "Wähle Anmeldung oder Gast", pt: "Escolha login ou convidado", ru: "Выберите вход или гостевой режим", zh: "选择登录或访客进入", ja: "ログインまたはゲストを選択", ko: "로그인 또는 게스트 선택", hi: "लॉगिन या अतिथि चुनें", tr: "Giriş veya misafir seçin", it: "Scegli accesso o ospite", pl: "Wybierz logowanie lub gościa", nl: "Kies inloggen of gast", sv: "Välj inloggning eller gäst", th: "เลือกเข้าสู่ระบบหรือแขก", vi: "Chọn đăng nhập hoặc khách", uk: "Виберіть вхід або гостя" },
 
   // Create Room
-  "create.title": { en: "Create Room", he: "צור חדר" },
-  "create.roomName": { en: "Room Name", he: "שם החדר" },
-  "create.rounds": { en: "Number of Rounds", he: "מספר סיבובים" },
-  "create.responseTime": { en: "Response Time (sec)", he: "(שניות) זמן תגובה" },
-  "create.discussionTime": { en: "Discussion Time (sec)", he: "(שניות) זמן דיון" },
-  "create.voteTime": { en: "Vote Time (sec)", he: "(שניות) זמן הצבעה" },
-  "create.maxPlayers": { en: "Max Players", he: "מספר שחקנים מקסימלי" },
-  "create.private": { en: "Private Room", he: "חדר פרטי" },
-  "create.button": { en: "Create Room", he: "צור חדר" },
-  "create.back": { en: "Back", he: "חזור" },
+  "create.title": { en: "Create Room", he: "צור חדר", ar: "إنشاء غرفة", es: "Crear sala", fr: "Créer une salle", de: "Raum erstellen", pt: "Criar sala", ru: "Создать комнату", zh: "创建房间", ja: "ルーム作成", ko: "방 만들기", hi: "कमरा बनाएं", tr: "Oda oluştur", it: "Crea stanza", pl: "Utwórz pokój", nl: "Kamer maken", sv: "Skapa rum", th: "สร้างห้อง", vi: "Tạo phòng", uk: "Створити кімнату" },
+  "create.roomName": { en: "Room Name", he: "שם החדר", ar: "اسم الغرفة", es: "Nombre de sala", fr: "Nom de la salle", de: "Raumname", pt: "Nome da sala", ru: "Название комнаты", zh: "房间名称", ja: "ルーム名", ko: "방 이름", hi: "कमरे का नाम", tr: "Oda adı", it: "Nome stanza", pl: "Nazwa pokoju", nl: "Kamernaam", sv: "Rumsnamn", th: "ชื่อห้อง", vi: "Tên phòng", uk: "Назва кімнати" },
+  "create.rounds": { en: "Number of Rounds", he: "מספר סיבובים", ar: "عدد الجولات", es: "Número de rondas", fr: "Nombre de manches", de: "Anzahl Runden", pt: "Número de rodadas", ru: "Количество раундов", zh: "回合数", ja: "ラウンド数", ko: "라운드 수", hi: "राउंड की संख्या", tr: "Tur sayısı", it: "Numero di round", pl: "Liczba rund", nl: "Aantal rondes", sv: "Antal rundor", th: "จำนวนรอบ", vi: "Số vòng", uk: "Кількість раундів" },
+  "create.responseTime": { en: "Response Time (sec)", he: "(שניות) זמן תגובה", ar: "(ثوانٍ) وقت الاستجابة", es: "Tiempo de respuesta (seg)", fr: "Temps de réponse (sec)", de: "Antwortzeit (Sek)", pt: "Tempo de resposta (seg)", ru: "Время ответа (сек)", zh: "回答时间（秒）", ja: "回答時間（秒）", ko: "응답 시간 (초)", hi: "उत्तर समय (सेकंड)", tr: "Yanıt süresi (sn)", it: "Tempo di risposta (sec)", pl: "Czas odpowiedzi (sek)", nl: "Reactietijd (sec)", sv: "Svarstid (sek)", th: "เวลาตอบ (วินาที)", vi: "Thời gian trả lời (giây)", uk: "Час відповіді (сек)" },
+  "create.discussionTime": { en: "Discussion Time (sec)", he: "(שניות) זמן דיון", ar: "(ثوانٍ) وقت المناقشة", es: "Tiempo de discusión (seg)", fr: "Temps de discussion (sec)", de: "Diskussionszeit (Sek)", pt: "Tempo de discussão (seg)", ru: "Время обсуждения (сек)", zh: "讨论时间（秒）", ja: "議論時間（秒）", ko: "토론 시간 (초)", hi: "चर्चा समय (सेकंड)", tr: "Tartışma süresi (sn)", it: "Tempo di discussione (sec)", pl: "Czas dyskusji (sek)", nl: "Discussietijd (sec)", sv: "Diskussionstid (sek)", th: "เวลาอภิปราย (วินาที)", vi: "Thời gian thảo luận (giây)", uk: "Час обговорення (сек)" },
+  "create.voteTime": { en: "Vote Time (sec)", he: "(שניות) זמן הצבעה", ar: "(ثوانٍ) وقت التصويت", es: "Tiempo de voto (seg)", fr: "Temps de vote (sec)", de: "Abstimmungszeit (Sek)", pt: "Tempo de votação (seg)", ru: "Время голосования (сек)", zh: "投票时间（秒）", ja: "投票時間（秒）", ko: "투표 시간 (초)", hi: "वोट समय (सेकंड)", tr: "Oylama süresi (sn)", it: "Tempo di voto (sec)", pl: "Czas głosowania (sek)", nl: "Stemtijd (sec)", sv: "Röstningstid (sek)", th: "เวลาโหวต (วินาที)", vi: "Thời gian bình chọn (giây)", uk: "Час голосування (сек)" },
+  "create.maxPlayers": { en: "Max Players", he: "מספר שחקנים מקסימלי", ar: "الحد الأقصى للاعبين", es: "Máximo de jugadores", fr: "Joueurs max", de: "Max Spieler", pt: "Máx. jogadores", ru: "Макс. игроков", zh: "最大玩家数", ja: "最大プレイヤー数", ko: "최대 플레이어", hi: "अधिकतम खिलाड़ी", tr: "Maks oyuncu", it: "Giocatori max", pl: "Maks graczy", nl: "Max spelers", sv: "Max spelare", th: "ผู้เล่นสูงสุด", vi: "Số người chơi tối đa", uk: "Макс. гравців" },
+  "create.private": { en: "Private Room", he: "חדר פרטי", ar: "غرفة خاصة", es: "Sala privada", fr: "Salle privée", de: "Privater Raum", pt: "Sala privada", ru: "Приватная комната", zh: "私人房间", ja: "プライベートルーム", ko: "비공개 방", hi: "निजी कमरा", tr: "Özel oda", it: "Stanza privata", pl: "Prywatny pokój", nl: "Privékamer", sv: "Privat rum", th: "ห้องส่วนตัว", vi: "Phòng riêng", uk: "Приватна кімната" },
+  "create.button": { en: "Create Room", he: "צור חדר", ar: "إنشاء غرفة", es: "Crear sala", fr: "Créer la salle", de: "Raum erstellen", pt: "Criar sala", ru: "Создать комнату", zh: "创建房间", ja: "ルーム作成", ko: "방 만들기", hi: "कमरा बनाएं", tr: "Oda oluştur", it: "Crea stanza", pl: "Utwórz pokój", nl: "Kamer maken", sv: "Skapa rum", th: "สร้างห้อง", vi: "Tạo phòng", uk: "Створити кімнату" },
+  "create.back": { en: "Back", he: "חזור", ar: "رجوع", es: "Volver", fr: "Retour", de: "Zurück", pt: "Voltar", ru: "Назад", zh: "返回", ja: "戻る", ko: "뒤로", hi: "वापस", tr: "Geri", it: "Indietro", pl: "Wstecz", nl: "Terug", sv: "Tillbaka", th: "กลับ", vi: "Quay lại", uk: "Назад" },
 
   // Lobby
-  "lobby.title": { en: "Lobby", he: "לובי" },
-  "lobby.copyCode": { en: "Copy Code", he: "העתק קוד" },
-  "lobby.copyLink": { en: "Copy Link", he: "העתק קישור" },
-  "lobby.share": { en: "Share", he: "שתף" },
-  "lobby.ready": { en: "Ready", he: "מוכן" },
-  "lobby.notReady": { en: "Not Ready", he: "לא מוכן" },
-  "lobby.startGame": { en: "Start Game", he: "התחל משחק" },
-  "lobby.notAllReady": { en: "Not all players are ready", he: "לא כל השחקנים מוכנים" },
-  "lobby.chat": { en: "Chat", he: "צ'אט" },
-  "lobby.chatPlaceholder": { en: "Type a message...", he: "...כתוב הודעה" },
-  "lobby.waiting": { en: "Waiting for players...", he: "...ממתין לשחקנים" },
-  "lobby.settings": { en: "Game Settings", he: "הגדרות משחק" },
-  "lobby.codeCopied": { en: "Room code copied!", he: "!קוד החדר הועתק" },
-  "lobby.linkCopied": { en: "Invite link copied!", he: "!קישור ההזמנה הועתק" },
-  "lobby.copyFailed": { en: "Failed to copy", he: "ההעתקה נכשלה" },
+  "lobby.title": { en: "Lobby", he: "לובי", ar: "اللوبي", es: "Vestíbulo", fr: "Salon", de: "Lobby", pt: "Lobby", ru: "Лобби", zh: "大厅", ja: "ロビー", ko: "로비", hi: "लॉबी", tr: "Lobi", it: "Lobby", pl: "Lobby", nl: "Lobby", sv: "Lobby", th: "ล็อบบี้", vi: "Phòng chờ", uk: "Лобі" },
+  "lobby.copyCode": { en: "Copy Code", he: "העתק קוד", ar: "نسخ الرمز", es: "Copiar código", fr: "Copier le code", de: "Code kopieren", pt: "Copiar código", ru: "Копировать код", zh: "复制代码", ja: "コードをコピー", ko: "코드 복사", hi: "कोड कॉपी करें", tr: "Kodu kopyala", it: "Copia codice", pl: "Kopiuj kod", nl: "Code kopiëren", sv: "Kopiera kod", th: "คัดลอกรหัส", vi: "Sao chép mã", uk: "Копіювати код" },
+  "lobby.copyLink": { en: "Copy Link", he: "העתק קישור", ar: "نسخ الرابط", es: "Copiar enlace", fr: "Copier le lien", de: "Link kopieren", pt: "Copiar link", ru: "Копировать ссылку", zh: "复制链接", ja: "リンクをコピー", ko: "링크 복사", hi: "लिंक कॉपी करें", tr: "Bağlantıyı kopyala", it: "Copia link", pl: "Kopiuj link", nl: "Link kopiëren", sv: "Kopiera länk", th: "คัดลอกลิงก์", vi: "Sao chép liên kết", uk: "Копіювати посилання" },
+  "lobby.share": { en: "Share", he: "שתף", ar: "مشاركة", es: "Compartir", fr: "Partager", de: "Teilen", pt: "Compartilhar", ru: "Поделиться", zh: "分享", ja: "共有", ko: "공유", hi: "शेयर करें", tr: "Paylaş", it: "Condividi", pl: "Udostępnij", nl: "Delen", sv: "Dela", th: "แชร์", vi: "Chia sẻ", uk: "Поділитися" },
+  "lobby.ready": { en: "Ready", he: "מוכן", ar: "مستعد", es: "Listo", fr: "Prêt", de: "Bereit", pt: "Pronto", ru: "Готов", zh: "准备", ja: "準備完了", ko: "준비 완료", hi: "तैयार", tr: "Hazır", it: "Pronto", pl: "Gotowy", nl: "Klaar", sv: "Redo", th: "พร้อม", vi: "Sẵn sàng", uk: "Готовий" },
+  "lobby.notReady": { en: "Not Ready", he: "לא מוכן", ar: "غير مستعد", es: "No listo", fr: "Pas prêt", de: "Nicht bereit", pt: "Não pronto", ru: "Не готов", zh: "未准备", ja: "未準備", ko: "준비 안됨", hi: "तैयार नहीं", tr: "Hazır değil", it: "Non pronto", pl: "Nie gotowy", nl: "Niet klaar", sv: "Inte redo", th: "ยังไม่พร้อม", vi: "Chưa sẵn sàng", uk: "Не готовий" },
+  "lobby.startGame": { en: "Start Game", he: "התחל משחק", ar: "ابدأ اللعبة", es: "Comenzar", fr: "Commencer", de: "Spiel starten", pt: "Iniciar jogo", ru: "Начать игру", zh: "开始游戏", ja: "ゲーム開始", ko: "게임 시작", hi: "गेम शुरू करें", tr: "Oyunu başlat", it: "Inizia partita", pl: "Rozpocznij grę", nl: "Start spel", sv: "Starta spel", th: "เริ่มเกม", vi: "Bắt đầu trò chơi", uk: "Почати гру" },
+  "lobby.notAllReady": { en: "Not all players are ready", he: "לא כל השחקנים מוכנים", ar: "ليس كل اللاعبين مستعدين", es: "No todos están listos", fr: "Pas tous prêts", de: "Nicht alle bereit", pt: "Nem todos prontos", ru: "Не все готовы", zh: "不是所有玩家都准备好了", ja: "全員準備完了ではありません", ko: "모든 플레이어가 준비되지 않았습니다", hi: "सभी खिलाड़ी तैयार नहीं हैं", tr: "Tüm oyuncular hazır değil", it: "Non tutti pronti", pl: "Nie wszyscy gotowi", nl: "Niet iedereen is klaar", sv: "Inte alla redo", th: "ผู้เล่นยังไม่พร้อมทุกคน", vi: "Chưa tất cả sẵn sàng", uk: "Не всі гравці готові" },
+  "lobby.chat": { en: "Chat", he: "צ'אט", ar: "الدردشة", es: "Chat", fr: "Chat", de: "Chat", pt: "Chat", ru: "Чат", zh: "聊天", ja: "チャット", ko: "채팅", hi: "चैट", tr: "Sohbet", it: "Chat", pl: "Czat", nl: "Chat", sv: "Chatt", th: "แชท", vi: "Trò chuyện", uk: "Чат" },
+  "lobby.chatPlaceholder": { en: "Type a message...", he: "...כתוב הודעה", ar: "...اكتب رسالة", es: "Escribe un mensaje...", fr: "Écrivez un message...", de: "Nachricht schreiben...", pt: "Digite uma mensagem...", ru: "Напишите сообщение...", zh: "输入消息...", ja: "メッセージを入力...", ko: "메시지 입력...", hi: "संदेश लिखें...", tr: "Mesaj yazın...", it: "Scrivi un messaggio...", pl: "Napisz wiadomość...", nl: "Typ een bericht...", sv: "Skriv ett meddelande...", th: "พิมพ์ข้อความ...", vi: "Nhập tin nhắn...", uk: "Напишіть повідомлення..." },
+  "lobby.waiting": { en: "Waiting for players...", he: "...ממתין לשחקנים", ar: "...في انتظار اللاعبين", es: "Esperando jugadores...", fr: "En attente de joueurs...", de: "Warte auf Spieler...", pt: "Aguardando jogadores...", ru: "Ожидание игроков...", zh: "等待玩家...", ja: "プレイヤーを待っています...", ko: "플레이어 대기중...", hi: "खिलाड़ियों की प्रतीक्षा...", tr: "Oyuncular bekleniyor...", it: "In attesa di giocatori...", pl: "Czekam na graczy...", nl: "Wachten op spelers...", sv: "Väntar på spelare...", th: "รอผู้เล่น...", vi: "Đang chờ người chơi...", uk: "Очікування гравців..." },
+  "lobby.settings": { en: "Game Settings", he: "הגדרות משחק", ar: "إعدادات اللعبة", es: "Configuración del juego", fr: "Paramètres de jeu", de: "Spieleinstellungen", pt: "Configurações do jogo", ru: "Настройки игры", zh: "游戏设置", ja: "ゲーム設定", ko: "게임 설정", hi: "गेम सेटिंग्स", tr: "Oyun ayarları", it: "Impostazioni di gioco", pl: "Ustawienia gry", nl: "Spelinstellingen", sv: "Spelinställningar", th: "ตั้งค่าเกม", vi: "Cài đặt trò chơi", uk: "Налаштування гри" },
+  "lobby.codeCopied": { en: "Room code copied!", he: "!קוד החדר הועתק", ar: "!تم نسخ رمز الغرفة", es: "¡Código copiado!", fr: "Code copié !", de: "Code kopiert!", pt: "Código copiado!", ru: "Код скопирован!", zh: "代码已复制！", ja: "コードをコピーしました！", ko: "코드가 복사되었습니다!", hi: "कोड कॉपी हो गया!", tr: "Kod kopyalandı!", it: "Codice copiato!", pl: "Kod skopiowany!", nl: "Code gekopieerd!", sv: "Kod kopierad!", th: "คัดลอกรหัสแล้ว!", vi: "Đã sao chép mã!", uk: "Код скопійовано!" },
+  "lobby.linkCopied": { en: "Invite link copied!", he: "!קישור ההזמנה הועתק", ar: "!تم نسخ رابط الدعوة", es: "¡Enlace copiado!", fr: "Lien copié !", de: "Link kopiert!", pt: "Link copiado!", ru: "Ссылка скопирована!", zh: "链接已复制！", ja: "リンクをコピーしました！", ko: "링크가 복사되었습니다!", hi: "लिंक कॉपी हो गया!", tr: "Bağlantı kopyalandı!", it: "Link copiato!", pl: "Link skopiowany!", nl: "Link gekopieerd!", sv: "Länk kopierad!", th: "คัดลอกลิงก์แล้ว!", vi: "Đã sao chép liên kết!", uk: "Посилання скопійовано!" },
+  "lobby.copyFailed": { en: "Failed to copy", he: "ההעתקה נכשלה", ar: "فشل النسخ", es: "Error al copiar", fr: "Échec de la copie", de: "Kopieren fehlgeschlagen", pt: "Falha ao copiar", ru: "Ошибка копирования", zh: "复制失败", ja: "コピーに失敗しました", ko: "복사 실패", hi: "कॉपी विफल", tr: "Kopyalama başarısız", it: "Copia fallita", pl: "Kopiowanie nie powiodło się", nl: "Kopiëren mislukt", sv: "Kopiering misslyckades", th: "คัดลอกล้มเหลว", vi: "Sao chép thất bại", uk: "Помилка копіювання" },
 
   // Matchmaking
-  "matchmaking.searching": { en: "Searching", he: "מחפש" },
-  "matchmaking.finding": { en: "Finding players around the world...", he: "...מחפש שחקנים ברחבי העולם" },
-  "matchmaking.cancel": { en: "Cancel", he: "ביטול" },
+  "matchmaking.searching": { en: "Searching", he: "מחפש", ar: "جارٍ البحث", es: "Buscando", fr: "Recherche", de: "Suche", pt: "Procurando", ru: "Поиск", zh: "搜索中", ja: "検索中", ko: "검색 중", hi: "खोज रहा है", tr: "Aranıyor", it: "Ricerca", pl: "Szukam", nl: "Zoeken", sv: "Söker", th: "กำลังค้นหา", vi: "Đang tìm", uk: "Пошук" },
+  "matchmaking.finding": { en: "Finding players around the world...", he: "...מחפש שחקנים ברחבי העולם", ar: "...البحث عن لاعبين حول العالم", es: "Buscando jugadores en el mundo...", fr: "Recherche de joueurs dans le monde...", de: "Spieler weltweit finden...", pt: "Encontrando jogadores pelo mundo...", ru: "Поиск игроков по всему миру...", zh: "正在全球寻找玩家...", ja: "世界中のプレイヤーを探しています...", ko: "전 세계 플레이어를 찾는 중...", hi: "दुनिया भर में खिलाड़ी खोज रहा है...", tr: "Dünya çapında oyuncu aranıyor...", it: "Cercando giocatori nel mondo...", pl: "Szukam graczy na całym świecie...", nl: "Spelers over de hele wereld zoeken...", sv: "Letar efter spelare världen över...", th: "กำลังค้นหาผู้เล่นทั่วโลก...", vi: "Đang tìm người chơi trên thế giới...", uk: "Пошук гравців по всьому світу..." },
+  "matchmaking.cancel": { en: "Cancel", he: "ביטול", ar: "إلغاء", es: "Cancelar", fr: "Annuler", de: "Abbrechen", pt: "Cancelar", ru: "Отмена", zh: "取消", ja: "キャンセル", ko: "취소", hi: "रद्द करें", tr: "İptal", it: "Annulla", pl: "Anuluj", nl: "Annuleren", sv: "Avbryt", th: "ยกเลิก", vi: "Hủy", uk: "Скасувати" },
 
   // Tutorial
-  "tutorial.title": { en: "How to Play", he: "איך משחקים" },
-  "tutorial.next": { en: "Next", he: "הבא" },
-  "tutorial.done": { en: "Got It!", he: "!הבנתי" },
-  "tutorial.step1Title": { en: "Get Your Secret Word", he: "קבל את המילה הסודית" },
-  "tutorial.step1Desc": { en: "Everyone gets the same word — except the Fake, who gets a different one. Don't reveal too much!", he: "כולם מקבלים את אותה מילה — חוץ מה-Fake, שמקבל מילה שונה. אל תחשוף יותר מדי!" },
-  "tutorial.step2Title": { en: "Give a Clever Hint", he: "תן רמז חכם" },
-  "tutorial.step2Desc": { en: "Each player gives a short hint about their word. Be clever — too obvious and you help the Fake!", he: "כל שחקן נותן רמז קצר על המילה שלו. תהיה חכם — רמז ברור מדי עוזר ל-Fake!" },
-  "tutorial.step3Title": { en: "Vote for the Fake", he: "הצבע נגד ה-Fake" },
-  "tutorial.step3Desc": { en: "Discuss the hints and vote who you think got a different word. Catch the Fake to score points!", he: "דונו על הרמזים והצביעו מי לדעתכם קיבל מילה שונה. תפסו את ה-Fake כדי לצבור נקודות!" },
-  "tutorial.step4Title": { en: "The Reveal!", he: "!החשיפה" },
-  "tutorial.step4Desc": { en: "Find out who was the Fake! If caught, the majority scores. If not — the Fake wins bonus points!", he: "גלו מי היה ה-Fake! אם נתפס — הרוב מרוויח. אם לא — ה-Fake מקבל בונוס!" },
+  "tutorial.title": { en: "How to Play", he: "איך משחקים", ar: "كيف تلعب", es: "Cómo jugar", fr: "Comment jouer", de: "Spielanleitung", pt: "Como jogar", ru: "Как играть", zh: "如何玩", ja: "遊び方", ko: "게임 방법", hi: "कैसे खेलें", tr: "Nasıl oynanır", it: "Come giocare", pl: "Jak grać", nl: "Hoe te spelen", sv: "Hur man spelar", th: "วิธีเล่น", vi: "Cách chơi", uk: "Як грати" },
+  "tutorial.next": { en: "Next", he: "הבא", ar: "التالي", es: "Siguiente", fr: "Suivant", de: "Weiter", pt: "Próximo", ru: "Далее", zh: "下一步", ja: "次へ", ko: "다음", hi: "अगला", tr: "İleri", it: "Avanti", pl: "Dalej", nl: "Volgende", sv: "Nästa", th: "ถัดไป", vi: "Tiếp", uk: "Далі" },
+  "tutorial.done": { en: "Got It!", he: "!הבנתי", ar: "!فهمت", es: "¡Entendido!", fr: "Compris !", de: "Verstanden!", pt: "Entendi!", ru: "Понятно!", zh: "明白了！", ja: "分かった！", ko: "알겠어요!", hi: "समझ गया!", tr: "Anladım!", it: "Capito!", pl: "Rozumiem!", nl: "Begrepen!", sv: "Förstått!", th: "เข้าใจแล้ว!", vi: "Hiểu rồi!", uk: "Зрозуміло!" },
+  "tutorial.step1Title": { en: "Get Your Secret Word", he: "קבל את המילה הסודית", ar: "احصل على كلمتك السرية", es: "Recibe tu palabra secreta", fr: "Recevez votre mot secret", de: "Erhalte dein Geheimwort", pt: "Receba sua palavra secreta", ru: "Получи секретное слово", zh: "获取你的秘密词", ja: "秘密の言葉を受け取ろう", ko: "비밀 단어를 받으세요", hi: "अपना गुप्त शब्द पाएं", tr: "Gizli kelimeni al", it: "Ricevi la parola segreta", pl: "Otrzymaj tajne słowo", nl: "Ontvang je geheime woord", sv: "Få ditt hemliga ord", th: "รับคำลับของคุณ", vi: "Nhận từ bí mật", uk: "Отримай секретне слово" },
+  "tutorial.step1Desc": { en: "Everyone gets the same word — except the Fake, who gets a different one. Don't reveal too much!", he: "כולם מקבלים את אותה מילה — חוץ מה-Fake, שמקבל מילה שונה. אל תחשוף יותר מדי!", ar: "الجميع يحصل على نفس الكلمة — باستثناء المزيف الذي يحصل على كلمة مختلفة. لا تكشف كثيراً!", es: "Todos reciben la misma palabra — excepto el Impostor. ¡No reveles demasiado!", fr: "Tout le monde reçoit le même mot — sauf l'Imposteur. Ne révélez pas trop !", de: "Alle bekommen dasselbe Wort — außer der Faker. Verrate nicht zu viel!", pt: "Todos recebem a mesma palavra — exceto o Impostor. Não revele demais!", ru: "Все получают одно слово — кроме Фейка. Не раскрывай слишком много!", zh: "除了Fake之外所有人都得到相同的词。别透露太多！", ja: "Fake以外は全員同じ言葉。あまり明かさないで！", ko: "Fake를 제외한 모든 사람이 같은 단어를 받습니다. 너무 많이 드러내지 마세요!", hi: "Fake को छोड़कर सभी को एक ही शब्द मिलता है। ज़्यादा न बताएं!", tr: "Sahtekar hariç herkes aynı kelimeyi alır. Fazla açık verme!", it: "Tutti ricevono la stessa parola — tranne il Fake. Non rivelare troppo!", pl: "Wszyscy dostają to samo słowo — oprócz Fake'a. Nie zdradzaj za dużo!", nl: "Iedereen krijgt hetzelfde woord — behalve de Faker. Verklap niet te veel!", sv: "Alla får samma ord — utom Fake. Avslöja inte för mycket!", th: "ทุกคนได้คำเดียวกัน ยกเว้น Fake อย่าเปิดเผยมากเกินไป!", vi: "Mọi người nhận cùng một từ — trừ Fake. Đừng tiết lộ quá nhiều!", uk: "Всі отримують одне слово — крім Фейка. Не розкривай занадто багато!" },
+  "tutorial.step2Title": { en: "Give a Clever Hint", he: "תן רמז חכם", ar: "أعطِ تلميحاً ذكياً", es: "Da una pista ingeniosa", fr: "Donnez un indice malin", de: "Gib einen cleveren Hinweis", pt: "Dê uma dica esperta", ru: "Дай хитрую подсказку", zh: "给出聪明的提示", ja: "賢いヒントを出そう", ko: "영리한 힌트를 주세요", hi: "एक चतुर संकेत दें", tr: "Akıllı bir ipucu ver", it: "Dai un indizio furbo", pl: "Daj sprytną wskazówkę", nl: "Geef een slimme hint", sv: "Ge en smart ledtråd", th: "ให้คำใบ้อย่างฉลาด", vi: "Đưa ra gợi ý thông minh", uk: "Дай хитру підказку" },
+  "tutorial.step2Desc": { en: "Each player gives a short hint about their word. Be clever — too obvious and you help the Fake!", he: "כל שחקן נותן רמז קצר על המילה שלו. תהיה חכם — רמז ברור מדי עוזר ל-Fake!", ar: "كل لاعب يعطي تلميحاً قصيراً. كن ذكياً — واضح جداً يساعد المزيف!", es: "Cada jugador da una pista corta. ¡Sé ingenioso — si es muy obvio ayudas al Impostor!", fr: "Chaque joueur donne un indice court. Soyez malin — trop évident et vous aidez l'Imposteur !", de: "Jeder gibt einen kurzen Hinweis. Sei clever — zu offensichtlich hilft dem Faker!", pt: "Cada jogador dá uma dica curta. Seja esperto — muito óbvio ajuda o Impostor!", ru: "Каждый даёт короткую подсказку. Будь хитрым — слишком очевидно поможет Фейку!", zh: "每个玩家给出简短提示。要聪明——太明显会帮助Fake！", ja: "各プレイヤーが短いヒントを出します。賢く——明らかすぎるとFakeを助けてしまう！", ko: "각 플레이어가 짧은 힌트를 줍니다. 영리하게 — 너무 명확하면 Fake를 도와요!", hi: "हर खिलाड़ी छोटा संकेत देता है। चतुर रहें — बहुत स्पष्ट होने से Fake को मदद मिलती है!", tr: "Her oyuncu kısa bir ipucu verir. Akıllı ol — çok bariz olursan sahtekara yardım edersin!", it: "Ogni giocatore dà un indizio breve. Sii furbo — troppo ovvio aiuta il Fake!", pl: "Każdy gracz daje krótką wskazówkę. Bądź sprytny — zbyt oczywiste pomaga Fake'owi!", nl: "Elke speler geeft een korte hint. Wees slim — te duidelijk helpt de Faker!", sv: "Varje spelare ger en kort ledtråd. Var smart — för uppenbart hjälper Fake!", th: "ผู้เล่นแต่ละคนให้คำใบ้สั้นๆ ฉลาดไว้ — ชัดเจนเกินไปจะช่วย Fake!", vi: "Mỗi người chơi đưa gợi ý ngắn. Hãy khéo léo — quá rõ ràng sẽ giúp Fake!", uk: "Кожен гравець дає коротку підказку. Будь хитрим — надто очевидно допоможе Фейку!" },
+  "tutorial.step3Title": { en: "Vote for the Fake", he: "הצבע נגד ה-Fake", ar: "صوّت ضد المزيف", es: "Vota al Impostor", fr: "Votez l'Imposteur", de: "Stimme für den Faker", pt: "Vote no Impostor", ru: "Голосуй за Фейка", zh: "投票给Fake", ja: "Fakeに投票", ko: "Fake에게 투표", hi: "Fake के खिलाफ वोट करें", tr: "Sahtekarı oyla", it: "Vota il Fake", pl: "Zagłosuj na Fake'a", nl: "Stem op de Faker", sv: "Rösta på Fake", th: "โหวตหา Fake", vi: "Bình chọn Fake", uk: "Голосуй за Фейка" },
+  "tutorial.step3Desc": { en: "Discuss the hints and vote who you think got a different word. Catch the Fake to score points!", he: "דונו על הרמזים והצביעו מי לדעתכם קיבל מילה שונה. תפסו את ה-Fake כדי לצבור נקודות!", ar: "ناقشوا التلميحات وصوّتوا لمن تعتقدون أنه حصل على كلمة مختلفة. أمسكوا بالمزيف لتسجيل النقاط!", es: "Discutan las pistas y voten. ¡Atrapen al Impostor para ganar puntos!", fr: "Discutez des indices et votez. Attrapez l'Imposteur pour marquer des points !", de: "Diskutiert die Hinweise und stimmt ab. Fangt den Faker für Punkte!", pt: "Discutam as dicas e votem. Peguem o Impostor para pontuar!", ru: "Обсудите подсказки и проголосуйте. Поймайте Фейка, чтобы набрать очки!", zh: "讨论提示并投票。抓住Fake得分！", ja: "ヒントを議論して投票。Fakeを捕まえてポイントを獲得！", ko: "힌트를 토론하고 투표하세요. Fake를 잡아서 점수를 얻으세요!", hi: "संकेतों पर चर्चा करें और वोट करें। Fake को पकड़कर अंक कमाएं!", tr: "İpuçlarını tartışın ve oy verin. Sahtekarı yakalayın ve puan kazanın!", it: "Discutete gli indizi e votate. Catturate il Fake per fare punti!", pl: "Dyskutujcie o wskazówkach i głosujcie. Złapcie Fake'a, żeby zdobyć punkty!", nl: "Bespreek de hints en stem. Vang de Faker voor punten!", sv: "Diskutera ledtrådarna och rösta. Fånga Fake för poäng!", th: "อภิปรายคำใบ้และโหวต จับ Fake ได้คะแนน!", vi: "Thảo luận gợi ý và bình chọn. Bắt Fake để ghi điểm!", uk: "Обговоріть підказки та проголосуйте. Зловіть Фейка, щоб набрати очки!" },
+  "tutorial.step4Title": { en: "The Reveal!", he: "!החשיפה", ar: "!الكشف", es: "¡La Revelación!", fr: "La Révélation !", de: "Die Enthüllung!", pt: "A Revelação!", ru: "Разоблачение!", zh: "揭晓！", ja: "正体判明！", ko: "공개!", hi: "खुलासा!", tr: "Açığa Çıkma!", it: "La Rivelazione!", pl: "Odkrycie!", nl: "De Onthulling!", sv: "Avslöjandet!", th: "เปิดเผย!", vi: "Tiết lộ!", uk: "Розкриття!" },
+  "tutorial.step4Desc": { en: "Find out who was the Fake! If caught, the majority scores. If not — the Fake wins bonus points!", he: "גלו מי היה ה-Fake! אם נתפס — הרוב מרוויח. אם לא — ה-Fake מקבל בונוס!", ar: "اكتشفوا من كان المزيف! إذا تم القبض عليه — الأغلبية تسجل. إذا لا — المزيف يحصل على نقاط إضافية!", es: "¡Descubran quién era el Impostor! Si lo atrapan — la mayoría puntúa. Si no — ¡el Impostor gana bonus!", fr: "Découvrez qui était l'Imposteur ! S'il est attrapé — la majorité marque. Sinon — l'Imposteur gagne un bonus !", de: "Findet heraus, wer der Faker war! Wenn gefangen — die Mehrheit punktet. Wenn nicht — der Faker bekommt Bonus!", pt: "Descubram quem era o Impostor! Se pego — a maioria pontua. Se não — o Impostor ganha bônus!", ru: "Узнайте, кто был Фейком! Если пойман — большинство получает очки. Если нет — Фейк получает бонус!", zh: "找出谁是Fake！如果被抓——多数人得分。如果没有——Fake获得奖励！", ja: "Fakeが誰だったか判明！捕まれば多数派が得点。逃げればFakeにボーナス！", ko: "누가 Fake였는지 확인! 잡으면 다수가 점수를 얻고, 못 잡으면 Fake가 보너스!", hi: "पता लगाएं कौन Fake था! अगर पकड़ा गया — बहुमत को अंक। अगर नहीं — Fake को बोनस!", tr: "Sahtekarın kim olduğunu öğrenin! Yakalanırsa — çoğunluk puan kazanır. Yakalanmazsa — sahtekar bonus kazanır!", it: "Scoprite chi era il Fake! Se catturato — la maggioranza segna. Altrimenti — il Fake vince bonus!", pl: "Odkryjcie, kto był Fake'iem! Jeśli złapany — większość zdobywa punkty. Jeśli nie — Fake dostaje bonus!", nl: "Ontdek wie de Faker was! Als gevangen — de meerderheid scoort. Zo niet — de Faker wint bonus!", sv: "Ta reda på vem som var Fake! Om fångad — majoriteten poängterar. Annars — Fake vinner bonus!", th: "ค้นหาว่าใครเป็น Fake! ถ้าจับได้ — ฝ่ายส่วนใหญ่ได้คะแนน ถ้าไม่ — Fake ได้โบนัส!", vi: "Tìm ra ai là Fake! Nếu bắt được — đa số ghi điểm. Nếu không — Fake được thưởng!", uk: "Дізнайтеся, хто був Фейком! Якщо спійманий — більшість отримує очки. Якщо ні — Фейк отримує бонус!" },
 
   // Game
-  "game.yourSecret": { en: "This is your secret", he: "זה הסוד שלך" },
-  "game.dontExpose": { en: "Don't expose yourself too early!", he: "!אל תיחשף מדי מוקדם" },
-  "game.youAreFake": { en: "You are the Fake!", he: "!אתה ה-Fake" },
-  "game.noWordForYou": { en: "You don't know the word!", he: "!אתה לא יודע מה המילה" },
-  "game.fakeInstruction": { en: "Blend in! Give hints that don't reveal you don't know the word.", he: "!השתלב! תן רמזים שלא חושפים שאתה לא יודע את המילה" },
-  "game.fakeHintTip": { en: "Be vague — don't get caught!", he: "!תהיה מעורפל — אל תיתפס" },
-  "game.hintTip": { en: "Be specific but not too obvious!", he: "!תהיה ספציפי אבל לא מדי ברור" },
-  "game.fakeHintPlaceholder": { en: "Bluff a hint...", he: "...בלוף רמז" },
-  "game.giveHint": { en: "Give a clever hint", he: "תן רמז חכם" },
-  "game.whoIsDifferent": { en: "Who got something different?", he: "?מי לדעתך קיבל משהו שונה" },
-  "game.reveal": { en: "The truth is revealed!", he: "!האמת נחשפת" },
-  "game.wasFake": { en: "was the Fake!", he: "!היה ה-Fake" },
-  "game.survived": { en: "The Fake survived!", he: "!ה-Fake שרד" },
-  "game.theWordWas": { en: "The word was", he: "המילה הייתה" },
-  "game.youCaughtFake": { en: "You caught the Fake!", he: "!תפסת את ה-Fake" },
-  "game.fakeSurvived": { en: "The Fake got away!", he: "!ה-Fake ברח" },
-  "game.round": { en: "Round", he: "סיבוב" },
-  "game.score": { en: "Score", he: "ניקוד" },
-  "game.vote": { en: "Vote", he: "הצבע" },
-  "game.discuss": { en: "Discussion", he: "דיון" },
-  "game.nextRound": { en: "Next Round", he: "סיבוב הבא" },
-  "game.results": { en: "Results", he: "תוצאות" },
-  "game.waitingForPlayers": { en: "Waiting for all players...", he: "...ממתין לכל השחקנים" },
-  "game.waitingForVotes": { en: "Waiting for all votes...", he: "...ממתין לכל ההצבעות" },
-  "game.rematch": { en: "Rematch", he: "משחק חוזר" },
-  "game.backToLobby": { en: "Back to Lobby", he: "חזרה ללובי" },
-  "game.inviteFriends": { en: "Invite Friends", he: "הזמן חברים" },
+  "game.yourSecret": { en: "This is your secret", he: "זה הסוד שלך", ar: "هذا هو سرك", es: "Este es tu secreto", fr: "C'est votre secret", de: "Das ist dein Geheimnis", pt: "Este é seu segredo", ru: "Это ваш секрет", zh: "这是你的秘密", ja: "これがあなたの秘密", ko: "이것이 당신의 비밀입니다", hi: "यह आपका रहस्य है", tr: "Bu senin sırrın", it: "Questo è il tuo segreto", pl: "To twój sekret", nl: "Dit is je geheim", sv: "Det här är din hemlighet", th: "นี่คือความลับของคุณ", vi: "Đây là bí mật của bạn", uk: "Це ваш секрет" },
+  "game.dontExpose": { en: "Don't expose yourself too early!", he: "!אל תיחשף מדי מוקדם", ar: "!لا تكشف عن نفسك مبكراً", es: "¡No te expongas demasiado pronto!", fr: "Ne vous exposez pas trop tôt !", de: "Enthülle dich nicht zu früh!", pt: "Não se exponha cedo demais!", ru: "Не раскрывайся слишком рано!", zh: "别太早暴露自己！", ja: "早すぎる暴露に注意！", ko: "너무 일찍 드러내지 마세요!", hi: "बहुत जल्दी मत खुलें!", tr: "Kendini çok erken açığa vurma!", it: "Non esporti troppo presto!", pl: "Nie ujawniaj się za wcześnie!", nl: "Onthul jezelf niet te vroeg!", sv: "Avslöja dig inte för tidigt!", th: "อย่าเปิดเผยตัวเร็วเกินไป!", vi: "Đừng lộ mình quá sớm!", uk: "Не розкривайся занадто рано!" },
+  "game.youAreFake": { en: "You are the Fake!", he: "!אתה ה-Fake", ar: "!أنت المزيف", es: "¡Eres el Impostor!", fr: "Vous êtes l'Imposteur !", de: "Du bist der Faker!", pt: "Você é o Impostor!", ru: "Вы — Фейк!", zh: "你是Fake！", ja: "あなたはFakeです！", ko: "당신이 Fake입니다!", hi: "आप Fake हैं!", tr: "Sen sahtekarsın!", it: "Sei il Fake!", pl: "Jesteś Fake'iem!", nl: "Jij bent de Faker!", sv: "Du är Fake!", th: "คุณคือ Fake!", vi: "Bạn là Fake!", uk: "Ви — Фейк!" },
+  "game.noWordForYou": { en: "You don't know the word!", he: "!אתה לא יודע מה המילה", ar: "!أنت لا تعرف الكلمة", es: "¡No conoces la palabra!", fr: "Vous ne connaissez pas le mot !", de: "Du kennst das Wort nicht!", pt: "Você não sabe a palavra!", ru: "Вы не знаете слово!", zh: "你不知道这个词！", ja: "あなたは言葉を知りません！", ko: "당신은 단어를 모릅니다!", hi: "आपको शब्द नहीं पता!", tr: "Kelimeyi bilmiyorsun!", it: "Non conosci la parola!", pl: "Nie znasz słowa!", nl: "Je kent het woord niet!", sv: "Du vet inte ordet!", th: "คุณไม่รู้คำ!", vi: "Bạn không biết từ đó!", uk: "Ви не знаєте слово!" },
+  "game.fakeInstruction": { en: "Blend in! Give hints that don't reveal you don't know the word.", he: "!השתלב! תן רמזים שלא חושפים שאתה לא יודע את המילה", ar: "!اندمج! أعطِ تلميحات لا تكشف أنك لا تعرف الكلمة", es: "¡Mézclate! Da pistas que no revelen que no conoces la palabra.", fr: "Fondez-vous ! Donnez des indices qui ne révèlent pas que vous ne connaissez pas le mot.", de: "Misch dich unter! Gib Hinweise, die nicht verraten, dass du das Wort nicht kennst.", pt: "Misture-se! Dê dicas que não revelem que não sabe a palavra.", ru: "Замаскируйся! Давай подсказки, не выдающие, что ты не знаешь слово.", zh: "融入其中！给出不会暴露你不知道这个词的提示。", ja: "溶け込め！言葉を知らないことがバレないヒントを出そう。", ko: "녹아들어! 단어를 모른다는 걸 드러내지 않는 힌트를 주세요.", hi: "घुलमिल जाएं! ऐसे संकेत दें जो यह न बताएं कि आपको शब्द नहीं पता।", tr: "Karış! Kelimeyi bilmediğini belli etmeyen ipuçları ver.", it: "Mimetizzati! Dai indizi che non rivelino che non conosci la parola.", pl: "Wtop się! Dawaj wskazówki, które nie zdradzą, że nie znasz słowa.", nl: "Ga op in de groep! Geef hints die niet onthullen dat je het woord niet kent.", sv: "Smält in! Ge ledtrådar som inte avslöjar att du inte vet ordet.", th: "กลมกลืน! ให้คำใบ้ที่ไม่เปิดเผยว่าคุณไม่รู้คำ", vi: "Hòa nhập! Đưa gợi ý không tiết lộ bạn không biết từ đó.", uk: "Замаскуйся! Давай підказки, що не видають, що ти не знаєш слово." },
+  "game.fakeHintTip": { en: "Be vague — don't get caught!", he: "!תהיה מעורפל — אל תיתפס", ar: "!كن غامضاً — لا تُمسك", es: "¡Sé vago — no te atrapen!", fr: "Soyez vague — ne vous faites pas prendre !", de: "Sei vage — lass dich nicht erwischen!", pt: "Seja vago — não se deixe pegar!", ru: "Будь расплывчатым — не попадись!", zh: "含糊一点——别被抓住！", ja: "曖昧に——バレるな！", ko: "모호하게 — 잡히지 마세요!", hi: "अस्पष्ट रहें — पकड़े मत जाओ!", tr: "Belirsiz ol — yakalanma!", it: "Sii vago — non farti prendere!", pl: "Bądź mglisty — nie daj się złapać!", nl: "Wees vaag — laat je niet betrappen!", sv: "Var vag — åk inte fast!", th: "คลุมเครือไว้ — อย่าให้จับได้!", vi: "Mơ hồ đi — đừng để bị bắt!", uk: "Будь невизначеним — не попадися!" },
+  "game.hintTip": { en: "Be specific but not too obvious!", he: "!תהיה ספציפי אבל לא מדי ברור", ar: "!كن محدداً ولكن ليس واضحاً جداً", es: "¡Sé específico pero no muy obvio!", fr: "Soyez précis mais pas trop évident !", de: "Sei spezifisch, aber nicht zu offensichtlich!", pt: "Seja específico mas não muito óbvio!", ru: "Будь конкретным, но не слишком очевидным!", zh: "具体但别太明显！", ja: "具体的に、でも明確すぎないように！", ko: "구체적이되 너무 명확하지 않게!", hi: "विशिष्ट रहें लेकिन बहुत स्पष्ट नहीं!", tr: "Spesifik ol ama çok bariz olma!", it: "Sii specifico ma non troppo ovvio!", pl: "Bądź konkretny, ale nie za oczywisty!", nl: "Wees specifiek maar niet te duidelijk!", sv: "Var specifik men inte för uppenbar!", th: "เจาะจงแต่อย่าชัดเจนเกินไป!", vi: "Cụ thể nhưng đừng quá rõ ràng!", uk: "Будь конкретним, але не занадто очевидним!" },
+  "game.fakeHintPlaceholder": { en: "Bluff a hint...", he: "...בלוף רמז", ar: "...بلوف تلميح", es: "Haz un bluff...", fr: "Bluffez un indice...", de: "Bluffe einen Hinweis...", pt: "Blefe uma dica...", ru: "Блефуй подсказку...", zh: "虚张声势...", ja: "ブラフのヒント...", ko: "허세 힌트...", hi: "ब्लफ़ संकेत...", tr: "Blöf ipucu...", it: "Bluffa un indizio...", pl: "Blefuj wskazówkę...", nl: "Bluf een hint...", sv: "Bluffa en ledtråd...", th: "บลัฟคำใบ้...", vi: "Lừa gợi ý...", uk: "Блефуй підказку..." },
+  "game.giveHint": { en: "Give a clever hint", he: "תן רמז חכם", ar: "أعطِ تلميحاً ذكياً", es: "Da una pista ingeniosa", fr: "Donnez un indice malin", de: "Gib einen cleveren Hinweis", pt: "Dê uma dica esperta", ru: "Дай хитрую подсказку", zh: "给出聪明的提示", ja: "賢いヒントを出して", ko: "영리한 힌트를 주세요", hi: "एक चतुर संकेत दें", tr: "Akıllı bir ipucu ver", it: "Dai un indizio furbo", pl: "Daj sprytną wskazówkę", nl: "Geef een slimme hint", sv: "Ge en smart ledtråd", th: "ให้คำใบ้อย่างฉลาด", vi: "Đưa gợi ý thông minh", uk: "Дай хитру підказку" },
+  "game.whoIsDifferent": { en: "Who got something different?", he: "?מי לדעתך קיבל משהו שונה", ar: "من حصل على شيء مختلف؟", es: "¿Quién recibió algo diferente?", fr: "Qui a reçu quelque chose de différent ?", de: "Wer hat etwas anderes bekommen?", pt: "Quem recebeu algo diferente?", ru: "Кто получил что-то другое?", zh: "谁得到了不同的东西？", ja: "誰が違うものを受け取った？", ko: "누가 다른 것을 받았나요?", hi: "किसे कुछ अलग मिला?", tr: "Kim farklı bir şey aldı?", it: "Chi ha ricevuto qualcosa di diverso?", pl: "Kto dostał coś innego?", nl: "Wie heeft iets anders gekregen?", sv: "Vem fick något annorlunda?", th: "ใครได้อะไรที่แตกต่าง?", vi: "Ai nhận được thứ khác biệt?", uk: "Хто отримав щось інше?" },
+  "game.reveal": { en: "The truth is revealed!", he: "!האמת נחשפת", ar: "!تم كشف الحقيقة", es: "¡La verdad se revela!", fr: "La vérité est révélée !", de: "Die Wahrheit wird enthüllt!", pt: "A verdade é revelada!", ru: "Правда раскрыта!", zh: "真相揭晓！", ja: "真実が明らかに！", ko: "진실이 밝혀졌습니다!", hi: "सच सामने आ गया!", tr: "Gerçek ortaya çıktı!", it: "La verità è rivelata!", pl: "Prawda ujawniona!", nl: "De waarheid is onthuld!", sv: "Sanningen avslöjas!", th: "ความจริงถูกเปิดเผย!", vi: "Sự thật được tiết lộ!", uk: "Правду розкрито!" },
+  "game.wasFake": { en: "was the Fake!", he: "!היה ה-Fake", ar: "!كان المزيف", es: "¡era el Impostor!", fr: "était l'Imposteur !", de: "war der Faker!", pt: "era o Impostor!", ru: "был Фейком!", zh: "是Fake！", ja: "がFakeでした！", ko: "가 Fake였습니다!", hi: "Fake था!", tr: "sahtekardı!", it: "era il Fake!", pl: "był Fake'iem!", nl: "was de Faker!", sv: "var Fake!", th: "คือ Fake!", vi: "là Fake!", uk: "був Фейком!" },
+  "game.survived": { en: "The Fake survived!", he: "!ה-Fake שרד", ar: "!نجا المزيف", es: "¡El Impostor sobrevivió!", fr: "L'Imposteur a survécu !", de: "Der Faker hat überlebt!", pt: "O Impostor sobreviveu!", ru: "Фейк выжил!", zh: "Fake存活了！", ja: "Fakeが生き残った！", ko: "Fake가 살아남았습니다!", hi: "Fake बच गया!", tr: "Sahtekar hayatta kaldı!", it: "Il Fake è sopravvissuto!", pl: "Fake przetrwał!", nl: "De Faker heeft overleefd!", sv: "Fake överlevde!", th: "Fake รอดชีวิต!", vi: "Fake sống sót!", uk: "Фейк вижив!" },
+  "game.theWordWas": { en: "The word was", he: "המילה הייתה", ar: "الكلمة كانت", es: "La palabra era", fr: "Le mot était", de: "Das Wort war", pt: "A palavra era", ru: "Слово было", zh: "词是", ja: "言葉は", ko: "단어는", hi: "शब्द था", tr: "Kelime", it: "La parola era", pl: "Słowo to", nl: "Het woord was", sv: "Ordet var", th: "คำคือ", vi: "Từ đó là", uk: "Слово було" },
+  "game.youCaughtFake": { en: "You caught the Fake!", he: "!תפסת את ה-Fake", ar: "!لقد أمسكت بالمزيف", es: "¡Atrapaste al Impostor!", fr: "Vous avez attrapé l'Imposteur !", de: "Du hast den Faker gefangen!", pt: "Você pegou o Impostor!", ru: "Вы поймали Фейка!", zh: "你抓住了Fake！", ja: "Fakeを捕まえた！", ko: "Fake를 잡았습니다!", hi: "आपने Fake को पकड़ लिया!", tr: "Sahtekarı yakaladın!", it: "Hai catturato il Fake!", pl: "Złapałeś Fake'a!", nl: "Je hebt de Faker gevangen!", sv: "Du fångade Fake!", th: "คุณจับ Fake ได้!", vi: "Bạn bắt được Fake!", uk: "Ви зловили Фейка!" },
+  "game.fakeSurvived": { en: "The Fake got away!", he: "!ה-Fake ברח", ar: "!هرب المزيف", es: "¡El Impostor escapó!", fr: "L'Imposteur s'est échappé !", de: "Der Faker ist entkommen!", pt: "O Impostor escapou!", ru: "Фейк сбежал!", zh: "Fake跑掉了！", ja: "Fakeが逃げた！", ko: "Fake가 도망쳤습니다!", hi: "Fake भाग गया!", tr: "Sahtekar kaçtı!", it: "Il Fake è scappato!", pl: "Fake uciekł!", nl: "De Faker is ontsnapt!", sv: "Fake lyckades fly!", th: "Fake หนีไปแล้ว!", vi: "Fake đã trốn thoát!", uk: "Фейк втік!" },
+  "game.round": { en: "Round", he: "סיבוב", ar: "جولة", es: "Ronda", fr: "Manche", de: "Runde", pt: "Rodada", ru: "Раунд", zh: "回合", ja: "ラウンド", ko: "라운드", hi: "राउंड", tr: "Tur", it: "Round", pl: "Runda", nl: "Ronde", sv: "Runda", th: "รอบ", vi: "Vòng", uk: "Раунд" },
+  "game.score": { en: "Score", he: "ניקוד", ar: "النتيجة", es: "Puntuación", fr: "Score", de: "Punktzahl", pt: "Pontuação", ru: "Счёт", zh: "分数", ja: "スコア", ko: "점수", hi: "स्कोर", tr: "Skor", it: "Punteggio", pl: "Wynik", nl: "Score", sv: "Poäng", th: "คะแนน", vi: "Điểm", uk: "Рахунок" },
+  "game.vote": { en: "Vote", he: "הצבע", ar: "صوّت", es: "Votar", fr: "Voter", de: "Abstimmen", pt: "Votar", ru: "Голосовать", zh: "投票", ja: "投票", ko: "투표", hi: "वोट करें", tr: "Oyla", it: "Vota", pl: "Głosuj", nl: "Stem", sv: "Rösta", th: "โหวต", vi: "Bình chọn", uk: "Голосувати" },
+  "game.discuss": { en: "Discussion", he: "דיון", ar: "مناقشة", es: "Discusión", fr: "Discussion", de: "Diskussion", pt: "Discussão", ru: "Обсуждение", zh: "讨论", ja: "議論", ko: "토론", hi: "चर्चा", tr: "Tartışma", it: "Discussione", pl: "Dyskusja", nl: "Discussie", sv: "Diskussion", th: "อภิปราย", vi: "Thảo luận", uk: "Обговорення" },
+  "game.nextRound": { en: "Next Round", he: "סיבוב הבא", ar: "الجولة التالية", es: "Siguiente ronda", fr: "Manche suivante", de: "Nächste Runde", pt: "Próxima rodada", ru: "Следующий раунд", zh: "下一回合", ja: "次のラウンド", ko: "다음 라운드", hi: "अगला राउंड", tr: "Sonraki tur", it: "Prossimo round", pl: "Następna runda", nl: "Volgende ronde", sv: "Nästa runda", th: "รอบถัดไป", vi: "Vòng tiếp theo", uk: "Наступний раунд" },
+  "game.results": { en: "Results", he: "תוצאות", ar: "النتائج", es: "Resultados", fr: "Résultats", de: "Ergebnisse", pt: "Resultados", ru: "Результаты", zh: "结果", ja: "結果", ko: "결과", hi: "परिणाम", tr: "Sonuçlar", it: "Risultati", pl: "Wyniki", nl: "Resultaten", sv: "Resultat", th: "ผลลัพธ์", vi: "Kết quả", uk: "Результати" },
+  "game.waitingForPlayers": { en: "Waiting for all players...", he: "...ממתין לכל השחקנים", ar: "...في انتظار جميع اللاعبين", es: "Esperando a todos...", fr: "En attente de tous les joueurs...", de: "Warte auf alle Spieler...", pt: "Aguardando todos...", ru: "Ожидание всех игроков...", zh: "等待所有玩家...", ja: "全プレイヤーを待っています...", ko: "모든 플레이어 대기 중...", hi: "सभी खिलाड़ियों की प्रतीक्षा...", tr: "Tüm oyuncular bekleniyor...", it: "In attesa di tutti...", pl: "Czekam na wszystkich...", nl: "Wachten op alle spelers...", sv: "Väntar på alla...", th: "รอผู้เล่นทุกคน...", vi: "Đang chờ mọi người...", uk: "Очікування всіх гравців..." },
+  "game.waitingForVotes": { en: "Waiting for all votes...", he: "...ממתין לכל ההצבעות", ar: "...في انتظار جميع الأصوات", es: "Esperando todos los votos...", fr: "En attente de tous les votes...", de: "Warte auf alle Stimmen...", pt: "Aguardando todos os votos...", ru: "Ожидание всех голосов...", zh: "等待所有投票...", ja: "全投票を待っています...", ko: "모든 투표 대기 중...", hi: "सभी वोटों की प्रतीक्षा...", tr: "Tüm oylar bekleniyor...", it: "In attesa di tutti i voti...", pl: "Czekam na wszystkie głosy...", nl: "Wachten op alle stemmen...", sv: "Väntar på alla röster...", th: "รอการโหวตทั้งหมด...", vi: "Đang chờ tất cả phiếu bầu...", uk: "Очікування всіх голосів..." },
+  "game.rematch": { en: "Rematch", he: "משחק חוזר", ar: "إعادة المباراة", es: "Revancha", fr: "Revanche", de: "Revanche", pt: "Revanche", ru: "Реванш", zh: "重赛", ja: "リマッチ", ko: "재경기", hi: "रीमैच", tr: "Rövanş", it: "Rivincita", pl: "Rewanż", nl: "Herkansing", sv: "Returmatch", th: "แข่งใหม่", vi: "Đấu lại", uk: "Реванш" },
+  "game.backToLobby": { en: "Back to Lobby", he: "חזרה ללובי", ar: "العودة إلى اللوبي", es: "Volver al vestíbulo", fr: "Retour au salon", de: "Zurück zur Lobby", pt: "Voltar ao lobby", ru: "Вернуться в лобби", zh: "返回大厅", ja: "ロビーに戻る", ko: "로비로 돌아가기", hi: "लॉबी में वापस", tr: "Lobiye dön", it: "Torna alla lobby", pl: "Wróć do lobby", nl: "Terug naar lobby", sv: "Tillbaka till lobby", th: "กลับไปล็อบบี้", vi: "Quay lại phòng chờ", uk: "Повернутися до лобі" },
+  "game.inviteFriends": { en: "Invite Friends", he: "הזמן חברים", ar: "دعوة أصدقاء", es: "Invitar amigos", fr: "Inviter des amis", de: "Freunde einladen", pt: "Convidar amigos", ru: "Пригласить друзей", zh: "邀请好友", ja: "友達を招待", ko: "친구 초대", hi: "दोस्तों को आमंत्रित करें", tr: "Arkadaşları davet et", it: "Invita amici", pl: "Zaproś znajomych", nl: "Vrienden uitnodigen", sv: "Bjud in vänner", th: "เชิญเพื่อน", vi: "Mời bạn bè", uk: "Запросити друзів" },
 
   // General
-  "general.language": { en: "עברית", he: "English" },
-  "general.players": { en: "Players", he: "שחקנים" },
+  "general.language": { en: "Language", he: "שפה", ar: "اللغة", es: "Idioma", fr: "Langue", de: "Sprache", pt: "Idioma", ru: "Язык", zh: "语言", ja: "言語", ko: "언어", hi: "भाषा", tr: "Dil", it: "Lingua", pl: "Język", nl: "Taal", sv: "Språk", th: "ภาษา", vi: "Ngôn ngữ", uk: "Мова" },
+  "general.players": { en: "Players", he: "שחקנים", ar: "لاعبون", es: "Jugadores", fr: "Joueurs", de: "Spieler", pt: "Jogadores", ru: "Игроки", zh: "玩家", ja: "プレイヤー", ko: "플레이어", hi: "खिलाड़ी", tr: "Oyuncular", it: "Giocatori", pl: "Gracze", nl: "Spelers", sv: "Spelare", th: "ผู้เล่น", vi: "Người chơi", uk: "Гравці" },
 };
 
 interface LanguageContextValue {
   language: Language;
+  setLanguage: (lang: Language) => void;
   toggleLanguage: () => void;
   t: (key: string) => string;
   dir: "ltr" | "rtl";
@@ -168,25 +245,34 @@ interface LanguageContextValue {
 const LanguageContext = createContext<LanguageContextValue | null>(null);
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguage] = useState<Language>("en");
+  const [language, setLanguage] = useState<Language>(() => {
+    const saved = localStorage.getItem("fif-lang");
+    return (saved as Language) || "en";
+  });
+
+  const handleSetLanguage = useCallback((lang: Language) => {
+    setLanguage(lang);
+    localStorage.setItem("fif-lang", lang);
+  }, []);
 
   const toggleLanguage = useCallback(() => {
-    setLanguage((prev) => (prev === "en" ? "he" : "en"));
-  }, []);
+    handleSetLanguage(language === "en" ? "he" : "en");
+  }, [language, handleSetLanguage]);
 
   const t = useCallback(
     (key: string) => {
       const entry = translations[key];
       if (!entry) return key;
-      return entry[language];
+      return entry[language] || entry["en"] || key;
     },
     [language],
   );
 
-  const dir = language === "he" ? "rtl" : "ltr";
+  const langOption = LANGUAGES.find((l) => l.code === language);
+  const dir = langOption?.dir || "ltr";
 
   return (
-    <LanguageContext.Provider value={{ language, toggleLanguage, t, dir }}>
+    <LanguageContext.Provider value={{ language, setLanguage: handleSetLanguage, toggleLanguage, t, dir }}>
       <div dir={dir}>{children}</div>
     </LanguageContext.Provider>
   );
