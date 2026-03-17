@@ -44,18 +44,15 @@ Deno.serve(async (req) => {
       }
     }
 
-    // 2) Try authenticated user via getClaims
+    // 2) Try authenticated user via auth token
     if (!playerId) {
       const authHeader = req.headers.get("authorization");
       if (authHeader?.startsWith("Bearer ")) {
         const token = authHeader.replace("Bearer ", "");
-        const userClient = createClient(supabaseUrl, anonKey, {
-          global: { headers: { Authorization: authHeader } },
-        });
-        const { data: claimsData, error: claimsError } = await userClient.auth.getClaims(token);
+        const { data: userData, error: userError } = await admin.auth.getUser(token);
 
-        if (!claimsError && claimsData?.claims?.sub) {
-          const userId = claimsData.claims.sub as string;
+        if (!userError && userData?.user?.id) {
+          const userId = userData.user.id;
 
           // Find player by user_id → need round to get room
           const { data: roundData } = await admin
