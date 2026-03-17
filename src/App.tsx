@@ -17,6 +17,7 @@ import ResultsScreen from "./pages/ResultsScreen";
 import AuthScreen from "./pages/AuthScreen";
 import ProfileScreen from "./pages/ProfileScreen";
 import SettingsScreen from "./pages/SettingsScreen";
+import FriendsScreen from "./pages/FriendsScreen";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
