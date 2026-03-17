@@ -37,14 +37,20 @@ const HomeScreen = () => {
       >
         <button
           className="flex items-center gap-3"
-          onClick={() => navigate("/profile")}
+          onClick={() => user ? navigate("/profile") : navigate("/auth")}
         >
           <div className="w-10 h-10 rounded-full gradient-hero flex items-center justify-center">
             <UserCircle className="w-6 h-6 text-primary-foreground" />
           </div>
           <div className="text-start">
-            <p className="font-display font-semibold text-foreground text-sm">{displayName}</p>
-            <p className="text-xs text-muted-foreground">Level {profile?.level || 1}</p>
+            {user ? (
+              <>
+                <p className="font-display font-semibold text-foreground text-sm">{displayName}</p>
+                <p className="text-xs text-muted-foreground">Level {profile?.level || 1}</p>
+              </>
+            ) : (
+              <p className="font-display font-semibold text-primary text-sm">{t("welcome.login")}</p>
+            )}
           </div>
         </button>
 
