@@ -231,6 +231,7 @@ const translations: Translations = {
   "game.inviteFriends": { en: "Invite Friends", he: "הזמן חברים", ar: "دعوة أصدقاء", es: "Invitar amigos", fr: "Inviter des amis", de: "Freunde einladen", pt: "Convidar amigos", ru: "Пригласить друзей", zh: "邀请好友", ja: "友達を招待", ko: "친구 초대", hi: "दोस्तों को आमंत्रित करें", tr: "Arkadaşları davet et", it: "Invita amici", pl: "Zaproś znajomych", nl: "Vrienden uitnodigen", sv: "Bjud in vänner", th: "เชิญเพื่อน", vi: "Mời bạn bè", uk: "Запросити друзів" },
 
   // General
+  "general.back": { en: "Back", he: "אחורה", ar: "رجوع", es: "Atrás", fr: "Retour", de: "Zurück", pt: "Voltar", ru: "Назад", zh: "返回", ja: "戻る", ko: "뒤로", hi: "वापस", tr: "Geri", it: "Indietro", pl: "Wstecz", nl: "Terug", sv: "Tillbaka", th: "กลับ", vi: "Quay lại", uk: "Назад" },
   "general.language": { en: "Language", he: "שפה", ar: "اللغة", es: "Idioma", fr: "Langue", de: "Sprache", pt: "Idioma", ru: "Язык", zh: "语言", ja: "言語", ko: "언어", hi: "भाषा", tr: "Dil", it: "Lingua", pl: "Język", nl: "Taal", sv: "Språk", th: "ภาษา", vi: "Ngôn ngữ", uk: "Мова" },
   "general.players": { en: "Players", he: "שחקנים", ar: "لاعبون", es: "Jugadores", fr: "Joueurs", de: "Spieler", pt: "Jogadores", ru: "Игроки", zh: "玩家", ja: "プレイヤー", ko: "플레이어", hi: "खिलाड़ी", tr: "Oyuncular", it: "Giocatori", pl: "Gracze", nl: "Spelers", sv: "Spelare", th: "ผู้เล่น", vi: "Người chơi", uk: "Гравці" },
 
