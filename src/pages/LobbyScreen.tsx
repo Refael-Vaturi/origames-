@@ -410,16 +410,32 @@ const LobbyScreen = () => {
                     transition={{ duration: 1.2 }}
                   />
                 )}
-                <motion.div
-                  className={cn(
-                    "w-10 h-10 rounded-full flex items-center justify-center text-primary-foreground font-display font-bold",
-                    avatarBackgrounds[i % avatarBackgrounds.length],
-                  )}
-                  animate={isNew ? { scale: [1, 1.3, 1] } : {}}
-                  transition={{ duration: 0.4, delay: 0.1 }}
-                >
-                  {player.guest_avatar || playerName[0]}
-                </motion.div>
+                {isMe(player) ? (
+                  <motion.div
+                    className={cn(
+                      "rounded-full flex items-center justify-center font-display font-bold",
+                      avatarBackgrounds[i % avatarBackgrounds.length],
+                    )}
+                    animate={isNew ? { scale: [1, 1.3, 1] } : {}}
+                    transition={{ duration: 0.4, delay: 0.1 }}
+                  >
+                    <AvatarPicker
+                      currentAvatar={getPlayerAvatar(player, i)}
+                      onSelect={handleAvatarChange}
+                    />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    className={cn(
+                      "w-10 h-10 rounded-full flex items-center justify-center text-primary-foreground font-display font-bold",
+                      avatarBackgrounds[i % avatarBackgrounds.length],
+                    )}
+                    animate={isNew ? { scale: [1, 1.3, 1] } : {}}
+                    transition={{ duration: 0.4, delay: 0.1 }}
+                  >
+                    {getPlayerAvatar(player, i)}
+                  </motion.div>
+                )}
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <span className="font-display font-semibold text-sm text-foreground">{playerName}</span>
