@@ -311,6 +311,43 @@ const LobbyScreen = () => {
     return player.profile?.display_name || "Player";
   };
 
+  const getPlayerAvatar = (player: RoomPlayer, index: number): string => {
+    if (player.guest_avatar) return player.guest_avatar;
+    return getPlayerName(player)[0];
+  };
+
+  const isMe = (player: RoomPlayer) => {
+    if (guestSession) return player.id === guestSession.playerId;
+    return user ? player.user_id === user.id : false;
+  };
+
+  const handleAvatarChange = async (emoji: string) => {
+    if (!roomId) return;
+
+    if (guestSession) {
+      // Update guest avatar via edge function or direct update
+      await supabase
+        .from("room_players")
+        .update({ guest_avatar: emoji } as Record<string, unknown>)
+        .eq("id", guestSession.playerId);
+      
+      // Update local session
+      const updated = { ...guestSession, avatar: emoji };
+      setGuestSession(updated);
+      localStorage.setItem(`guest_room_${roomCode}`, JSON.stringify(updated));
+    } else if (user) {
+      // For authenticated users, update guest_avatar on room_players for this room
+      await supabase
+        .from("room_players")
+        .update({ guest_avatar: emoji } as Record<string, unknown>)
+        .eq("room_id", roomId)
+        .eq("user_id", user.id);
+    }
+
+    // Refetch to sync
+    if (roomId) void fetchPlayers(roomId, guestSession);
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <motion.header
