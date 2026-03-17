@@ -34,6 +34,7 @@ const App = () => (
       <Sonner />
       <LanguageProvider>
         <AuthProvider>
+          <LevelUpWrapper />
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<HomeScreen />} />
