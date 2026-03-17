@@ -127,7 +127,7 @@ const LobbyScreen = () => {
 
       if (!room) {
         toast({ title: "Room not found", variant: "destructive" });
-        navigate("/home");
+        navigate("/");
         return;
       }
 
