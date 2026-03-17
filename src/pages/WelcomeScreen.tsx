@@ -8,7 +8,7 @@ import heroImage from "@/assets/hero-characters.png";
 
 const WelcomeScreen = () => {
   const navigate = useNavigate();
-  const { t, toggleLanguage } = useLanguage();
+  const { t } = useLanguage();
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center relative overflow-hidden px-4">
