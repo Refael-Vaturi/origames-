@@ -17,6 +17,7 @@ import ResultsScreen from "./pages/ResultsScreen";
 import AuthScreen from "./pages/AuthScreen";
 import ProfileScreen from "./pages/ProfileScreen";
 import SettingsScreen from "./pages/SettingsScreen";
+import FriendsScreen from "./pages/FriendsScreen";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,6 +36,7 @@ const App = () => (
               <Route path="/auth" element={<AuthScreen />} />
               <Route path="/profile" element={<ProfileScreen />} />
               <Route path="/settings" element={<SettingsScreen />} />
+              <Route path="/friends" element={<FriendsScreen />} />
               <Route path="/join" element={<JoinByCodeScreen />} />
               <Route path="/create-room" element={<CreateRoomScreen />} />
               <Route path="/lobby" element={<LobbyScreen />} />

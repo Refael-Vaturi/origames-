@@ -119,15 +119,15 @@ const HomeScreen = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
         >
-          <div className="bg-card rounded-2xl p-4 shadow-card">
+          <button onClick={() => navigate("/friends")} className="bg-card rounded-2xl p-4 shadow-card text-start hover:bg-muted transition-colors">
             <h3 className="font-display font-semibold text-sm text-foreground mb-1">{t("home.onlineFriends")}</h3>
-            <p className="text-xs text-muted-foreground">3 {t("general.players")}</p>
+            <p className="text-xs text-muted-foreground">{t("friends.title")}</p>
             <div className="flex -space-x-2 mt-2">
               {[0, 1, 2].map((i) => (
                 <div key={i} className="w-8 h-8 rounded-full border-2 border-card" style={{ background: `hsl(${120 + i * 80} 60% 60%)` }} />
               ))}
             </div>
-          </div>
+          </button>
           <div className="bg-card rounded-2xl p-4 shadow-card">
             <h3 className="font-display font-semibold text-sm text-foreground mb-1">{t("home.invites")}</h3>
             <p className="text-xs text-muted-foreground">2 pending</p>
