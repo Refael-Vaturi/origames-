@@ -263,7 +263,15 @@ const LobbyScreen = () => {
     }
 
     if (roomId) {
-      await supabase.from("rooms").update({ status: "playing" }).eq("id", roomId);
+      // Use start-round edge function which sets status to "playing" with service role
+      const { data, error } = await supabase.functions.invoke("start-round", {
+        body: { room_id: roomId, round_number: 1 },
+      });
+
+      if (error || data?.error) {
+        toast({ title: "Error starting game", variant: "destructive" });
+        return;
+      }
     }
 
     navigate("/game?room=" + roomId);
