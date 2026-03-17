@@ -104,7 +104,7 @@ const MatchmakingScreen = () => {
             variant="outline"
             size="lg"
             className="w-full"
-            onClick={() => navigate("/home")}
+            onClick={() => navigate("/")}
           >
             {t("matchmaking.cancel")}
           </Button>

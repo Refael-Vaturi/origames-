@@ -71,7 +71,7 @@ const WelcomeScreen = () => {
         <Button variant="hero" size="xl" onClick={() => navigate("/auth")}>
           {t("welcome.login")}
         </Button>
-        <Button variant="game" size="lg" onClick={() => navigate("/home")}>
+        <Button variant="game" size="lg" onClick={() => navigate("/")}>
           {t("welcome.guest")}
         </Button>
         <Button variant="outline" size="lg" onClick={() => navigate("/join")}>
