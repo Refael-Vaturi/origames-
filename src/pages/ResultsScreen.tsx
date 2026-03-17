@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Trophy, RotateCcw, ArrowLeft, Users, Loader2 } from "lucide-react";
+import { playSuccess } from "@/hooks/useSound";
 
 interface Player {
   id: string;
@@ -98,6 +99,7 @@ const ResultsScreen = () => {
 
       if (scoresData) setScores(scoresData as ScoreRow[]);
       setLoading(false);
+      playSuccess();
     };
 
     load();

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Users, Gamepad2, Hash, GraduationCap, Bell, Settings, UserCircle } from "lucide-react";
 import LanguageSelector from "@/components/LanguageSelector";
 import logoImage from "@/assets/logo.png";
+import { playClick, playWhoosh } from "@/hooks/useSound";
 import { useState } from "react";
 
 const HomeScreen = () => {
@@ -105,7 +106,7 @@ const HomeScreen = () => {
         >
           {mainActions.map(({ key, icon: Icon, variant, path }) => (
             <motion.div key={key} variants={{ hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1 } }}>
-              <Button variant={variant} size="xl" className="w-full" onClick={() => navigate(path === "/home" ? "/" : path)}>
+              <Button variant={variant} size="xl" className="w-full" onClick={() => { playClick(); navigate(path === "/home" ? "/" : path); }}>
                 <Icon className="w-6 h-6" />
                 {t(key)}
               </Button>

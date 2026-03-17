@@ -4,13 +4,14 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Globe, Volume2, VolumeX, Moon, Sun, Vibrate, Info } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { playClick, setSoundEnabled, isSoundEnabled } from "@/hooks/useSound";
 
 const SettingsScreen = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const { t, toggleLanguage, language } = useLanguage();
-  const [sound, setSound] = useState(true);
+  const [sound, setSound] = useState(isSoundEnabled());
   const [vibration, setVibration] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
 
@@ -60,7 +61,7 @@ const SettingsScreen = () => {
             </SettingRow>
 
             <SettingRow icon={sound ? Volume2 : VolumeX} label={t("settings.sound")}>
-              <Toggle value={sound} onChange={setSound} />
+              <Toggle value={sound} onChange={(v) => { setSound(v); setSoundEnabled(v); if (v) playClick(); }} />
             </SettingRow>
 
             <SettingRow icon={Vibrate} label={t("settings.vibration")}>

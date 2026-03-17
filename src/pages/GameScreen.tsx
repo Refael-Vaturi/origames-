@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import RoomChat from "@/components/RoomChat";
 import { Eye, EyeOff, MessageSquare, Send, Vote, Sparkles, Loader2 } from "lucide-react";
+import { playWhoosh, playClick, playSuccess, playError, playTick, playReveal, playVote, playPop } from "@/hooks/useSound";
 
 type Phase =
   | "loading"
@@ -292,11 +293,13 @@ const GameScreen = () => {
     if (phase !== "secret" && phase !== "discussion" && phase !== "hint_reveal") return;
     if (timer <= 0) {
       if (phase === "secret") {
+        playWhoosh();
         setPhase("hint");
         setCurrentHintRound(1);
         setMyHintSubmitted(false);
         setHintInput("");
       } else if (phase === "discussion") {
+        playWhoosh();
         setPhase("voting");
         setMyVoteSubmitted(false);
       } else if (phase === "hint_reveal") {
@@ -312,7 +315,12 @@ const GameScreen = () => {
       }
       return;
     }
-    const interval = setInterval(() => setTimer((prev) => prev - 1), 1000);
+    const interval = setInterval(() => {
+      setTimer((prev) => {
+        if (prev <= 4 && prev > 0) playTick();
+        return prev - 1;
+      });
+    }, 1000);
     return () => clearInterval(interval);
   }, [phase, timer, currentHintRound, room]);
 
@@ -321,6 +329,7 @@ const GameScreen = () => {
     if (phase !== "waiting_hints" || !currentRound) return;
     const count = hints.filter((h) => h.round_id === currentRound.id && h.hint_round === currentHintRound).length;
     if (count >= totalPlayers) {
+      playPop();
       setPhase("hint_reveal");
       setTimer(4);
     }
@@ -331,6 +340,7 @@ const GameScreen = () => {
     if (phase !== "waiting_votes" || !currentRound) return;
     const count = votes.filter((v) => v.round_id === currentRound.id).length;
     if (count >= totalPlayers) {
+      playReveal();
       setPhase("reveal");
     }
   }, [phase, votes, currentRound, totalPlayers]);
@@ -341,6 +351,7 @@ const GameScreen = () => {
 
     setMyHintSubmitted(true);
     setPhase("waiting_hints");
+    playClick();
 
     const body: Record<string, unknown> = {
       action: "submit-hint",
@@ -368,6 +379,7 @@ const GameScreen = () => {
 
     setMyVoteSubmitted(true);
     setPhase("waiting_votes");
+    playVote();
 
     const body: Record<string, unknown> = {
       action: "submit-vote",
@@ -726,7 +738,7 @@ const GameScreen = () => {
                       <motion.button
                         key={player.id}
                         whileTap={{ scale: 0.95 }}
-                        onClick={() => setSelectedVote(player.id)}
+                        onClick={() => { setSelectedVote(player.id); playPop(); }}
                         className={`w-full flex items-center gap-3 rounded-2xl p-3 transition-all border-2 ${
                           selectedVote === player.id
                             ? "border-primary bg-primary/10 shadow-card"
