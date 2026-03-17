@@ -16,6 +16,7 @@ const HomeScreen = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const { user, profile } = useAuth();
+  const { pendingInvites } = useNotifications();
 
   // First visit → redirect to tutorial
   useEffect(() => {
