@@ -4,7 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Users, Gamepad2, Hash, GraduationCap, Bell, Settings, UserCircle } from "lucide-react";
+import { Users, Gamepad2, Hash, GraduationCap, Settings, UserCircle } from "lucide-react";
+import NotificationBell from "@/components/NotificationBell";
 import LanguageSelector from "@/components/LanguageSelector";
 import logoImage from "@/assets/logo.png";
 import { playClick, playWhoosh } from "@/hooks/useSound";
@@ -14,7 +15,6 @@ const HomeScreen = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const { user, profile } = useAuth();
-  const [showNotifications, setShowNotifications] = useState(false);
 
   // First visit → redirect to tutorial
   useEffect(() => {
@@ -25,11 +25,6 @@ const HomeScreen = () => {
   }, [navigate]);
 
   const displayName = profile?.display_name || (user ? "Player" : "Guest");
-
-  const notifications = [
-    { id: 1, text: "CoolGamer invited you to Room #42", time: "2m ago" },
-    { id: 2, text: "QuickFox sent you a friend request", time: "10m ago" },
-  ];
 
   const mainActions = [
     { key: "home.startGlobal", icon: Gamepad2, variant: "hero" as const, path: "/matchmaking" },
@@ -69,35 +64,12 @@ const HomeScreen = () => {
 
         <div className="flex items-center gap-2">
           <LanguageSelector />
-          <button
-            className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground relative"
-            onClick={() => setShowNotifications(!showNotifications)}
-          >
-            <Bell className="w-5 h-5" />
-            <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-game-pink" />
-          </button>
+          {user && <NotificationBell />}
           <button className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground" onClick={() => navigate("/settings")}>
             <Settings className="w-5 h-5" />
           </button>
         </div>
       </motion.header>
-
-      {/* Notifications dropdown */}
-      {showNotifications && (
-        <motion.div
-          className="absolute top-16 end-4 z-50 w-72 bg-card rounded-2xl p-4 shadow-card border border-border"
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <h3 className="font-display font-semibold text-sm text-foreground mb-3">{t("home.notifications")}</h3>
-          {notifications.map((n) => (
-            <div key={n.id} className="py-2 border-b border-border last:border-0">
-              <p className="text-sm font-body text-foreground">{n.text}</p>
-              <p className="text-xs text-muted-foreground font-body">{n.time}</p>
-            </div>
-          ))}
-        </motion.div>
-      )}
 
       {/* Main content */}
       <div className="flex-1 flex flex-col items-center justify-center px-4 pb-8">

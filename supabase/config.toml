@@ -14,3 +14,6 @@ verify_jwt = false
 
 [functions.create-room-guest]
 verify_jwt = false
+
+[functions.send-notification]
+verify_jwt = false

@@ -21,7 +21,7 @@ const generateCode = () => {
 const FriendsScreen = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const {
     friends,
     pendingReceived,
@@ -115,6 +115,17 @@ const FriendsScreen = () => {
       }
 
       const inviteLink = `${window.location.origin}/join?code=${roomCode}`;
+
+      // Send in-app + push notification to the friend
+      await supabase.functions.invoke("send-notification", {
+        body: {
+          target_user_id: friendUserId,
+          type: "game_invite",
+          title: `🎮 ${profile?.display_name || "A friend"} ${t("notifications.invitedYou")}`,
+          body: `${t("notifications.joinWith")} ${roomCode}`,
+          data: { roomCode },
+        },
+      });
 
       // Try Web Share API first
       if (navigator.share) {
