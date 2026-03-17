@@ -7,6 +7,7 @@ import { ArrowLeft, Mail, Lock, Eye, EyeOff, UserCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { toast } from "@/hooks/use-toast";
+import { playClick } from "@/hooks/useSound";
 
 const AuthScreen = () => {
   const navigate = useNavigate();
