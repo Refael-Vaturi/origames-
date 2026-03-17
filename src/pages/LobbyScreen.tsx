@@ -10,6 +10,7 @@ import { ArrowLeft, Copy, Share2, Crown, Check } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { playPlayerJoined } from "@/hooks/useSound";
+import AvatarPicker from "@/components/AvatarPicker";
 
 interface RoomPlayer {
   id: string;
