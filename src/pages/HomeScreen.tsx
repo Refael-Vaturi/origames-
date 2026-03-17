@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Users, Gamepad2, Hash, GraduationCap, Bell, Settings, UserCircle } from "lucide-react";
 import LanguageSelector from "@/components/LanguageSelector";
 import logoImage from "@/assets/logo.png";
+import { playClick, playWhoosh } from "@/hooks/useSound";
 import { useState } from "react";
 
 const HomeScreen = () => {
