@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.game-action]
 verify_jwt = false
+
+[functions.create-room-guest]
+verify_jwt = false
