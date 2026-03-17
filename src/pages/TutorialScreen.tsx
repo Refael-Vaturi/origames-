@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight, Eye, MessageSquare, Vote, Sparkles } from "lucide-react";
+import LanguageSelector from "@/components/LanguageSelector";
 
 const TutorialScreen = () => {
   const navigate = useNavigate();
@@ -49,7 +50,7 @@ const TutorialScreen = () => {
   };
 
   const handleBack = () => {
-    if (isFirstVisit) return; // Can't go back on first visit
+    if (isFirstVisit) return;
     navigate(-1);
   };
 
@@ -62,17 +63,20 @@ const TutorialScreen = () => {
         transition={{ type: "spring", duration: 0.6 }}
       >
         <div className="bg-card rounded-3xl p-8 shadow-card">
-          <div className="flex items-center gap-3 mb-6">
-            {!isFirstVisit && (
-              <button
-                onClick={handleBack}
-                className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground flex items-center gap-1"
-              >
-                <ArrowLeft className="w-5 h-5" />
-                <span className="text-sm font-body">{t("general.back")}</span>
-              </button>
-            )}
-            <h1 className="font-display text-2xl font-bold text-foreground">{t("tutorial.title")}</h1>
+          {/* Header with back button and language selector */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-2">
+              {!isFirstVisit && (
+                <button
+                  onClick={handleBack}
+                  className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground"
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                </button>
+              )}
+              <h1 className="font-display text-2xl font-bold text-foreground">{t("tutorial.title")}</h1>
+            </div>
+            <LanguageSelector />
           </div>
 
           {/* Step indicator */}
