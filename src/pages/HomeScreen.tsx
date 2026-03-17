@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -14,6 +15,14 @@ const HomeScreen = () => {
   const { t } = useLanguage();
   const { user, profile } = useAuth();
   const [showNotifications, setShowNotifications] = useState(false);
+
+  // First visit → redirect to tutorial
+  useEffect(() => {
+    const seen = localStorage.getItem("fif-tutorial-seen");
+    if (!seen) {
+      navigate("/tutorial?first=1", { replace: true });
+    }
+  }, [navigate]);
 
   const displayName = profile?.display_name || (user ? "Player" : "Guest");
 

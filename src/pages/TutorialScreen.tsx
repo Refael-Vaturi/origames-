@@ -1,14 +1,17 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight, Eye, MessageSquare, Vote, Sparkles } from "lucide-react";
 
 const TutorialScreen = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { t } = useLanguage();
   const [step, setStep] = useState(0);
+
+  const isFirstVisit = searchParams.get("first") === "1";
 
   const steps = [
     {
@@ -40,6 +43,16 @@ const TutorialScreen = () => {
   const current = steps[step];
   const Icon = current.icon;
 
+  const handleDone = () => {
+    localStorage.setItem("fif-tutorial-seen", "1");
+    navigate("/", { replace: true });
+  };
+
+  const handleBack = () => {
+    if (isFirstVisit) return; // Can't go back on first visit
+    navigate(-1);
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4">
       <motion.div
@@ -50,12 +63,15 @@ const TutorialScreen = () => {
       >
         <div className="bg-card rounded-3xl p-8 shadow-card">
           <div className="flex items-center gap-3 mb-6">
-            <button
-              onClick={() => navigate(-1)}
-              className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
+            {!isFirstVisit && (
+              <button
+                onClick={handleBack}
+                className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground flex items-center gap-1"
+              >
+                <ArrowLeft className="w-5 h-5" />
+                <span className="text-sm font-body">{t("general.back")}</span>
+              </button>
+            )}
             <h1 className="font-display text-2xl font-bold text-foreground">{t("tutorial.title")}</h1>
           </div>
 
@@ -105,6 +121,7 @@ const TutorialScreen = () => {
                 onClick={() => setStep(step - 1)}
               >
                 <ArrowLeft className="w-4 h-4" />
+                {t("general.back")}
               </Button>
             )}
             {step < steps.length - 1 ? (
@@ -122,7 +139,7 @@ const TutorialScreen = () => {
                 variant="hero"
                 size="lg"
                 className="flex-1"
-                onClick={() => navigate("/")}
+                onClick={handleDone}
               >
                 {t("tutorial.done")}
               </Button>
