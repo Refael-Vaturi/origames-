@@ -315,7 +315,12 @@ const GameScreen = () => {
       }
       return;
     }
-    const interval = setInterval(() => setTimer((prev) => prev - 1), 1000);
+    const interval = setInterval(() => {
+      setTimer((prev) => {
+        if (prev <= 4 && prev > 0) playTick();
+        return prev - 1;
+      });
+    }, 1000);
     return () => clearInterval(interval);
   }, [phase, timer, currentHintRound, room]);
 
