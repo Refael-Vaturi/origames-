@@ -196,40 +196,48 @@ const GameScreen = () => {
     init();
   }, [roomId, user, navigate]);
 
-  // ─── Start round when ready ───
+  // ─── Start initial round only once ───
   useEffect(() => {
-    if (!room || !myPlayerId || players.length < 2 || currentRound) return;
+    if (!room || !myPlayerId || players.length < 2 || currentRound || initialStartDoneRef.current || roundStartingRef.current) return;
 
     const startRound = async () => {
-      const { data, error } = await supabase.functions.invoke("start-round", {
-        body: { room_id: roomId, round_number: roundNumber },
-      });
-      if (!error && data && !data.error) {
-        setCurrentRound(data as GameRound);
-        setPhase("secret");
-        setTimer(5);
+      roundStartingRef.current = true;
+      initialStartDoneRef.current = true;
+      try {
+        const { data, error } = await supabase.functions.invoke("start-round", {
+          body: { room_id: roomId, round_number: roundNumber },
+        });
+        if (!error && data && !data.error) {
+          setCurrentRound(data as GameRound);
+          setPhase("secret");
+          setTimer(5);
+        }
+      } finally {
+        roundStartingRef.current = false;
       }
     };
 
     startRound();
-  }, [room, myPlayerId, players, currentRound, roomId, roundNumber]);
+  }, [room, myPlayerId, players.length, roomId, roundNumber]);
 
-  // ─── Realtime: listen for new rounds ───
+  // ─── Realtime: listen for rounds & scores (stable channel, no currentRound dep) ───
   useEffect(() => {
     if (!roomId) return;
 
     const channel = supabase
-      .channel(`game-rounds-${roomId}`)
+      .channel(`game-data-${roomId}`)
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "game_rounds", filter: `room_id=eq.${roomId}` },
         (payload) => {
           const round = payload.new as GameRound;
-          if (round.round_number === roundNumber && !currentRound) {
-            setCurrentRound(round);
+          // Only accept round if we don't have one yet
+          setCurrentRound((prev) => {
+            if (prev) return prev; // already have a round, ignore
             setPhase("secret");
             setTimer(5);
-          }
+            return round;
+          });
         },
       )
       .on(
@@ -254,7 +262,7 @@ const GameScreen = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [roomId, roundNumber, currentRound]);
+  }, [roomId]);
 
   // ─── Realtime: listen for hints & votes of current round ───
   useEffect(() => {
