@@ -485,12 +485,15 @@ const GameScreen = () => {
 
   // ─── Next round ───
   const handleNextRound = async () => {
+    if (roundStartingRef.current) return; // prevent double-click
+    
     const next = roundNumber + 1;
     if (next > totalRounds) {
       navigate(`/results?room=${roomId}`);
       return;
     }
 
+    roundStartingRef.current = true;
     setRoundNumber(next);
     setCurrentRound(null);
     setHints([]);
@@ -500,15 +503,20 @@ const GameScreen = () => {
     setMyHintSubmitted(false);
     setMyVoteSubmitted(false);
     setCurrentHintRound(1);
+    setShowRevealResult(false);
     setPhase("loading");
 
-    const { data, error } = await supabase.functions.invoke("start-round", {
-      body: { room_id: roomId, round_number: next },
-    });
-    if (data && !error && !data.error) {
-      setCurrentRound(data as GameRound);
-      setPhase("secret");
-      setTimer(5);
+    try {
+      const { data, error } = await supabase.functions.invoke("start-round", {
+        body: { room_id: roomId, round_number: next },
+      });
+      if (data && !error && !data.error) {
+        setCurrentRound(data as GameRound);
+        setPhase("secret");
+        setTimer(5);
+      }
+    } finally {
+      roundStartingRef.current = false;
     }
   };
 
