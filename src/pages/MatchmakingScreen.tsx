@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,6 +23,8 @@ const MatchmakingScreen = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const requestedPlayers = searchParams.get("players") ? Number(searchParams.get("players")) : null;
   const [dots, setDots] = useState("");
   const [players, setPlayers] = useState<{ id: string; user_id: string; guest_name: string | null }[]>([]);
   const [roomId, setRoomId] = useState<string | null>(null);
@@ -77,6 +79,7 @@ const MatchmakingScreen = () => {
 
       // 2. If no open room, create one
       if (!targetRoom) {
+        const maxP = requestedPlayers || MAX_PLAYERS;
         const code = generateCode();
         const { data: newRoom, error } = await supabase
           .from("rooms")
@@ -84,7 +87,7 @@ const MatchmakingScreen = () => {
             code,
             host_id: user.id,
             is_private: false,
-            max_players: MAX_PLAYERS,
+            max_players: maxP,
             name: "Global Game",
           })
           .select("id, code")
