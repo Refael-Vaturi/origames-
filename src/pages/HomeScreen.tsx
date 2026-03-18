@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -6,12 +6,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useReconnect } from "@/hooks/useReconnect";
 import { Button } from "@/components/ui/button";
-import { Users, Gamepad2, Hash, GraduationCap, Settings, UserCircle, RefreshCw, X } from "lucide-react";
+import { Users, Gamepad2, Hash, GraduationCap, Settings, UserCircle, RefreshCw, X, Bot, Globe } from "lucide-react";
 import NotificationBell from "@/components/NotificationBell";
 import LanguageSelector from "@/components/LanguageSelector";
 import logoImage from "@/assets/logo.png";
-import { playClick, playWhoosh } from "@/hooks/useSound";
-import { useState } from "react";
+import { playClick, playWhoosh, playPop } from "@/hooks/useSound";
+import { toast } from "@/hooks/use-toast";
 
 const HomeScreen = () => {
   const navigate = useNavigate();
@@ -19,6 +19,7 @@ const HomeScreen = () => {
   const { user, profile } = useAuth();
   const { pendingInvites } = useNotifications();
   const { activeRoom, reconnect, dismiss } = useReconnect();
+  const [showPlayerPicker, setShowPlayerPicker] = useState(false);
 
   // First visit → redirect to tutorial
   useEffect(() => {
@@ -30,11 +31,39 @@ const HomeScreen = () => {
 
   const displayName = profile?.display_name || (user ? "Player" : "Guest");
 
+  const handleGlobalGame = () => {
+    if (!user) {
+      toast({ title: t("auth.loginRequired"), variant: "destructive" });
+      navigate("/auth?redirect=/");
+      return;
+    }
+    playClick();
+    setShowPlayerPicker(true);
+  };
+
+  const startMatchmaking = (playerCount?: number) => {
+    setShowPlayerPicker(false);
+    playWhoosh();
+    const params = playerCount ? `?players=${playerCount}` : "";
+    navigate(`/matchmaking${params}`);
+  };
+
   const mainActions = [
-    { key: "home.startGlobal", icon: Gamepad2, variant: "hero" as const, path: "/matchmaking" },
-    { key: "home.playFriends", icon: Users, variant: "game" as const, path: "/create-room" },
-    { key: "home.joinCode", icon: Hash, variant: "accent" as const, path: "/join" },
-    { key: "home.tutorial", icon: GraduationCap, variant: "outline" as const, path: "/tutorial" },
+    { key: "home.startGlobal", icon: Gamepad2, variant: "hero" as const, action: handleGlobalGame },
+    { key: "home.practice", icon: Bot, variant: "game" as const, action: () => { playClick(); navigate("/practice"); } },
+    { key: "home.playFriends", icon: Users, variant: "accent" as const, action: () => { playClick(); navigate("/create-room"); } },
+    { key: "home.joinCode", icon: Hash, variant: "outline" as const, action: () => { playClick(); navigate("/join"); } },
+    { key: "home.tutorial", icon: GraduationCap, variant: "outline" as const, action: () => { playClick(); navigate("/tutorial"); } },
+  ];
+
+  const playerOptions = [
+    { count: undefined, label: t("matchmaking.anyPlayers") || "Any" },
+    { count: 3, label: "3" },
+    { count: 4, label: "4" },
+    { count: 5, label: "5" },
+    { count: 6, label: "6" },
+    { count: 7, label: "7" },
+    { count: 8, label: "8" },
   ];
 
   return (
@@ -49,9 +78,13 @@ const HomeScreen = () => {
           className="flex items-center gap-3"
           onClick={() => user ? navigate("/profile") : navigate("/auth")}
         >
-          <div className="w-10 h-10 rounded-full gradient-hero flex items-center justify-center">
+          <motion.div
+            className="w-10 h-10 rounded-full gradient-hero flex items-center justify-center"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+          >
             <UserCircle className="w-6 h-6 text-primary-foreground" />
-          </div>
+          </motion.div>
           <div className="text-start">
             {user ? (
               <>
@@ -64,7 +97,13 @@ const HomeScreen = () => {
           </div>
         </button>
 
-        <img src={logoImage} alt="Fake It Fast" className="h-10" />
+        <motion.img
+          src={logoImage}
+          alt="Fake It Fast"
+          className="h-10"
+          animate={{ rotate: [0, -2, 2, 0] }}
+          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+        />
 
         <div className="flex items-center gap-2">
           <LanguageSelector />
@@ -105,21 +144,39 @@ const HomeScreen = () => {
 
       {/* Main content */}
       <div className="flex-1 flex flex-col items-center justify-center px-4 pb-8">
+        {/* Background effects */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-20 left-5 w-32 h-32 rounded-full bg-game-purple/10 blur-2xl" />
-          <div className="absolute bottom-20 right-5 w-40 h-40 rounded-full bg-game-pink/10 blur-2xl" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-60 h-60 rounded-full bg-game-cyan/5 blur-3xl" />
+          <motion.div
+            className="absolute top-20 left-5 w-32 h-32 rounded-full bg-game-purple/10 blur-2xl"
+            animate={{ scale: [1, 1.2, 1], x: [0, 10, 0] }}
+            transition={{ duration: 6, repeat: Infinity }}
+          />
+          <motion.div
+            className="absolute bottom-20 right-5 w-40 h-40 rounded-full bg-game-pink/10 blur-2xl"
+            animate={{ scale: [1.2, 1, 1.2], y: [0, -10, 0] }}
+            transition={{ duration: 8, repeat: Infinity }}
+          />
+          <motion.div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-60 h-60 rounded-full bg-game-cyan/5 blur-3xl"
+            animate={{ opacity: [0.3, 0.6, 0.3] }}
+            transition={{ duration: 4, repeat: Infinity }}
+          />
         </div>
 
         <motion.div
-          className="flex flex-col gap-4 w-full max-w-sm relative z-10"
+          className="flex flex-col gap-3 w-full max-w-sm relative z-10"
           initial="hidden"
           animate="visible"
-          variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.1 } } }}
+          variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.08 } } }}
         >
-          {mainActions.map(({ key, icon: Icon, variant, path }) => (
-            <motion.div key={key} variants={{ hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1 } }}>
-              <Button variant={variant} size="xl" className="w-full" onClick={() => { playClick(); navigate(path === "/home" ? "/" : path); }}>
+          {mainActions.map(({ key, icon: Icon, variant, action }) => (
+            <motion.div
+              key={key}
+              variants={{ hidden: { y: 20, opacity: 0 }, visible: { y: 0, opacity: 1 } }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <Button variant={variant} size="xl" className="w-full" onClick={action}>
                 <Icon className="w-6 h-6" />
                 {t(key)}
               </Button>
@@ -128,12 +185,17 @@ const HomeScreen = () => {
         </motion.div>
 
         <motion.div
-          className="mt-8 grid grid-cols-2 gap-3 w-full max-w-sm relative z-10"
+          className="mt-6 grid grid-cols-2 gap-3 w-full max-w-sm relative z-10"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
         >
-          <button onClick={() => navigate("/friends")} className="bg-card rounded-2xl p-4 shadow-card text-start hover:bg-muted transition-colors">
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => navigate("/friends")}
+            className="bg-card rounded-2xl p-4 shadow-card text-start hover:bg-muted transition-colors"
+          >
             <h3 className="font-display font-semibold text-sm text-foreground mb-1">{t("home.onlineFriends")}</h3>
             <p className="text-xs text-muted-foreground">{t("friends.title")}</p>
             <div className="flex -space-x-2 mt-2">
@@ -141,7 +203,7 @@ const HomeScreen = () => {
                 <div key={i} className="w-8 h-8 rounded-full border-2 border-card" style={{ background: `hsl(${120 + i * 80} 60% 60%)` }} />
               ))}
             </div>
-          </button>
+          </motion.button>
           <div className="bg-card rounded-2xl p-4 shadow-card">
             <h3 className="font-display font-semibold text-sm text-foreground mb-1">{t("notifications.pendingInvites")}</h3>
             <p className="text-xs text-muted-foreground">
@@ -164,6 +226,60 @@ const HomeScreen = () => {
           </div>
         </motion.div>
       </div>
+
+      {/* Player Count Picker Modal */}
+      <AnimatePresence>
+        {showPlayerPicker && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center px-4"
+            onClick={() => setShowPlayerPicker(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.8, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.8, y: 20 }}
+              className="bg-card rounded-3xl p-6 shadow-card w-full max-w-sm"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="text-center mb-6">
+                <Globe className="w-10 h-10 text-primary mx-auto mb-3" />
+                <h2 className="font-display text-xl font-bold text-foreground">
+                  {t("matchmaking.howManyPlayers")}
+                </h2>
+                <p className="text-sm text-muted-foreground mt-1">{t("matchmaking.pickOrAny")}</p>
+              </div>
+
+              <div className="grid grid-cols-4 gap-2 mb-4">
+                {playerOptions.map(({ count, label }, i) => (
+                  <motion.button
+                    key={label}
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: i * 0.05, type: "spring" }}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => { playPop(); startMatchmaking(count); }}
+                    className={`p-3 rounded-2xl font-display font-bold text-lg transition-all ${
+                      count === undefined
+                        ? "col-span-4 gradient-hero text-primary-foreground shadow-button"
+                        : "bg-muted text-foreground hover:bg-primary/20 hover:text-primary"
+                    }`}
+                  >
+                    {count === undefined ? `🎲 ${label}` : label}
+                  </motion.button>
+                ))}
+              </div>
+
+              <Button variant="outline" size="lg" className="w-full" onClick={() => setShowPlayerPicker(false)}>
+                {t("general.back")}
+              </Button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

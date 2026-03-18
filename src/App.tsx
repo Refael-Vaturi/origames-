@@ -20,6 +20,7 @@ import AuthScreen from "./pages/AuthScreen";
 import ProfileScreen from "./pages/ProfileScreen";
 import SettingsScreen from "./pages/SettingsScreen";
 import FriendsScreen from "./pages/FriendsScreen";
+import PracticeScreen from "./pages/PracticeScreen";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -50,6 +51,7 @@ const App = () => (
               <Route path="/lobby" element={<LobbyScreen />} />
               <Route path="/matchmaking" element={<MatchmakingScreen />} />
               <Route path="/tutorial" element={<TutorialScreen />} />
+              <Route path="/practice" element={<PracticeScreen />} />
               <Route path="/game" element={<GameScreen />} />
               <Route path="/results" element={<ResultsScreen />} />
               <Route path="*" element={<NotFound />} />
