@@ -267,6 +267,47 @@ const MatchmakingScreen = () => {
             </motion.p>
           )}
 
+          <AnimatePresence>
+            {waitingLong && players.length < MIN_PLAYERS && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mb-4 p-3 rounded-2xl bg-accent/10 border border-accent/20 text-center"
+              >
+                <p className="text-sm font-display font-semibold text-foreground mb-1">
+                  ⏳ {t("matchmaking.stillLooking")}
+                </p>
+                <p className="text-xs text-muted-foreground font-body mb-3">
+                  {t("matchmaking.inviteFriends")}
+                </p>
+                {roomCode && (
+                  <Button
+                    variant="accent"
+                    size="sm"
+                    className="w-full"
+                    onClick={async () => {
+                      const shareData = {
+                        title: "Fake It Fast",
+                        text: t("matchmaking.shareText"),
+                        url: `${window.location.origin}/join?code=${roomCode}`,
+                      };
+                      if (navigator.share) {
+                        await navigator.share(shareData).catch(() => {});
+                      } else {
+                        await navigator.clipboard.writeText(shareData.url);
+                        toast({ title: t("matchmaking.linkCopied") });
+                      }
+                    }}
+                  >
+                    <Share2 className="w-4 h-4" />
+                    {t("matchmaking.shareInvite")}
+                  </Button>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <Button
             variant="outline"
             size="lg"
