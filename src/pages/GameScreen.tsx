@@ -105,6 +105,8 @@ const GameScreen = () => {
   const [suspenseHighlight, setSuspenseHighlight] = useState<string | null>(null);
   const [showRevealResult, setShowRevealResult] = useState(false);
   const suspenseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const roundStartingRef = useRef(false);
+  const initialStartDoneRef = useRef(false);
 
   // Derived
   const iAmFake = currentRound?.fake_player_id === myPlayerId;
