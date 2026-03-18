@@ -28,6 +28,7 @@ const MatchmakingScreen = () => {
   const [roomId, setRoomId] = useState<string | null>(null);
   const [roomCode, setRoomCode] = useState<string | null>(null);
   const [joining, setJoining] = useState(true);
+  const [waitingLong, setWaitingLong] = useState(false);
   const cleanupRef = useRef(false);
 
   // Dots animation
