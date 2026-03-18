@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight, Eye, MessageSquare, Vote, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, Eye, MessageSquare, Vote, Sparkles, Lightbulb, Users } from "lucide-react";
 import LanguageSelector from "@/components/LanguageSelector";
 
 const TutorialScreen = () => {
@@ -16,28 +16,46 @@ const TutorialScreen = () => {
 
   const steps = [
     {
+      icon: Users,
+      titleKey: "tutorial.step0Title",
+      descKey: "tutorial.step0Desc",
+      color: "hsl(var(--game-cyan))",
+      exampleKey: null as string | null,
+    },
+    {
       icon: Eye,
       titleKey: "tutorial.step1Title",
       descKey: "tutorial.step1Desc",
       color: "hsl(var(--game-purple))",
+      exampleKey: "tutorial.step1Example",
     },
     {
       icon: MessageSquare,
       titleKey: "tutorial.step2Title",
       descKey: "tutorial.step2Desc",
       color: "hsl(var(--game-cyan))",
+      exampleKey: "tutorial.step2Example",
     },
     {
       icon: Vote,
       titleKey: "tutorial.step3Title",
       descKey: "tutorial.step3Desc",
       color: "hsl(var(--game-pink))",
+      exampleKey: null,
     },
     {
       icon: Sparkles,
       titleKey: "tutorial.step4Title",
       descKey: "tutorial.step4Desc",
       color: "hsl(var(--game-yellow))",
+      exampleKey: null,
+    },
+    {
+      icon: Lightbulb,
+      titleKey: "tutorial.step5Title",
+      descKey: "tutorial.step5Desc",
+      color: "hsl(var(--game-purple))",
+      exampleKey: null,
     },
   ];
 
@@ -80,7 +98,7 @@ const TutorialScreen = () => {
           </div>
 
           {/* Step indicator */}
-          <div className="flex gap-2 mb-6">
+          <div className="flex gap-1.5 mb-6">
             {steps.map((_, i) => (
               <div
                 key={i}
@@ -101,7 +119,7 @@ const TutorialScreen = () => {
               className="text-center"
             >
               <div
-                className="w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center"
+                className="w-20 h-20 mx-auto mb-5 rounded-full flex items-center justify-center"
                 style={{ background: current.color }}
               >
                 <Icon className="w-10 h-10 text-primary-foreground" />
@@ -110,11 +128,28 @@ const TutorialScreen = () => {
               <h2 className="font-display text-xl font-bold text-foreground mb-3">
                 {t(current.titleKey)}
               </h2>
-              <p className="text-sm text-muted-foreground font-body leading-relaxed mb-8">
+              <p className="text-sm text-muted-foreground font-body leading-relaxed mb-4">
                 {t(current.descKey)}
               </p>
+
+              {/* Example box */}
+              {current.exampleKey && (
+                <div className="bg-muted/50 rounded-2xl p-3 mb-4 border border-border">
+                  <p className="text-xs font-display font-semibold text-primary mb-1">
+                    {t("tutorial.example")}
+                  </p>
+                  <p className="text-xs text-muted-foreground font-body leading-relaxed">
+                    {t(current.exampleKey)}
+                  </p>
+                </div>
+              )}
             </motion.div>
           </AnimatePresence>
+
+          {/* Step counter */}
+          <p className="text-center text-xs text-muted-foreground mb-4 font-body">
+            {step + 1} / {steps.length}
+          </p>
 
           <div className="flex gap-3">
             {step > 0 && (
