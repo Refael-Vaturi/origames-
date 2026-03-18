@@ -79,6 +79,7 @@ const MatchmakingScreen = () => {
 
       // 2. If no open room, create one
       if (!targetRoom) {
+        const maxP = requestedPlayers || MAX_PLAYERS;
         const code = generateCode();
         const { data: newRoom, error } = await supabase
           .from("rooms")
@@ -86,7 +87,7 @@ const MatchmakingScreen = () => {
             code,
             host_id: user.id,
             is_private: false,
-            max_players: MAX_PLAYERS,
+            max_players: maxP,
             name: "Global Game",
           })
           .select("id, code")
