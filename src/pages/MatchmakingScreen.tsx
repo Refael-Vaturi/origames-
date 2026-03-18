@@ -1,11 +1,11 @@
 import { useEffect, useState, useRef } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Globe, Users, Wifi, Loader2 } from "lucide-react";
+import { ArrowLeft, Globe, Users, Wifi, Loader2, Share2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 const MIN_PLAYERS = 3;
@@ -28,12 +28,14 @@ const MatchmakingScreen = () => {
   const [roomId, setRoomId] = useState<string | null>(null);
   const [roomCode, setRoomCode] = useState<string | null>(null);
   const [joining, setJoining] = useState(true);
+  const [waitingLong, setWaitingLong] = useState(false);
   const cleanupRef = useRef(false);
 
   // Dots animation
   useEffect(() => {
     const iv = setInterval(() => setDots((p) => (p.length >= 3 ? "" : p + ".")), 500);
-    return () => clearInterval(iv);
+    const longTimer = setTimeout(() => setWaitingLong(true), 15000);
+    return () => { clearInterval(iv); clearTimeout(longTimer); };
   }, []);
 
   // Find or create a public room, then join it
@@ -264,6 +266,47 @@ const MatchmakingScreen = () => {
               ✨ {t("matchmaking.starting")}
             </motion.p>
           )}
+
+          <AnimatePresence>
+            {waitingLong && players.length < MIN_PLAYERS && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mb-4 p-3 rounded-2xl bg-accent/10 border border-accent/20 text-center"
+              >
+                <p className="text-sm font-display font-semibold text-foreground mb-1">
+                  ⏳ {t("matchmaking.stillLooking")}
+                </p>
+                <p className="text-xs text-muted-foreground font-body mb-3">
+                  {t("matchmaking.inviteFriends")}
+                </p>
+                {roomCode && (
+                  <Button
+                    variant="accent"
+                    size="sm"
+                    className="w-full"
+                    onClick={async () => {
+                      const shareData = {
+                        title: "Fake It Fast",
+                        text: t("matchmaking.shareText"),
+                        url: `${window.location.origin}/join?code=${roomCode}`,
+                      };
+                      if (navigator.share) {
+                        await navigator.share(shareData).catch(() => {});
+                      } else {
+                        await navigator.clipboard.writeText(shareData.url);
+                        toast({ title: t("matchmaking.linkCopied") });
+                      }
+                    }}
+                  >
+                    <Share2 className="w-4 h-4" />
+                    {t("matchmaking.shareInvite")}
+                  </Button>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <Button
             variant="outline"
