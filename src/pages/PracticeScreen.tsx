@@ -87,7 +87,7 @@ const PracticeScreen = () => {
   const [round, setRound] = useState(1);
   const [scores, setScores] = useState<Record<string, number>>({});
   const [showSecret, setShowSecret] = useState(true);
-  const timerRef = useRef<NodeJS.Timeout>();
+  const timerRef = useRef<ReturnType<typeof setTimeout>>();
 
   const initRound = useCallback(() => {
     const wordIndex = Math.floor(Math.random() * WORDS.length);
