@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Mail, Lock, Eye, EyeOff, UserCircle } from "lucide-react";
+import { ArrowLeft, Mail, Lock, Eye, EyeOff, UserCircle, User, AtSign } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { toast } from "@/hooks/use-toast";
-import { playClick } from "@/hooks/useSound";
+import { playClick, playSuccess, playWhoosh } from "@/hooks/useSound";
+
+type AuthMethod = "username" | "email";
 
 const AuthScreen = () => {
   const navigate = useNavigate();
@@ -22,8 +24,10 @@ const AuthScreen = () => {
 
   const modeFromUrl = searchParams.get("mode") === "register" ? "register" : "login";
   const [mode, setMode] = useState<"login" | "register">(modeFromUrl);
+  const [authMethod, setAuthMethod] = useState<AuthMethod>("username");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -34,17 +38,18 @@ const AuthScreen = () => {
 
   const handleAuthError = (error: unknown) => {
     const message = String((error as { message?: string })?.message || error || "");
-
     if (message.includes("Email not confirmed") || message.includes("email_not_confirmed")) {
       toast({ title: t("auth.emailNotConfirmed"), variant: "destructive" });
       return;
     }
-
     if (message.includes("Invalid login credentials") || message.includes("invalid_credentials")) {
       toast({ title: t("auth.invalidCredentials"), variant: "destructive" });
       return;
     }
-
+    if (message.includes("already registered") || message.includes("User already registered")) {
+      toast({ title: t("auth.usernameTaken") || "Username already taken", variant: "destructive" });
+      return;
+    }
     toast({ title: t("auth.error") || "Error", description: message, variant: "destructive" });
   };
 
@@ -54,7 +59,6 @@ const AuthScreen = () => {
       const result = await lovable.auth.signInWithOAuth("google", {
         redirect_uri: window.location.origin + redirectPath,
       });
-
       if (result.error) handleAuthError(result.error);
     } catch (e) {
       handleAuthError(e);
@@ -69,7 +73,6 @@ const AuthScreen = () => {
       const result = await lovable.auth.signInWithOAuth("apple", {
         redirect_uri: window.location.origin + redirectPath,
       });
-
       if (result.error) handleAuthError(result.error);
     } catch (e) {
       handleAuthError(e);
@@ -78,27 +81,52 @@ const AuthScreen = () => {
     }
   };
 
-  const handleSubmit = async () => {
-    if (!email || !password) return;
-    setLoading(true);
+  const usernameToEmail = (u: string) => `${u.toLowerCase().replace(/[^a-z0-9_]/g, "")}@fakeitfast.local`;
 
+  const handleSubmit = async () => {
+    if (authMethod === "username") {
+      if (!username || !password) return;
+      if (username.length < 3) {
+        toast({ title: t("auth.usernameTooShort") || "Username must be at least 3 characters", variant: "destructive" });
+        return;
+      }
+    } else {
+      if (!email || !password) return;
+    }
+
+    setLoading(true);
     try {
       if (mode === "register") {
+        const signUpEmail = authMethod === "username" ? usernameToEmail(username) : email;
+        const signUpDisplayName = authMethod === "username" ? (displayName || username) : (displayName || "Player");
+
         const { error } = await supabase.auth.signUp({
-          email,
+          email: signUpEmail,
           password,
           options: {
-            data: { display_name: displayName || "Player" },
+            data: { display_name: signUpDisplayName, username: authMethod === "username" ? username : undefined },
             emailRedirectTo: window.location.origin + redirectPath,
           },
         });
-
         if (error) throw error;
 
-        toast({ title: t("auth.checkEmail") || "Check your email to confirm!" });
+        // For username auth, auto-confirm is enabled so user is logged in immediately
+        if (authMethod === "username") {
+          // Update profile with username
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            await supabase.from("profiles").update({ username, display_name: signUpDisplayName }).eq("user_id", user.id);
+          }
+          playSuccess();
+          navigate(redirectPath, { replace: true });
+        } else {
+          toast({ title: t("auth.checkEmail") || "Check your email to confirm!" });
+        }
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const loginEmail = authMethod === "username" ? usernameToEmail(username) : email;
+        const { error } = await supabase.auth.signInWithPassword({ email: loginEmail, password });
         if (error) throw error;
+        playSuccess();
         navigate(redirectPath, { replace: true });
       }
     } catch (e) {
@@ -126,6 +154,7 @@ const AuthScreen = () => {
             </h1>
           </div>
 
+          {/* OAuth buttons */}
           <div className="space-y-3 mb-6">
             <button
               onClick={handleGoogleSignIn}
@@ -159,8 +188,41 @@ const AuthScreen = () => {
             <div className="flex-1 h-px bg-border" />
           </div>
 
+          {/* Auth method toggle */}
+          <div className="flex bg-muted rounded-2xl p-1 mb-4">
+            <button
+              onClick={() => { setAuthMethod("username"); playClick(); }}
+              className={`flex-1 py-2 rounded-xl text-sm font-display font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
+                authMethod === "username" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
+              }`}
+            >
+              <User className="w-4 h-4" />
+              {t("auth.username") || "Username"}
+            </button>
+            <button
+              onClick={() => { setAuthMethod("email"); playClick(); }}
+              className={`flex-1 py-2 rounded-xl text-sm font-display font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
+                authMethod === "email" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
+              }`}
+            >
+              <Mail className="w-4 h-4" />
+              Email
+            </button>
+          </div>
+
           <div className="space-y-3 mb-4">
-            {mode === "register" && (
+            {mode === "register" && authMethod === "username" && (
+              <motion.input
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 48, opacity: 1 }}
+                type="text"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder={t("auth.displayName")}
+                className="w-full h-12 px-4 rounded-2xl border-2 border-input bg-background font-body text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
+              />
+            )}
+            {mode === "register" && authMethod === "email" && (
               <input
                 type="text"
                 value={displayName}
@@ -169,16 +231,46 @@ const AuthScreen = () => {
                 className="w-full h-12 px-4 rounded-2xl border-2 border-input bg-background font-body text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
               />
             )}
-            <div className="relative">
-              <Mail className="absolute start-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder={t("auth.email")}
-                className="w-full h-12 ps-11 pe-4 rounded-2xl border-2 border-input bg-background font-body text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
-              />
-            </div>
+
+            <AnimatePresence mode="wait">
+              {authMethod === "username" ? (
+                <motion.div
+                  key="username-input"
+                  initial={{ x: -20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  exit={{ x: 20, opacity: 0 }}
+                  className="relative"
+                >
+                  <AtSign className="absolute start-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <input
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value.replace(/\s/g, ""))}
+                    placeholder={t("auth.usernamePlaceholder") || "username"}
+                    className="w-full h-12 ps-11 pe-4 rounded-2xl border-2 border-input bg-background font-body text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
+                    autoComplete="username"
+                  />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="email-input"
+                  initial={{ x: 20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  exit={{ x: -20, opacity: 0 }}
+                  className="relative"
+                >
+                  <Mail className="absolute start-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder={t("auth.email")}
+                    className="w-full h-12 ps-11 pe-4 rounded-2xl border-2 border-input bg-background font-body text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             <div className="relative">
               <Lock className="absolute start-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
@@ -196,6 +288,16 @@ const AuthScreen = () => {
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
+
+            {mode === "register" && authMethod === "username" && (
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-xs text-muted-foreground font-body text-center"
+              >
+                {t("auth.usernameRequired") || "Username is required and must be unique"}
+              </motion.p>
+            )}
           </div>
 
           <Button variant="hero" size="xl" className="w-full mb-4" onClick={handleSubmit} disabled={loading}>
@@ -203,7 +305,7 @@ const AuthScreen = () => {
           </Button>
 
           <button
-            onClick={() => setMode(mode === "login" ? "register" : "login")}
+            onClick={() => { setMode(mode === "login" ? "register" : "login"); playClick(); }}
             className="w-full text-center text-sm text-primary font-body hover:underline mb-4"
           >
             {mode === "login" ? t("auth.switchRegister") : t("auth.switchLogin")}

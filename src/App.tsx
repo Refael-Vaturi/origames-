@@ -51,6 +51,7 @@ const App = () => (
               <Route path="/lobby" element={<LobbyScreen />} />
               <Route path="/matchmaking" element={<MatchmakingScreen />} />
               <Route path="/tutorial" element={<TutorialScreen />} />
+              <Route path="/practice" element={<PracticeScreen />} />
               <Route path="/game" element={<GameScreen />} />
               <Route path="/results" element={<ResultsScreen />} />
               <Route path="*" element={<NotFound />} />
