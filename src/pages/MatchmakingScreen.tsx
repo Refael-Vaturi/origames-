@@ -23,6 +23,8 @@ const MatchmakingScreen = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const requestedPlayers = searchParams.get("players") ? Number(searchParams.get("players")) : null;
   const [dots, setDots] = useState("");
   const [players, setPlayers] = useState<{ id: string; user_id: string; guest_name: string | null }[]>([]);
   const [roomId, setRoomId] = useState<string | null>(null);
