@@ -34,7 +34,8 @@ const MatchmakingScreen = () => {
   // Dots animation
   useEffect(() => {
     const iv = setInterval(() => setDots((p) => (p.length >= 3 ? "" : p + ".")), 500);
-    return () => clearInterval(iv);
+    const longTimer = setTimeout(() => setWaitingLong(true), 15000);
+    return () => { clearInterval(iv); clearTimeout(longTimer); };
   }, []);
 
   // Find or create a public room, then join it
