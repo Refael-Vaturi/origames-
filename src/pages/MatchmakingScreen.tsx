@@ -1,11 +1,11 @@
 import { useEffect, useState, useRef } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Globe, Users, Wifi, Loader2 } from "lucide-react";
+import { ArrowLeft, Globe, Users, Wifi, Loader2, Share2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 const MIN_PLAYERS = 3;
