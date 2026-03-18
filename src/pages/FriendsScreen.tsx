@@ -381,7 +381,42 @@ const FriendsScreen = () => {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
+              className="space-y-4"
             >
+              {/* Your ID card */}
+              <div className="bg-card rounded-2xl p-5 shadow-card border border-primary/20">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 rounded-full gradient-hero flex items-center justify-center text-primary-foreground font-display font-bold text-sm">
+                    {profile?.display_name?.[0]?.toUpperCase() || "?"}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs text-muted-foreground font-body">{t("friends.yourId")}</p>
+                    <p className="font-display font-bold text-foreground text-lg">
+                      {profile?.display_name || "Player"}
+                    </p>
+                    {profile?.username && (
+                      <p className="text-xs text-muted-foreground font-body">@{profile.username}</p>
+                    )}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={async () => {
+                      const name = profile?.username || profile?.display_name || "";
+                      await navigator.clipboard.writeText(name);
+                      toast({ title: t("friends.idCopied") });
+                      playClick();
+                    }}
+                  >
+                    {t("friends.copyId")}
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground font-body">
+                  {t("friends.shareIdTip")}
+                </p>
+              </div>
+
+              {/* Add friend form */}
               <div className="bg-card rounded-2xl p-5 shadow-card">
                 <div className="flex items-center gap-3 mb-4">
                   <UserPlus className="w-6 h-6 text-primary" />
@@ -407,7 +442,7 @@ const FriendsScreen = () => {
                     onClick={handleSendRequest}
                     disabled={sending || !addInput.trim()}
                   >
-                    {sending ? "..." : t("friends.sendRequest")}
+                    {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                   </Button>
                 </div>
 
@@ -426,7 +461,7 @@ const FriendsScreen = () => {
                     animate={{ opacity: 1 }}
                     className="mt-3 text-sm text-primary font-body"
                   >
-                    {t("friends.requestSent")}
+                    ✅ {t("friends.requestSent")}
                   </motion.p>
                 )}
               </div>
