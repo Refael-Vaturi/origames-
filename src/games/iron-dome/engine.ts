@@ -862,6 +862,7 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
         threatsToKill.push(t.id);
         s.score += t.points;
         s.totalIntercepted++;
+        s.waveDestroyedThreats++;
         s.explosions = [...s.explosions, {
           x: t.x, y: t.y, radius: 2, maxRadius: 20,
           alpha: 1, color: '#88CCFF', isGround: false
