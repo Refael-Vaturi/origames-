@@ -58,7 +58,6 @@ function createCities(w: number, h: number): City[] {
 function createDefaultStoreItems(): StoreItem[] {
   return [
     { id: 'first-aid', name: 'First Aid', icon: '🩹', description: '+1 life', cost: 5, maxBuys: 2, bought: 0 },
-    { id: 'air-support', name: 'Air Support', icon: '🚁', description: '+1 helicopter strike [A]', cost: 8, maxBuys: 5, bought: 0 },
     { id: 'fast-reload', name: 'Fast Reload', icon: '⚡', description: 'Missiles reload faster', cost: 10, maxBuys: 1, bought: 0 },
     { id: 'gps-jammer', name: 'GPS Jammer', icon: '📡', description: 'Diverts ~25% threats [G]', cost: 7, maxBuys: 3, bought: 0 },
     { id: 'iron-beam', name: 'Iron Beam', icon: '🔆', description: 'Laser auto-target [B]', cost: 15, maxBuys: 1, bought: 0 },
