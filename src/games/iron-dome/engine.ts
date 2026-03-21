@@ -624,6 +624,14 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
                 x: t.x, y: t.y - 30, text: '⚪ EMP SLOWDOWN 10s!',
                 alpha: 1, vy: -1, color: '#FFFFFF', size: 16,
               }];
+            } else if (t.missileColor === 'pink') {
+              s.helicopterTimer = 10000;
+              s.helicopterX = 0;
+              s.soundEvents.push('powerup-pink');
+              s.floatingTexts = [...s.floatingTexts, {
+                x: t.x, y: t.y - 30, text: '🩷 HELICOPTER 10s!',
+                alpha: 1, vy: -1, color: '#FF88AA', size: 16,
+              }];
             }
           }
         }
