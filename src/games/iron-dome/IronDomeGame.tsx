@@ -79,10 +79,17 @@ const IronDomeGame: React.FC = () => {
     if (!canvas) return;
 
     const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      canvas.style.width = `${w}px`;
+      canvas.style.height = `${h}px`;
+      const ctx = canvas.getContext('2d');
+      if (ctx) ctx.scale(dpr, dpr);
       if (!stateRef.current || stateRef.current.phase === 'menu') {
-        stateRef.current = createInitialState(canvas.width, canvas.height);
+        stateRef.current = createInitialState(w, h);
         setGameState(stateRef.current);
         setPhase('menu');
       }
