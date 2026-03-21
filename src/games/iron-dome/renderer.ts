@@ -648,4 +648,8 @@ function renderHUD(ctx: CanvasRenderingContext2D, state: GameState, w: number, h
     const secs = (state.empTimer / 1000).toFixed(1);
     drawTimer('⚪', secs, '#FFFFFF', 'rgba(255,255,255,0.5)', state.empTimer / 10000);
   }
+  if (state.helicopterTimer > 0) {
+    const secs = (state.helicopterTimer / 1000).toFixed(1);
+    drawTimer('🚁', secs, '#FF88AA', 'rgba(255,136,170,0.6)', state.helicopterTimer / 10000);
+  }
 }
