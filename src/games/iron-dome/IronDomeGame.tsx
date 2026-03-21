@@ -111,8 +111,12 @@ const IronDomeGame: React.FC = () => {
       const dt = lastTimeRef.current ? Math.min(time - lastTimeRef.current, 50) : 16;
       lastTimeRef.current = time;
 
+      // Use logical (CSS) dimensions, not canvas pixel dimensions
+      const logicalW = window.innerWidth;
+      const logicalH = window.innerHeight;
+
       if (stateRef.current) {
-        stateRef.current = update(stateRef.current, dt, canvas.width, canvas.height, time);
+        stateRef.current = update(stateRef.current, dt, logicalW, logicalH, time);
 
         // Process sound events from engine
         if (stateRef.current.soundEvents.length > 0) {
@@ -125,8 +129,11 @@ const IronDomeGame: React.FC = () => {
           setGameState({ ...stateRef.current });
         }
 
+        ctx.save();
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        renderGame(ctx, stateRef.current, canvas.width, canvas.height, time);
+        renderGame(ctx, stateRef.current, logicalW, logicalH, time);
+        ctx.restore();
+      }
       }
 
       animFrameRef.current = requestAnimationFrame(loop);
