@@ -160,20 +160,20 @@ function spawnThreat(state: GameState, type: ThreatType, w: number, h: number): 
   let missileColor: MissileColor | undefined;
   if (type === 'missile') {
     const roll = Math.random() * 100;
-    if (roll < 0.5) {
-      missileColor = 'white';   // 0.5% - EMP
-    } else if (roll < 1) {
-      missileColor = 'yellow';  // 0.5% - Auto dome
-    } else if (roll < 2) {
-      missileColor = 'purple';  // 1% - Shield
-    } else if (roll < 3) {
-      missileColor = 'pink';    // 1% - Helicopter
+    if (roll < 2) {
+      missileColor = 'white';   // 2% - EMP
     } else if (roll < 5) {
-      missileColor = 'blue';    // 2% - Triple 10s
-    } else if (roll < 10) {
-      missileColor = 'green';   // 5% - Triple 5s
+      missileColor = 'yellow';  // 3% - Auto dome
+    } else if (roll < 9) {
+      missileColor = 'purple';  // 4% - Shield
+    } else if (roll < 13) {
+      missileColor = 'pink';    // 4% - Helicopter
+    } else if (roll < 20) {
+      missileColor = 'blue';    // 7% - Auto-fire 5s
+    } else if (roll < 30) {
+      missileColor = 'green';   // 10% - Triple interceptors
     } else {
-      missileColor = 'red';     // 90%
+      missileColor = 'red';     // 70%
     }
   }
 
