@@ -8,6 +8,9 @@ import {
 } from './engine';
 import { GameState, GamePhase } from './types';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { t as ironT } from './i18n';
+import LanguageSelector from '@/components/LanguageSelector';
 import { supabase } from '@/integrations/supabase/client';
 
 const IronDomeGame: React.FC = () => {
@@ -21,6 +24,9 @@ const IronDomeGame: React.FC = () => {
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [musicEnabled, setMusicEnabled] = useState(true);
   const { user } = useAuth();
+  const { language } = useLanguage();
+
+  const T = useCallback((key: string) => ironT(key, language), [language]);
 
   // Initialize canvas
   useEffect(() => {
@@ -54,16 +60,13 @@ const IronDomeGame: React.FC = () => {
       lastTimeRef.current = time;
 
       if (stateRef.current) {
-        // Update
         stateRef.current = update(stateRef.current, dt, canvas.width, canvas.height, time);
 
-        // Sync phase to React
         if (stateRef.current.phase !== phase) {
           setPhase(stateRef.current.phase);
           setGameState({ ...stateRef.current });
         }
 
-        // Render
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         renderGame(ctx, stateRef.current, canvas.width, canvas.height, time);
       }
@@ -94,7 +97,6 @@ const IronDomeGame: React.FC = () => {
       y = e.clientY - rect.top;
     }
 
-    // Don't fire below ground
     if (y > canvas.height * 0.85) return;
 
     stateRef.current = fireInterceptor(stateRef.current, x, y, canvas.width, canvas.height);
@@ -136,7 +138,6 @@ const IronDomeGame: React.FC = () => {
       }
       if (e.key === ' ') {
         e.preventDefault();
-        // Fire at center of screen
         if (canvasRef.current) {
           stateRef.current = fireInterceptor(
             stateRef.current,
@@ -156,7 +157,6 @@ const IronDomeGame: React.FC = () => {
 
   const playSound = (type: string) => {
     if (!soundEnabled) return;
-    // Web Audio API beeps
     try {
       const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
       const osc = audioCtx.createOscillator();
@@ -253,6 +253,11 @@ const IronDomeGame: React.FC = () => {
 
       {/* Top-right controls */}
       <div className="absolute top-3 right-3 flex items-center gap-2 z-30">
+        {phase === 'menu' && (
+          <div className="[&_button]:bg-black/40 [&_button]:border [&_button]:border-white/10 [&_button]:backdrop-blur-sm">
+            <LanguageSelector />
+          </div>
+        )}
         <button onClick={() => setMusicEnabled(!musicEnabled)} className="p-2 bg-black/40 rounded-lg backdrop-blur-sm border border-white/10 text-white/70 hover:text-white transition-colors">
           <Music className="w-4 h-4" style={{ opacity: musicEnabled ? 1 : 0.3 }} />
         </button>
@@ -287,28 +292,28 @@ const IronDomeGame: React.FC = () => {
                 animate={{ textShadow: ['0 0 20px rgba(0,200,255,0.5)', '0 0 40px rgba(0,200,255,0.3)', '0 0 20px rgba(0,200,255,0.5)'] }}
                 transition={{ duration: 2, repeat: Infinity }}
               >
-                Iron Dome
+                {T('title')}
               </motion.h1>
-              <p className="text-cyan-200/60 text-sm tracking-widest">Defend your cities</p>
+              <p className="text-cyan-200/60 text-sm tracking-widest">{T('subtitle')}</p>
 
               <div className="flex flex-col gap-3 w-full mt-6">
-                <MenuButton icon={<Play className="w-5 h-5" />} label="Campaign" sub="Play 10 Waves" onClick={() => startGame('campaign')} color="cyan" />
-                <MenuButton icon={<InfinityIcon className="w-5 h-5" />} label="Survival" sub="How long can you survive?" onClick={() => startGame('survival')} color="blue" />
+                <MenuButton icon={<Play className="w-5 h-5" />} label={T('campaign')} sub={T('play10waves')} onClick={() => startGame('campaign')} color="cyan" />
+                <MenuButton icon={<InfinityIcon className="w-5 h-5" />} label={T('survival')} sub={T('howLong')} onClick={() => startGame('survival')} color="blue" />
 
                 <div className="flex gap-3 mt-2">
-                  <MenuButtonSmall icon="📖" label="Rules" onClick={() => {
+                  <MenuButtonSmall icon="📖" label={T('rules')} onClick={() => {
                     if (stateRef.current) {
                       stateRef.current.phase = 'rules';
                       setPhase('rules');
                     }
                   }} />
-                  <MenuButtonSmall icon="🏆" label="Leaderboard" onClick={() => {}} />
+                  <MenuButtonSmall icon="🏆" label={T('leaderboard')} onClick={() => {}} />
                 </div>
               </div>
 
               {/* Stats */}
               <div className="mt-4 px-4 py-3 bg-black/40 rounded-xl border border-cyan-900/30 text-center">
-                <p className="text-cyan-400/40 text-xs">🌍 Players worldwide</p>
+                <p className="text-cyan-400/40 text-xs">{T('playersWorldwide')}</p>
               </div>
             </div>
           </motion.div>
@@ -333,7 +338,7 @@ const IronDomeGame: React.FC = () => {
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ type: 'spring', duration: 0.5 }}
               >
-                WAVE {gameState.wave}
+                {T('wave')} {gameState.wave}
               </motion.p>
               <motion.p
                 className="text-cyan-300/50 text-lg mt-2"
@@ -343,7 +348,7 @@ const IronDomeGame: React.FC = () => {
               >
                 {gameState.mode === 'campaign'
                   ? `${gameState.wave} / 10`
-                  : 'Survive as long as you can'}
+                  : T('surviveAsLong')}
               </motion.p>
             </div>
           </motion.div>
@@ -366,7 +371,7 @@ const IronDomeGame: React.FC = () => {
               initial={{ scale: 0 }}
               animate={{ scale: [0, 1.2, 1] }}
             >
-              ✅ WAVE CLEARED!
+              ✅ {T('waveCleared')}
             </motion.p>
           </motion.div>
         )}
@@ -383,13 +388,13 @@ const IronDomeGame: React.FC = () => {
             className="absolute inset-0 flex flex-col items-center justify-center z-20 bg-black/60"
           >
             <Pause className="w-16 h-16 text-white/60 mb-4" />
-            <p className="text-2xl font-bold text-white mb-6">PAUSED</p>
+            <p className="text-2xl font-bold text-white mb-6">{T('paused')}</p>
             <div className="flex flex-col gap-3">
               <button onClick={handleResume} className="px-8 py-3 bg-cyan-600/80 text-white rounded-xl font-bold hover:bg-cyan-500 transition-colors">
-                Resume
+                {T('resume')}
               </button>
               <button onClick={handleRestart} className="px-8 py-3 bg-white/10 text-white/70 rounded-xl font-bold hover:bg-white/20 transition-colors">
-                Quit to Menu
+                {T('quitToMenu')}
               </button>
             </div>
           </motion.div>
@@ -407,9 +412,9 @@ const IronDomeGame: React.FC = () => {
             className="absolute inset-0 flex items-center justify-center z-20 bg-black/70"
           >
             <div className="bg-[#0a1525] border border-cyan-900/40 rounded-2xl p-6 max-w-sm w-full mx-4">
-              <h2 className="text-2xl font-bold text-cyan-400 text-center mb-1" style={{ fontFamily: "'Courier New', monospace" }}>STORE</h2>
-              <p className="text-cyan-300/40 text-xs text-center mb-4">Wave {gameState.wave} completed</p>
-              <p className="text-green-400 text-center text-sm mb-4">💰 Credits: {gameState.credits}</p>
+              <h2 className="text-2xl font-bold text-cyan-400 text-center mb-1" style={{ fontFamily: "'Courier New', monospace" }}>{T('store')}</h2>
+              <p className="text-cyan-300/40 text-xs text-center mb-4">{T('waveCompleted').replace('{n}', String(gameState.wave))}</p>
+              <p className="text-green-400 text-center text-sm mb-4">💰 {T('credits')}: {gameState.credits}</p>
 
               <div className="flex flex-col gap-2 mb-4">
                 {gameState.storeItems.map(item => (
@@ -436,7 +441,7 @@ const IronDomeGame: React.FC = () => {
                 onClick={handleNextWave}
                 className="w-full py-3 bg-gradient-to-r from-cyan-600 to-blue-600 text-white rounded-xl font-bold text-lg hover:from-cyan-500 hover:to-blue-500 transition-all"
               >
-                Next Wave →
+                {T('nextWave')}
               </button>
             </div>
           </motion.div>
@@ -464,31 +469,31 @@ const IronDomeGame: React.FC = () => {
                 animate={{ opacity: [1, 0.7, 1] }}
                 transition={{ duration: 2, repeat: Infinity }}
               >
-                MISSION FAILED
+                {T('missionFailed')}
               </motion.h2>
               <div className="text-5xl font-bold text-yellow-400 my-4">{gameState.score}</div>
 
               <div className="grid grid-cols-3 gap-3 mb-4 text-center">
                 <div className="bg-black/40 rounded-xl p-2">
                   <p className="text-yellow-400 text-lg font-bold">{gameState.wave}</p>
-                  <p className="text-cyan-300/40 text-xs">Wave</p>
+                  <p className="text-cyan-300/40 text-xs">{T('wave')}</p>
                 </div>
                 <div className="bg-black/40 rounded-xl p-2">
                   <p className="text-green-400 text-lg font-bold">{gameState.totalIntercepted}</p>
-                  <p className="text-cyan-300/40 text-xs">Intercepted</p>
+                  <p className="text-cyan-300/40 text-xs">{T('intercepted')}</p>
                 </div>
                 <div className="bg-black/40 rounded-xl p-2">
                   <p className="text-orange-400 text-lg font-bold">x{gameState.maxCombo}</p>
-                  <p className="text-cyan-300/40 text-xs">Max Combo</p>
+                  <p className="text-cyan-300/40 text-xs">{T('maxCombo')}</p>
                 </div>
               </div>
 
               <div className="flex gap-3">
                 <button onClick={handleRestart} className="flex-1 py-3 bg-red-600/60 text-white rounded-xl font-bold hover:bg-red-500/60 transition-colors">
-                  Menu
+                  {T('menu')}
                 </button>
                 <button onClick={() => startGame(gameState.mode)} className="flex-1 py-3 bg-cyan-600/80 text-white rounded-xl font-bold hover:bg-cyan-500 transition-colors">
-                  Retry
+                  {T('retry')}
                 </button>
               </div>
             </motion.div>
@@ -519,28 +524,28 @@ const IronDomeGame: React.FC = () => {
                 🏆
               </motion.div>
               <h2 className="text-3xl font-bold text-yellow-400 mb-1" style={{ fontFamily: "'Courier New', monospace" }}>
-                VICTORY!
+                {T('victory')}
               </h2>
-              <p className="text-cyan-300/50 text-sm mb-4">All 10 waves defended</p>
+              <p className="text-cyan-300/50 text-sm mb-4">{T('all10waves')}</p>
               <div className="text-5xl font-bold text-yellow-400 my-4">{gameState.score}</div>
 
               <div className="grid grid-cols-3 gap-3 mb-4">
                 <div className="bg-black/40 rounded-xl p-2">
                   <p className="text-green-400 text-lg font-bold">{gameState.totalIntercepted}</p>
-                  <p className="text-cyan-300/40 text-xs">Intercepted</p>
+                  <p className="text-cyan-300/40 text-xs">{T('intercepted')}</p>
                 </div>
                 <div className="bg-black/40 rounded-xl p-2">
                   <p className="text-orange-400 text-lg font-bold">x{gameState.maxCombo}</p>
-                  <p className="text-cyan-300/40 text-xs">Max Combo</p>
+                  <p className="text-cyan-300/40 text-xs">{T('maxCombo')}</p>
                 </div>
                 <div className="bg-black/40 rounded-xl p-2">
                   <p className="text-red-400 text-lg font-bold">{gameState.totalMissed}</p>
-                  <p className="text-cyan-300/40 text-xs">Missed</p>
+                  <p className="text-cyan-300/40 text-xs">{T('missed')}</p>
                 </div>
               </div>
 
               <button onClick={handleRestart} className="w-full py-3 bg-gradient-to-r from-yellow-600 to-orange-600 text-white rounded-xl font-bold text-lg hover:from-yellow-500 hover:to-orange-500 transition-all">
-                Back to Menu
+                {T('backToMenu')}
               </button>
             </motion.div>
           </motion.div>
@@ -558,33 +563,33 @@ const IronDomeGame: React.FC = () => {
             className="absolute inset-0 flex items-center justify-center z-20 bg-black/80 overflow-y-auto py-8"
           >
             <div className="bg-[#0a1525] border border-cyan-900/40 rounded-2xl p-6 max-w-md w-full mx-4 max-h-[80vh] overflow-y-auto">
-              <h2 className="text-2xl font-bold text-cyan-400 text-center mb-1" style={{ fontFamily: "'Courier New', monospace" }}>How to Play</h2>
-              <p className="text-cyan-300/50 text-sm text-center mb-4">Defend cities from incoming threats</p>
+              <h2 className="text-2xl font-bold text-cyan-400 text-center mb-1" style={{ fontFamily: "'Courier New', monospace" }}>{T('howToPlay')}</h2>
+              <p className="text-cyan-300/50 text-sm text-center mb-4">{T('defendCities')}</p>
 
-              <RuleSection label="OBJECTIVE" icon="🛡">
-                Intercept all incoming threats before they hit your cities. You have 4 lives. Each city hit costs 1 life. Survive all 10 waves to win.
+              <RuleSection label={T('objective')} icon="🛡">
+                {T('objectiveDesc')}
               </RuleSection>
 
-              <RuleSection label="CONTROLS" icon="🖱">
-                Click/tap the sky to fire an interceptor missile toward that point. 20 missiles per magazine, auto-reloads when empty.
+              <RuleSection label={T('controls')} icon="🖱">
+                {T('controlsDesc')}
               </RuleSection>
 
-              <RuleSection label="KEYBOARD" icon="⌨">
-                [Space] Fire · [A] Air Support · [G] GPS Jammer · [B] Iron Beam · [P/ESC] Pause
+              <RuleSection label={T('keyboard')} icon="⌨">
+                {T('keyboardDesc')}
               </RuleSection>
 
-              <RuleSection label="THREATS" icon="🚀">
+              <RuleSection label={T('threats')} icon="🚀">
                 <div className="space-y-1 text-xs">
-                  <p>🚀 <b>Missile</b> (100pts) - Standard ballistic. 1 hit.</p>
-                  <p>✈ <b>UAV</b> (150pts) - Evasive drone. 1 hit.</p>
-                  <p>💣 <b>Cluster</b> (300pts) - Splits into 4 after 7s!</p>
-                  <p>💥 <b>Submunition</b> (75pts) - Small fast debris.</p>
-                  <p>☢ <b>1-Ton</b> (250pts) - Heavy. 2 hits needed.</p>
+                  <p>🚀 <b>{T('missile')}</b> (100pts) - {T('missileDesc')}</p>
+                  <p>✈ <b>{T('uav')}</b> (150pts) - {T('uavDesc')}</p>
+                  <p>💣 <b>{T('cluster')}</b> (300pts) - {T('clusterDesc')}</p>
+                  <p>💥 <b>{T('submunition')}</b> (75pts) - {T('submunitionDesc')}</p>
+                  <p>☢ <b>{T('heavy')}</b> (250pts) - {T('heavyDesc')}</p>
                 </div>
               </RuleSection>
 
-              <RuleSection label="COMBO SYSTEM" icon="✕">
-                Intercept without missing to build combo. Multiplier grows up to x5. Ground hits reset combo to zero. Combo milestones earn credits.
+              <RuleSection label={T('comboSystem')} icon="✕">
+                {T('comboDesc')}
               </RuleSection>
 
               <button
@@ -596,7 +601,7 @@ const IronDomeGame: React.FC = () => {
                 }}
                 className="w-full py-3 bg-cyan-600/60 text-white rounded-xl font-bold mt-4 hover:bg-cyan-500/60 transition-colors"
               >
-                Got it!
+                {T('gotIt')}
               </button>
             </div>
           </motion.div>
@@ -621,7 +626,7 @@ const IronDomeGame: React.FC = () => {
       {/* Bottom info bar during gameplay */}
       {phase === 'playing' && (
         <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20 text-white/30 text-[10px] font-mono pointer-events-none">
-          🚀 Missile · ✈ UAV · 💣 Cluster (7s!) · ☢ 1-ton (2 hits!) · ESC = Pause
+          🚀 {T('missile')} · ✈ {T('uav')} · 💣 {T('cluster')} (7s!) · ☢ {T('heavy')} (2 hits!) · ESC = {T('paused')}
         </div>
       )}
     </div>
