@@ -692,21 +692,32 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
   }
   if (s.autoDefenseTimer > 0) {
     s.autoDefenseTimer = Math.max(0, s.autoDefenseTimer - dt);
-    // Auto-defense: destroy nearest threat every ~300ms
-    if (s.threats.length > 0 && Math.random() < dt / 300) {
-      const groundY = h * GROUND_Y_RATIO;
-      const target = [...s.threats].sort((a, b) => b.y - a.y)[0];
-      s.threats = s.threats.filter(t => t.id !== target.id);
-      s.score += target.points;
-      s.totalIntercepted++;
-      s.explosions = [...s.explosions, {
-        x: target.x, y: target.y, radius: 2, maxRadius: 30,
-        alpha: 1, color: '#FFFF44', isGround: false
-      }];
-      s.floatingTexts = [...s.floatingTexts, {
-        x: target.x, y: target.y, text: `+${target.points} 🛡️`,
-        alpha: 1, vy: -1.5, color: '#FFFF88', size: 12,
-      }];
+    // Auto-defense dome: destroy any threat entering the semicircle zone above ground
+    const groundY = h * GROUND_Y_RATIO;
+    const domeCenterX = w / 2;
+    const domeRadius = w * 0.45;
+    const threatsInDome: number[] = [];
+    s.threats.forEach(t => {
+      const dx = t.x - domeCenterX;
+      const dy = t.y - groundY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      // Only destroy if inside dome semicircle (above ground) and descending
+      if (dist < domeRadius && t.y < groundY && dy < 0) {
+        threatsInDome.push(t.id);
+        s.score += t.points;
+        s.totalIntercepted++;
+        s.explosions = [...s.explosions, {
+          x: t.x, y: t.y, radius: 2, maxRadius: 25,
+          alpha: 1, color: '#FFFF44', isGround: false
+        }];
+        s.floatingTexts = [...s.floatingTexts, {
+          x: t.x, y: t.y, text: `+${t.points} 🛡️`,
+          alpha: 1, vy: -1.5, color: '#FFFF88', size: 12,
+        }];
+      }
+    });
+    if (threatsInDome.length > 0) {
+      s.threats = s.threats.filter(t => !threatsInDome.includes(t.id));
     }
   }
 
