@@ -233,6 +233,7 @@ function renderThreat(ctx: CanvasRenderingContext2D, threat: Threat, time: numbe
     const missileColor = threat.missileColor;
     const bodyColor = missileColor === 'green' ? '#22CC44'
       : missileColor === 'yellow' ? '#DDCC00'
+      : missileColor === 'blue' ? '#2266DD'
       : type === 'submunition' ? '#FFAA00' : '#CC3333';
     ctx.fillStyle = bodyColor;
     ctx.beginPath();
@@ -251,8 +252,10 @@ function renderThreat(ctx: CanvasRenderingContext2D, threat: Threat, time: numbe
     ctx.closePath();
     ctx.fill();
     // Glow for special missiles
-    if (missileColor === 'green' || missileColor === 'yellow') {
-      const glowColor = missileColor === 'green' ? 'rgba(0,255,0,0.3)' : 'rgba(255,255,0,0.3)';
+    if (missileColor === 'green' || missileColor === 'yellow' || missileColor === 'blue') {
+      const glowColor = missileColor === 'green' ? 'rgba(0,255,0,0.3)'
+        : missileColor === 'blue' ? 'rgba(68,136,255,0.4)'
+        : 'rgba(255,255,0,0.3)';
       const mg = ctx.createRadialGradient(0, 0, 0, 0, 0, size * 2);
       mg.addColorStop(0, glowColor);
       mg.addColorStop(1, 'transparent');

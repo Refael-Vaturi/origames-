@@ -574,6 +574,13 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
                 x: t.x, y: t.y - 30, text: '🟢 x3 INTERCEPTORS!',
                 alpha: 1, vy: -1, color: '#44FF44', size: 16,
               }];
+            } else if (t.missileColor === 'blue') {
+              // Triple interceptor for 10 seconds
+              s.tripleInterceptorTimer = 10000;
+              s.floatingTexts = [...s.floatingTexts, {
+                x: t.x, y: t.y - 30, text: '🔵 x3 INTERCEPTORS 10s!',
+                alpha: 1, vy: -1, color: '#4488FF', size: 16,
+              }];
             } else if (t.missileColor === 'yellow') {
               // Auto defense for 5 seconds
               s.autoDefenseTimer = 5000;
