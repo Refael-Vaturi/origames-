@@ -58,7 +58,6 @@ function createCities(w: number, h: number): City[] {
 function createDefaultStoreItems(): StoreItem[] {
   return [
     { id: 'first-aid', name: 'First Aid', icon: '🩹', description: '+1 life', cost: 5, maxBuys: 2, bought: 0 },
-    { id: 'air-support', name: 'Air Support', icon: '🚁', description: '+1 helicopter strike [A]', cost: 8, maxBuys: 5, bought: 0 },
     { id: 'fast-reload', name: 'Fast Reload', icon: '⚡', description: 'Missiles reload faster', cost: 10, maxBuys: 1, bought: 0 },
     { id: 'gps-jammer', name: 'GPS Jammer', icon: '📡', description: 'Diverts ~25% threats [G]', cost: 7, maxBuys: 3, bought: 0 },
     { id: 'iron-beam', name: 'Iron Beam', icon: '🔆', description: 'Laser auto-target [B]', cost: 15, maxBuys: 1, bought: 0 },
@@ -105,6 +104,8 @@ export function createInitialState(w: number, h: number): GameState {
     autoDefenseTimer: 0,
     shieldTimer: 0,
     empTimer: 0,
+    helicopterTimer: 0,
+    helicopterX: 0,
     soundEvents: [],
   };
 }
@@ -161,15 +162,17 @@ function spawnThreat(state: GameState, type: ThreatType, w: number, h: number): 
     if (roll < 0.5) {
       missileColor = 'white';   // 0.5% - EMP
     } else if (roll < 1) {
-      missileColor = 'yellow';  // 0.5% - Auto defense
+      missileColor = 'yellow';  // 0.5% - Auto dome
     } else if (roll < 2) {
       missileColor = 'purple';  // 1% - Shield
-    } else if (roll < 4) {
+    } else if (roll < 3) {
+      missileColor = 'pink';    // 1% - Helicopter
+    } else if (roll < 5) {
       missileColor = 'blue';    // 2% - Triple 10s
-    } else if (roll < 9) {
+    } else if (roll < 10) {
       missileColor = 'green';   // 5% - Triple 5s
     } else {
-      missileColor = 'red';     // 91%
+      missileColor = 'red';     // 90%
     }
   }
 
@@ -190,7 +193,7 @@ function spawnThreat(state: GameState, type: ThreatType, w: number, h: number): 
     evasive,
     evasiveTimer: 0,
     clusterTimer: type === 'cluster' ? CLUSTER_SPLIT_TIME : 0,
-    points: missileColor === 'yellow' ? 1000 : missileColor === 'white' ? 1500 : missileColor === 'purple' ? 800 : missileColor === 'blue' ? 750 : missileColor === 'green' ? 500 : tc.points,
+    points: missileColor === 'yellow' ? 1000 : missileColor === 'white' ? 1500 : missileColor === 'purple' ? 800 : missileColor === 'blue' ? 750 : missileColor === 'green' ? 500 : missileColor === 'pink' ? 600 : tc.points,
     locked: false,
     missileColor,
   };
@@ -620,6 +623,14 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
                 x: t.x, y: t.y - 30, text: '⚪ EMP SLOWDOWN 10s!',
                 alpha: 1, vy: -1, color: '#FFFFFF', size: 16,
               }];
+            } else if (t.missileColor === 'pink') {
+              s.helicopterTimer = 10000;
+              s.helicopterX = 0;
+              s.soundEvents.push('powerup-pink');
+              s.floatingTexts = [...s.floatingTexts, {
+                x: t.x, y: t.y - 30, text: '🩷 HELICOPTER 10s!',
+                alpha: 1, vy: -1, color: '#FF88AA', size: 16,
+              }];
             }
           }
         }
@@ -718,6 +729,40 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
     });
     if (threatsInDome.length > 0) {
       s.threats = s.threats.filter(t => !threatsInDome.includes(t.id));
+    }
+  }
+
+  // Helicopter - flies across top of screen shooting threats
+  if (s.helicopterTimer > 0) {
+    s.helicopterTimer = Math.max(0, s.helicopterTimer - dt);
+    s.helicopterX += (w / 10000) * dt; // Cross screen in ~10s
+    if (s.helicopterX > w) s.helicopterX = 0; // Loop
+
+    // Shoot nearest threat from helicopter position every ~400ms
+    if (s.threats.length > 0 && Math.random() < dt / 400) {
+      const heliY = 40;
+      let nearest: typeof s.threats[0] | null = null;
+      let nearDist = Infinity;
+      s.threats.forEach(t => {
+        const dx = t.x - s.helicopterX;
+        const dy = t.y - heliY;
+        const d = Math.sqrt(dx * dx + dy * dy);
+        if (d < nearDist) { nearDist = d; nearest = t; }
+      });
+      if (nearest) {
+        const t = nearest as typeof s.threats[0];
+        s.threats = s.threats.filter(th => th.id !== t.id);
+        s.score += t.points;
+        s.totalIntercepted++;
+        s.explosions = [...s.explosions, {
+          x: t.x, y: t.y, radius: 2, maxRadius: 20,
+          alpha: 1, color: '#88CCFF', isGround: false
+        }];
+        s.floatingTexts = [...s.floatingTexts, {
+          x: t.x, y: t.y, text: `+${t.points} 🚁`,
+          alpha: 1, vy: -1.5, color: '#88CCFF', size: 12,
+        }];
+      }
     }
   }
 

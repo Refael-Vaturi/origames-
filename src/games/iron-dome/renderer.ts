@@ -130,11 +130,68 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   // Particles
   state.particles.forEach(p => renderParticle(ctx, p));
 
+  // Helicopter visual
+  if (state.helicopterTimer > 0) {
+    renderHelicopter(ctx, state.helicopterX, 40, time);
+  }
+
   // Floating texts
   state.floatingTexts.forEach(ft => renderFloatingText(ctx, ft));
 
   // HUD
   renderHUD(ctx, state, w, h, time);
+}
+
+function renderHelicopter(ctx: CanvasRenderingContext2D, x: number, y: number, time: number) {
+  ctx.save();
+  ctx.translate(x, y);
+
+  // Body
+  ctx.fillStyle = '#4a6a4a';
+  ctx.beginPath();
+  ctx.ellipse(0, 0, 18, 8, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Cockpit
+  ctx.fillStyle = '#88CCFF';
+  ctx.beginPath();
+  ctx.ellipse(12, -2, 6, 5, 0.2, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Tail
+  ctx.fillStyle = '#3a5a3a';
+  ctx.fillRect(-28, -3, 14, 5);
+  ctx.fillRect(-32, -8, 6, 12);
+
+  // Main rotor (spinning)
+  const rotorAngle = time * 0.03;
+  ctx.strokeStyle = 'rgba(200,200,200,0.6)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(-22 * Math.cos(rotorAngle), -10);
+  ctx.lineTo(22 * Math.cos(rotorAngle), -10);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(-22 * Math.sin(rotorAngle), -10);
+  ctx.lineTo(22 * Math.sin(rotorAngle), -10);
+  ctx.stroke();
+
+  // Rotor hub
+  ctx.fillStyle = '#666';
+  ctx.beginPath();
+  ctx.arc(0, -10, 2, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Searchlight beam
+  ctx.fillStyle = 'rgba(255,255,200,0.05)';
+  ctx.beginPath();
+  ctx.moveTo(0, 8);
+  ctx.lineTo(-40, 200);
+  ctx.lineTo(40, 200);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.restore();
 }
 
 function renderCities(ctx: CanvasRenderingContext2D, cities: City[], groundY: number, time: number) {
@@ -242,6 +299,7 @@ function renderThreat(ctx: CanvasRenderingContext2D, threat: Threat, time: numbe
     : threat.missileColor === 'blue' ? '#4488FF'
     : threat.missileColor === 'purple' ? '#CC66FF'
     : threat.missileColor === 'white' ? '#FFFFFF'
+    : threat.missileColor === 'pink' ? '#FF88AA'
     : COLORS.missileTrail;
 
   trail.forEach((p, i) => {
@@ -277,6 +335,7 @@ function renderThreat(ctx: CanvasRenderingContext2D, threat: Threat, time: numbe
       : missileColor === 'blue' ? '#2266DD'
       : missileColor === 'purple' ? '#9944CC'
       : missileColor === 'white' ? '#CCCCCC'
+      : missileColor === 'pink' ? '#DD5588'
       : type === 'submunition' ? '#FFAA00' : '#CC3333';
     ctx.fillStyle = bodyColor;
     ctx.beginPath();
@@ -300,6 +359,7 @@ function renderThreat(ctx: CanvasRenderingContext2D, threat: Threat, time: numbe
         : missileColor === 'blue' ? 'rgba(68,136,255,0.4)'
         : missileColor === 'purple' ? 'rgba(180,68,255,0.4)'
         : missileColor === 'white' ? 'rgba(255,255,255,0.5)'
+        : missileColor === 'pink' ? 'rgba(255,100,170,0.4)'
         : 'rgba(255,255,0,0.3)';
       const mg = ctx.createRadialGradient(0, 0, 0, 0, 0, size * 2.5);
       mg.addColorStop(0, glowColor);
@@ -532,11 +592,7 @@ function renderHUD(ctx: CanvasRenderingContext2D, state: GameState, w: number, h
   ctx.font = '10px monospace';
   ctx.textAlign = 'left';
 
-  if (state.airSupportCharges > 0) {
-    ctx.fillStyle = '#AADDFF';
-    ctx.fillText(`[A] Air Support x${state.airSupportCharges}`, abilityX, abilityY);
-    abilityX += 140;
-  }
+  // Air support indicator removed - now triggered by pink missile
   if (state.gpsJammerCharges > 0) {
     ctx.fillStyle = '#AAFFAA';
     ctx.fillText(`[G] GPS Jammer x${state.gpsJammerCharges}`, abilityX, abilityY);
@@ -591,5 +647,9 @@ function renderHUD(ctx: CanvasRenderingContext2D, state: GameState, w: number, h
   if (state.empTimer > 0) {
     const secs = (state.empTimer / 1000).toFixed(1);
     drawTimer('⚪', secs, '#FFFFFF', 'rgba(255,255,255,0.5)', state.empTimer / 10000);
+  }
+  if (state.helicopterTimer > 0) {
+    const secs = (state.helicopterTimer / 1000).toFixed(1);
+    drawTimer('🚁', secs, '#FF88AA', 'rgba(255,136,170,0.6)', state.helicopterTimer / 10000);
   }
 }
