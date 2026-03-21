@@ -133,4 +133,8 @@ export interface GameState {
   // Special missile effects
   tripleInterceptorTimer: number;
   autoDefenseTimer: number;
+  shieldTimer: number;
+  empTimer: number;
+  // Sound events queue (consumed by UI layer)
+  soundEvents: string[];
 }
