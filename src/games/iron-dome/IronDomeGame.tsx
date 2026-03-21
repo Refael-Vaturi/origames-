@@ -23,12 +23,57 @@ const IronDomeGame: React.FC = () => {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [musicEnabled, setMusicEnabled] = useState(true);
+  const [leaderboardData, setLeaderboardData] = useState<any[]>([]);
+  const [leaderboardMode, setLeaderboardMode] = useState<'campaign' | 'survival'>('campaign');
+  const [scoreSaved, setScoreSaved] = useState(false);
+  const [loadingLB, setLoadingLB] = useState(false);
   const { user } = useAuth();
   const { language } = useLanguage();
 
   const T = useCallback((key: string) => ironT(key, language), [language]);
 
-  // Initialize canvas
+  const saveScore = useCallback(async (state: GameState) => {
+    if (!user || scoreSaved) return;
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('display_name')
+        .eq('user_id', user.id)
+        .single();
+
+      await supabase.from('iron_dome_scores').insert({
+        user_id: user.id,
+        display_name: profile?.display_name || 'Player',
+        score: state.score,
+        wave: state.wave,
+        max_combo: state.maxCombo,
+        mode: state.mode,
+      });
+      setScoreSaved(true);
+    } catch (e) {
+      console.error('Failed to save score:', e);
+    }
+  }, [user, scoreSaved]);
+
+  const fetchLeaderboard = useCallback(async (mode: 'campaign' | 'survival') => {
+    setLoadingLB(true);
+    const { data } = await supabase
+      .from('iron_dome_scores')
+      .select('*')
+      .eq('mode', mode)
+      .order('score', { ascending: false })
+      .limit(15);
+    setLeaderboardData(data || []);
+    setLoadingLB(false);
+  }, []);
+
+  // Auto-save score on game over or victory
+  useEffect(() => {
+    if ((phase === 'game-over' || phase === 'victory') && gameState && user && !scoreSaved) {
+      saveScore(gameState);
+    }
+  }, [phase, gameState, user, scoreSaved, saveScore]);
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -207,6 +252,7 @@ const IronDomeGame: React.FC = () => {
   const startGame = (mode: 'campaign' | 'survival') => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    setScoreSaved(false);
     const s = createInitialState(canvas.width, canvas.height);
     s.mode = mode;
     stateRef.current = startWave(s, canvas.width, canvas.height);
@@ -308,7 +354,14 @@ const IronDomeGame: React.FC = () => {
                       setPhase('rules');
                     }
                   }} />
-                  <MenuButtonSmall icon="🏆" label={T('leaderboard')} onClick={() => {}} />
+                  <MenuButtonSmall icon="🏆" label={T('leaderboard')} onClick={() => {
+                    fetchLeaderboard('campaign');
+                    setLeaderboardMode('campaign');
+                    if (stateRef.current) {
+                      stateRef.current.phase = 'leaderboard';
+                      setPhase('leaderboard');
+                    }
+                  }} />
                 </div>
               </div>
 
@@ -489,6 +542,15 @@ const IronDomeGame: React.FC = () => {
                 </div>
               </div>
 
+              {/* Score save status */}
+              <p className="text-center text-xs mb-3">
+                {scoreSaved ? (
+                  <span className="text-green-400">✅ {T('scoreSaved')}</span>
+                ) : !user ? (
+                  <span className="text-cyan-300/40">🔒 {T('loginToSave')}</span>
+                ) : null}
+              </p>
+
               <div className="flex gap-3">
                 <button onClick={handleRestart} className="flex-1 py-3 bg-red-600/60 text-white rounded-xl font-bold hover:bg-red-500/60 transition-colors">
                   {T('menu')}
@@ -544,6 +606,15 @@ const IronDomeGame: React.FC = () => {
                   <p className="text-cyan-300/40 text-xs">{T('missed')}</p>
                 </div>
               </div>
+
+              {/* Score save status */}
+              <p className="text-center text-xs mb-3">
+                {scoreSaved ? (
+                  <span className="text-green-400">✅ {T('scoreSaved')}</span>
+                ) : !user ? (
+                  <span className="text-cyan-300/40">🔒 {T('loginToSave')}</span>
+                ) : null}
+              </p>
 
               <button onClick={handleRestart} className="w-full py-3 bg-gradient-to-r from-yellow-600 to-orange-600 text-white rounded-xl font-bold text-lg hover:from-yellow-500 hover:to-orange-500 transition-all">
                 {T('backToMenu')}
@@ -609,7 +680,112 @@ const IronDomeGame: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* Pause button during gameplay */}
+      {/* Leaderboard */}
+      <AnimatePresence>
+        {phase === 'leaderboard' && (
+          <motion.div
+            key="leaderboard"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 flex items-center justify-center z-20 bg-black/80 overflow-y-auto py-8"
+          >
+            <div className="bg-[#0a1525] border border-cyan-900/40 rounded-2xl p-6 max-w-md w-full mx-4 max-h-[80vh] overflow-y-auto">
+              <h2 className="text-2xl font-bold text-yellow-400 text-center mb-1" style={{ fontFamily: "'Courier New', monospace" }}>
+                🏆 {T('leaderboard')}
+              </h2>
+
+              {/* Mode tabs */}
+              <div className="flex gap-2 mb-4 mt-3">
+                {(['campaign', 'survival'] as const).map(mode => (
+                  <button
+                    key={mode}
+                    onClick={() => { setLeaderboardMode(mode); fetchLeaderboard(mode); }}
+                    className={`flex-1 py-2 rounded-xl text-sm font-bold transition-colors ${
+                      leaderboardMode === mode
+                        ? 'bg-cyan-600/80 text-white'
+                        : 'bg-white/5 text-white/50 hover:bg-white/10'
+                    }`}
+                  >
+                    {mode === 'campaign' ? T('campaign') : T('survival')}
+                  </button>
+                ))}
+              </div>
+
+              <p className="text-cyan-300/40 text-xs text-center mb-3">
+                {leaderboardMode === 'campaign' ? T('campaignTop') : T('survivalTop')}
+              </p>
+
+              {loadingLB ? (
+                <div className="text-center py-8">
+                  <motion.div
+                    className="text-3xl mx-auto"
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                  >
+                    ⏳
+                  </motion.div>
+                </div>
+              ) : leaderboardData.length === 0 ? (
+                <p className="text-cyan-300/50 text-sm text-center py-8">{T('noScores')}</p>
+              ) : (
+                <div className="space-y-1">
+                  {/* Header */}
+                  <div className="flex items-center gap-2 px-3 py-1 text-[10px] text-cyan-300/40 font-bold uppercase tracking-wider">
+                    <span className="w-8">{T('rank')}</span>
+                    <span className="flex-1">{T('player')}</span>
+                    <span className="w-16 text-right">{T('score')}</span>
+                    <span className="w-12 text-right">{T('wave')}</span>
+                    <span className="w-12 text-right">{T('maxCombo')}</span>
+                  </div>
+                  {leaderboardData.map((entry, i) => {
+                    const isMe = user && entry.user_id === user.id;
+                    const medals = ['🥇', '🥈', '🥉'];
+                    return (
+                      <motion.div
+                        key={entry.id}
+                        initial={{ x: -20, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        transition={{ delay: i * 0.03 }}
+                        className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm ${
+                          isMe
+                            ? 'bg-cyan-600/20 border border-cyan-500/30'
+                            : i % 2 === 0
+                            ? 'bg-black/20'
+                            : 'bg-black/40'
+                        }`}
+                      >
+                        <span className="w-8 text-center font-bold text-cyan-300/60">
+                          {i < 3 ? medals[i] : i + 1}
+                        </span>
+                        <span className={`flex-1 font-semibold truncate ${isMe ? 'text-cyan-300' : 'text-white/80'}`}>
+                          {entry.display_name}
+                        </span>
+                        <span className="w-16 text-right font-bold text-yellow-400">{entry.score}</span>
+                        <span className="w-12 text-right text-cyan-300/60">{entry.wave}</span>
+                        <span className="w-12 text-right text-orange-400/60">x{entry.max_combo}</span>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              )}
+
+              <button
+                onClick={() => {
+                  if (stateRef.current) {
+                    stateRef.current.phase = 'menu';
+                    setPhase('menu');
+                  }
+                }}
+                className="w-full py-3 bg-cyan-600/60 text-white rounded-xl font-bold mt-4 hover:bg-cyan-500/60 transition-colors"
+              >
+                {T('close')}
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {phase === 'playing' && (
         <button
           onClick={() => {
