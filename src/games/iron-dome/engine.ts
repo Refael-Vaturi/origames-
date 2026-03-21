@@ -178,19 +178,48 @@ export function fireInterceptor(state: GameState, targetX: number, targetY: numb
   const launchX = w / 2;
   const launchY = groundY - 5;
 
-  const dx = targetX - launchX;
-  const dy = targetY - launchY;
+  // Find nearest threat to click point and target it instead
+  let finalTargetX = targetX;
+  let finalTargetY = targetY;
+  let lockedThreatId: number | undefined;
+
+  if (state.threats.length > 0) {
+    let nearestDist = Infinity;
+    let nearestThreat: Threat | null = null;
+    state.threats.forEach(t => {
+      const dx = t.x - targetX;
+      const dy = t.y - targetY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < nearestDist && dist < 200) { // Lock on if within 200px of click
+        nearestDist = dist;
+        nearestThreat = t;
+      }
+    });
+    if (nearestThreat) {
+      // Predict where the threat will be when interceptor arrives
+      const thr = nearestThreat as Threat;
+      const travelDist = Math.sqrt((thr.x - launchX) ** 2 + (thr.y - launchY) ** 2);
+      const travelTime = travelDist / INTERCEPTOR_SPEED;
+      finalTargetX = thr.x + Math.cos(thr.angle) * thr.speed * (travelTime * 0.6);
+      finalTargetY = thr.y + Math.sin(thr.angle) * thr.speed * (travelTime * 0.6);
+      lockedThreatId = thr.id;
+    }
+  }
+
+  const dx = finalTargetX - launchX;
+  const dy = finalTargetY - launchY;
   const angle = Math.atan2(dy, dx);
 
   const interceptor: Interceptor = {
     id: state.nextId,
     x: launchX,
     y: launchY,
-    targetX,
-    targetY,
+    targetX: finalTargetX,
+    targetY: finalTargetY,
     speed: INTERCEPTOR_SPEED,
     angle,
     trail: [],
+    lockedThreatId,
   };
 
   const newAmmo = state.ammo - 1;
