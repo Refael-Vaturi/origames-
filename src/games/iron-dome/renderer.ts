@@ -146,6 +146,8 @@ function renderThreat(ctx: CanvasRenderingContext2D, threat: Threat, time: numbe
     : type === 'cluster' ? COLORS.clusterTrail
     : type === 'heavy' ? COLORS.heavyTrail
     : type === 'submunition' ? COLORS.submunition
+    : threat.missileColor === 'green' ? '#44FF66'
+    : threat.missileColor === 'yellow' ? '#FFFF44'
     : COLORS.missileTrail;
 
   trail.forEach((p, i) => {
@@ -175,7 +177,11 @@ function renderThreat(ctx: CanvasRenderingContext2D, threat: Threat, time: numbe
 
   if (type === 'missile' || type === 'submunition') {
     const size = type === 'submunition' ? 7 : 10;
-    ctx.fillStyle = type === 'submunition' ? '#FFAA00' : '#CC3333';
+    const missileColor = threat.missileColor;
+    const bodyColor = missileColor === 'green' ? '#22CC44'
+      : missileColor === 'yellow' ? '#DDCC00'
+      : type === 'submunition' ? '#FFAA00' : '#CC3333';
+    ctx.fillStyle = bodyColor;
     ctx.beginPath();
     ctx.moveTo(size, 0);
     ctx.lineTo(-size, -size * 0.5);
@@ -191,6 +197,17 @@ function renderThreat(ctx: CanvasRenderingContext2D, threat: Threat, time: numbe
     ctx.lineTo(size * 0.5, size * 0.2);
     ctx.closePath();
     ctx.fill();
+    // Glow for special missiles
+    if (missileColor === 'green' || missileColor === 'yellow') {
+      const glowColor = missileColor === 'green' ? 'rgba(0,255,0,0.3)' : 'rgba(255,255,0,0.3)';
+      const mg = ctx.createRadialGradient(0, 0, 0, 0, 0, size * 2);
+      mg.addColorStop(0, glowColor);
+      mg.addColorStop(1, 'transparent');
+      ctx.fillStyle = mg;
+      ctx.beginPath();
+      ctx.arc(0, 0, size * 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
   } else if (type === 'uav') {
     ctx.fillStyle = '#3388CC';
     ctx.beginPath();
@@ -427,5 +444,30 @@ function renderHUD(ctx: CanvasRenderingContext2D, state: GameState, w: number, h
   if (state.ironBeamActive) {
     ctx.fillStyle = '#FFDDAA';
     ctx.fillText(`[B] Iron Beam ON`, abilityX, abilityY);
+  }
+
+  // Special power timers
+  if (state.tripleInterceptorTimer > 0) {
+    const secs = (state.tripleInterceptorTimer / 1000).toFixed(1);
+    ctx.fillStyle = '#44FF44';
+    ctx.font = 'bold 16px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(`🟢 x3 INTERCEPTORS: ${secs}s`, w / 2, 50);
+    // Animated border
+    ctx.strokeStyle = `rgba(68,255,68,${0.3 + Math.sin(time * 0.01) * 0.2})`;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(4, 4, w - 8, h - 8);
+  }
+  if (state.autoDefenseTimer > 0) {
+    const secs = (state.autoDefenseTimer / 1000).toFixed(1);
+    ctx.fillStyle = '#FFFF44';
+    ctx.font = 'bold 16px monospace';
+    ctx.textAlign = 'center';
+    const yPos = state.tripleInterceptorTimer > 0 ? 72 : 50;
+    ctx.fillText(`🟡 AUTO DEFENSE: ${secs}s`, w / 2, yPos);
+    // Animated border
+    ctx.strokeStyle = `rgba(255,255,68,${0.3 + Math.sin(time * 0.01) * 0.2})`;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(6, 6, w - 12, h - 12);
   }
 }

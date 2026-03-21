@@ -1,5 +1,5 @@
 import {
-  GameState, GamePhase, GameMode, Threat, ThreatType, Interceptor,
+  GameState, GamePhase, GameMode, Threat, ThreatType, MissileColor, Interceptor,
   Explosion, Particle, City, FloatingText, StoreItem
 } from './types';
 import { CAMPAIGN_WAVES, getSurvivalWave, buildSpawnQueue, THREAT_CONFIGS } from './waves';
@@ -101,6 +101,8 @@ export function createInitialState(w: number, h: number): GameState {
     totalMissed: 0,
     totalFired: 0,
     nextId: 1,
+    tripleInterceptorTimer: 0,
+    autoDefenseTimer: 0,
   };
 }
 
@@ -149,6 +151,19 @@ function spawnThreat(state: GameState, type: ThreatType, w: number, h: number): 
 
   const evasive = state.mode === 'survival' && state.wave > 3 && Math.random() < Math.min(0.4, state.wave * 0.03);
 
+  // Determine missile color for missile type
+  let missileColor: MissileColor | undefined;
+  if (type === 'missile') {
+    const roll = Math.random() * 100;
+    if (roll < 1) {
+      missileColor = 'yellow'; // 1% chance
+    } else if (roll < 6) {
+      missileColor = 'green';  // 5% chance
+    } else {
+      missileColor = 'red';    // 94% (rest)
+    }
+  }
+
   return {
     id: state.nextId,
     type,
@@ -166,8 +181,9 @@ function spawnThreat(state: GameState, type: ThreatType, w: number, h: number): 
     evasive,
     evasiveTimer: 0,
     clusterTimer: type === 'cluster' ? CLUSTER_SPLIT_TIME : 0,
-    points: tc.points,
+    points: missileColor === 'green' ? 500 : missileColor === 'yellow' ? 1000 : tc.points,
     locked: false,
+    missileColor,
   };
 }
 
@@ -225,14 +241,34 @@ export function fireInterceptor(state: GameState, targetX: number, targetY: numb
   const newAmmo = state.ammo - 1;
   const needReload = newAmmo <= 0;
 
+  const interceptors = [interceptor];
+
+  // Triple interceptor mode: fire 2 extra spread interceptors
+  if (state.tripleInterceptorTimer > 0) {
+    for (let spread = 0; spread < 2; spread++) {
+      const spreadAngle = angle + (spread === 0 ? -0.2 : 0.2);
+      interceptors.push({
+        id: state.nextId + 1 + spread,
+        x: launchX + (spread === 0 ? -30 : 30),
+        y: launchY,
+        targetX: finalTargetX + (spread === 0 ? -40 : 40),
+        targetY: finalTargetY,
+        speed: INTERCEPTOR_SPEED,
+        angle: spreadAngle,
+        trail: [],
+        targetThreatId,
+      });
+    }
+  }
+
   return {
     ...state,
-    interceptors: [...state.interceptors, interceptor],
+    interceptors: [...state.interceptors, ...interceptors],
     ammo: newAmmo,
     reloading: needReload,
     reloadTimer: needReload ? (state.fastReload ? FAST_RELOAD_TIME : RELOAD_TIME) : 0,
     totalFired: state.totalFired + 1,
-    nextId: state.nextId + 1,
+    nextId: state.nextId + interceptors.length,
   };
 }
 
@@ -527,6 +563,23 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
                 size: 1 + Math.random() * 2,
               }];
             }
+
+            // Special missile color effects
+            if (t.missileColor === 'green') {
+              // Triple interceptor for 5 seconds
+              s.tripleInterceptorTimer = 5000;
+              s.floatingTexts = [...s.floatingTexts, {
+                x: t.x, y: t.y - 30, text: '🟢 x3 INTERCEPTORS!',
+                alpha: 1, vy: -1, color: '#44FF44', size: 16,
+              }];
+            } else if (t.missileColor === 'yellow') {
+              // Auto defense for 5 seconds
+              s.autoDefenseTimer = 5000;
+              s.floatingTexts = [...s.floatingTexts, {
+                x: t.x, y: t.y - 30, text: '🟡 AUTO DEFENSE!',
+                alpha: 1, vy: -1, color: '#FFFF44', size: 16,
+              }];
+            }
           }
         }
       });
@@ -582,6 +635,30 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
       s.floatingTexts = [...s.floatingTexts, {
         x: target.x, y: target.y, text: `+${target.points} ⚡`,
         alpha: 1, vy: -1.5, color: '#FFDDAA', size: 11,
+      }];
+    }
+  }
+
+  // Update special timers
+  if (s.tripleInterceptorTimer > 0) {
+    s.tripleInterceptorTimer = Math.max(0, s.tripleInterceptorTimer - dt);
+  }
+  if (s.autoDefenseTimer > 0) {
+    s.autoDefenseTimer = Math.max(0, s.autoDefenseTimer - dt);
+    // Auto-defense: destroy nearest threat every ~300ms
+    if (s.threats.length > 0 && Math.random() < dt / 300) {
+      const groundY = h * GROUND_Y_RATIO;
+      const target = [...s.threats].sort((a, b) => b.y - a.y)[0];
+      s.threats = s.threats.filter(t => t.id !== target.id);
+      s.score += target.points;
+      s.totalIntercepted++;
+      s.explosions = [...s.explosions, {
+        x: target.x, y: target.y, radius: 2, maxRadius: 30,
+        alpha: 1, color: '#FFFF44', isGround: false
+      }];
+      s.floatingTexts = [...s.floatingTexts, {
+        x: target.x, y: target.y, text: `+${target.points} 🛡️`,
+        alpha: 1, vy: -1.5, color: '#FFFF88', size: 12,
       }];
     }
   }
