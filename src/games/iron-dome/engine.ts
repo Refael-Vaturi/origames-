@@ -114,6 +114,8 @@ export function createInitialState(w: number, h: number): GameState {
     waveFastReload: false,
     waveAutoDefenseStart: 0,
     wavePerksDisplay: [],
+    waveTotalThreats: 0,
+    waveDestroyedThreats: 0,
   };
 }
 
@@ -155,11 +157,13 @@ export function startWave(state: GameState, w: number, h: number): GameState {
     perks[perks.length - 1] = '🟡 מגן אוטומטי 5 שניות';
   }
 
+  const spawnQueue = buildSpawnQueue(config);
+
   return {
     ...state,
     phase: 'wave-intro',
     waveIntroTimer: 2000,
-    spawnQueue: buildSpawnQueue(config),
+    spawnQueue,
     spawnTimer: 0,
     threats: [],
     interceptors: [],
@@ -171,6 +175,8 @@ export function startWave(state: GameState, w: number, h: number): GameState {
     waveFastReload: waveFastReload,
     waveAutoDefenseStart: autoDefenseStart,
     wavePerksDisplay: perks,
+    waveTotalThreats: spawnQueue.length,
+    waveDestroyedThreats: 0,
     // Apply wave perks
     tripleInterceptorTimer: tripleDome ? 999999 : 0,
     autoDefenseTimer: autoDefenseStart,
@@ -225,6 +231,23 @@ function spawnThreat(state: GameState, type: ThreatType, w: number, h: number): 
     }
   }
 
+  // Advanced waves: missiles get more HP and are bigger
+  let hp = tc.hp;
+  const wave = state.wave;
+  if (type === 'missile' && (!missileColor || missileColor === 'red')) {
+    if (wave >= 7) {
+      // 40% chance of armored missile (2HP) from wave 7
+      if (Math.random() < 0.4) hp = 2;
+    }
+    if (wave >= 9) {
+      // 20% chance of heavy armored (3HP) from wave 9
+      if (Math.random() < 0.2) hp = 3;
+    }
+  }
+  if (type === 'heavy') {
+    hp = Math.min(tc.hp + Math.floor((wave - 1) / 3), 5); // heavies get tougher
+  }
+
   return {
     id: state.nextId,
     type,
@@ -235,14 +258,14 @@ function spawnThreat(state: GameState, type: ThreatType, w: number, h: number): 
     targetX,
     targetY,
     speed,
-    hp: tc.hp,
-    maxHp: tc.hp,
+    hp,
+    maxHp: hp,
     angle,
     trail: [],
     evasive,
     evasiveTimer: 0,
     clusterTimer: type === 'cluster' ? CLUSTER_SPLIT_TIME : 0,
-    points: missileColor === 'yellow' ? 1000 : missileColor === 'white' ? 1500 : missileColor === 'purple' ? 800 : missileColor === 'blue' ? 750 : missileColor === 'green' ? 500 : missileColor === 'pink' ? 600 : tc.points,
+    points: missileColor === 'yellow' ? 1000 : missileColor === 'white' ? 1500 : missileColor === 'purple' ? 800 : missileColor === 'blue' ? 750 : missileColor === 'green' ? 500 : missileColor === 'pink' ? 600 : hp > 1 ? tc.points * hp : tc.points,
     locked: false,
     missileColor,
   };
@@ -643,7 +666,7 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
             s.maxCombo = Math.max(s.maxCombo, s.combo);
             s.comboMultiplier = Math.min(5, Math.floor(s.combo / 5) + 1);
             s.totalIntercepted++;
-
+            s.waveDestroyedThreats++;
             // Credits from combo milestones
             const comboCredits: Record<number, number> = { 5: 3, 10: 5, 15: 8, 20: 12, 30: 20 };
             if (comboCredits[s.combo]) {
@@ -807,6 +830,7 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
           threatsInDome.push(t.id);
           s.score += t.points;
           s.totalIntercepted++;
+          s.waveDestroyedThreats++;
           s.explosions = [...s.explosions, {
             x: t.x, y: t.y, radius: 2, maxRadius: 25,
             alpha: 1, color: '#FFFF44', isGround: false
@@ -838,6 +862,7 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
         threatsToKill.push(t.id);
         s.score += t.points;
         s.totalIntercepted++;
+        s.waveDestroyedThreats++;
         s.explosions = [...s.explosions, {
           x: t.x, y: t.y, radius: 2, maxRadius: 20,
           alpha: 1, color: '#88CCFF', isGround: false
