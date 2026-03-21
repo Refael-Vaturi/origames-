@@ -106,6 +106,7 @@ export function createInitialState(w: number, h: number): GameState {
     empTimer: 0,
     helicopterTimer: 0,
     helicopterX: 0,
+    autoFireTimer: 0,
     soundEvents: [],
   };
 }
