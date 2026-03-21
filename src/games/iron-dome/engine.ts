@@ -767,6 +767,32 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
     }
   }
 
+  // Auto-fire: dome automatically fires at threats
+  if (s.autoFireTimer > 0) {
+    s.autoFireTimer = Math.max(0, s.autoFireTimer - dt);
+    if (s.threats.length > 0 && Math.random() < dt / 250) {
+      // Pick the lowest threat
+      const target = [...s.threats].sort((a, b) => b.y - a.y)[0];
+      const groundY = h * GROUND_Y_RATIO;
+      const launchX = w / 2;
+      const launchY = groundY - 5;
+      const dx = target.x - launchX;
+      const dy = target.y - launchY;
+      const angle = Math.atan2(dy, dx);
+      s.interceptors = [...s.interceptors, {
+        id: s.nextId++,
+        x: launchX,
+        y: launchY,
+        targetX: target.x,
+        targetY: target.y,
+        speed: INTERCEPTOR_SPEED,
+        angle,
+        trail: [],
+        targetThreatId: target.id,
+      }];
+    }
+  }
+
   // Check game over
   if (s.lives <= 0) {
     s.phase = 'game-over';
