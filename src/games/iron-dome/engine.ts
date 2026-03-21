@@ -713,28 +713,30 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
   }
   if (s.autoDefenseTimer > 0) {
     s.autoDefenseTimer = Math.max(0, s.autoDefenseTimer - dt);
-    // Auto-defense dome: destroy threats that enter the lower portion of the dome (near ground)
+    // Auto-defense dome: destroy any threat inside the dome semicircle above ground
     const groundY2 = h * GROUND_Y_RATIO;
     const domeCenterX = w / 2;
     const domeRadius = w * 0.45;
     const threatsInDome: number[] = [];
     s.threats.forEach(t => {
-      const dx = t.x - domeCenterX;
-      const dy = t.y - groundY2;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      // Only destroy if inside dome semicircle AND below 70% of ground (close to cities)
-      if (dist < domeRadius && t.y > groundY2 * 0.7 && t.y < groundY2) {
-        threatsInDome.push(t.id);
-        s.score += t.points;
-        s.totalIntercepted++;
-        s.explosions = [...s.explosions, {
-          x: t.x, y: t.y, radius: 2, maxRadius: 25,
-          alpha: 1, color: '#FFFF44', isGround: false
-        }];
-        s.floatingTexts = [...s.floatingTexts, {
-          x: t.x, y: t.y, text: `+${t.points} 🛡️`,
-          alpha: 1, vy: -1.5, color: '#FFFF88', size: 12,
-        }];
+      // Check if threat is above ground and within the semicircle
+      if (t.y < groundY2) {
+        const dx = t.x - domeCenterX;
+        const dy = t.y - groundY2;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < domeRadius) {
+          threatsInDome.push(t.id);
+          s.score += t.points;
+          s.totalIntercepted++;
+          s.explosions = [...s.explosions, {
+            x: t.x, y: t.y, radius: 2, maxRadius: 25,
+            alpha: 1, color: '#FFFF44', isGround: false
+          }];
+          s.floatingTexts = [...s.floatingTexts, {
+            x: t.x, y: t.y, text: `+${t.points} 🛡️`,
+            alpha: 1, vy: -1.5, color: '#FFFF88', size: 12,
+          }];
+        }
       }
     });
     if (threatsInDome.length > 0) {
