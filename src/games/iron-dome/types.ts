@@ -135,6 +135,8 @@ export interface GameState {
   autoDefenseTimer: number;
   shieldTimer: number;
   empTimer: number;
+  helicopterTimer: number;
+  helicopterX: number;
   // Sound events queue (consumed by UI layer)
   soundEvents: string[];
 }
