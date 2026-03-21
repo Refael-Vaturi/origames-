@@ -1,26 +1,26 @@
 import { WaveConfig, ThreatType } from './types';
 
 export const CAMPAIGN_WAVES: WaveConfig[] = [
-  // Wave 1: Easy intro - single missiles
-  { missiles: 5, uavs: 0, clusters: 0, heavies: 0, speed: 0.8, spawnInterval: 3000 },
-  // Wave 2: A bit more
-  { missiles: 8, uavs: 0, clusters: 0, heavies: 0, speed: 0.9, spawnInterval: 2500 },
-  // Wave 3: UAVs appear
-  { missiles: 10, uavs: 2, clusters: 0, heavies: 0, speed: 1.0, spawnInterval: 2200 },
-  // Wave 4: More pressure
-  { missiles: 12, uavs: 3, clusters: 0, heavies: 0, speed: 1.1, spawnInterval: 2000 },
-  // Wave 5: Clusters intro
-  { missiles: 12, uavs: 3, clusters: 2, heavies: 0, speed: 1.2, spawnInterval: 1800 },
-  // Wave 6: Heavy intro
-  { missiles: 14, uavs: 4, clusters: 2, heavies: 1, speed: 1.4, spawnInterval: 1600 },
-  // Wave 7: Intense
-  { missiles: 16, uavs: 5, clusters: 3, heavies: 2, speed: 1.6, spawnInterval: 1400 },
-  // Wave 8: Chaos
-  { missiles: 18, uavs: 6, clusters: 3, heavies: 2, speed: 1.8, spawnInterval: 1200 },
+  // Wave 1: Easy intro
+  { missiles: 6, uavs: 0, clusters: 0, heavies: 0, speed: 0.9, spawnInterval: 2800 },
+  // Wave 2: More missiles, faster
+  { missiles: 10, uavs: 1, clusters: 0, heavies: 0, speed: 1.0, spawnInterval: 2200 },
+  // Wave 3: UAVs appear, double shot perk
+  { missiles: 14, uavs: 3, clusters: 0, heavies: 0, speed: 1.1, spawnInterval: 1800 },
+  // Wave 4: More pressure, fast reload perk
+  { missiles: 18, uavs: 4, clusters: 1, heavies: 0, speed: 1.25, spawnInterval: 1500 },
+  // Wave 5: Clusters + triple dome perk
+  { missiles: 22, uavs: 5, clusters: 2, heavies: 1, speed: 1.4, spawnInterval: 1300 },
+  // Wave 6: Heavy intro, big jump
+  { missiles: 26, uavs: 6, clusters: 3, heavies: 2, speed: 1.6, spawnInterval: 1100 },
+  // Wave 7: Triple shot perk, intense
+  { missiles: 30, uavs: 7, clusters: 4, heavies: 2, speed: 1.8, spawnInterval: 950 },
+  // Wave 8: Chaos, auto-defense perk
+  { missiles: 35, uavs: 8, clusters: 4, heavies: 3, speed: 2.0, spawnInterval: 800 },
   // Wave 9: Near impossible
-  { missiles: 20, uavs: 7, clusters: 4, heavies: 3, speed: 2.0, spawnInterval: 1000 },
-  // Wave 10: Final boss wave
-  { missiles: 25, uavs: 8, clusters: 5, heavies: 4, speed: 2.2, spawnInterval: 800 },
+  { missiles: 40, uavs: 10, clusters: 5, heavies: 4, speed: 2.3, spawnInterval: 650 },
+  // Wave 10: Final boss wave - massive
+  { missiles: 50, uavs: 12, clusters: 6, heavies: 5, speed: 2.6, spawnInterval: 500 },
 ];
 
 export function getSurvivalWave(wave: number): WaveConfig {
