@@ -26,12 +26,12 @@ export const CAMPAIGN_WAVES: WaveConfig[] = [
 export function getSurvivalWave(wave: number): WaveConfig {
   const base = Math.min(wave, 50);
   return {
-    missiles: 5 + Math.floor(base * 2),
-    uavs: Math.floor(base * 1.0),
-    clusters: Math.max(0, Math.floor((base - 2) * 0.6)),
-    heavies: Math.max(0, Math.floor((base - 4) * 0.5)),
-    speed: 0.8 + wave * 0.15,
-    spawnInterval: Math.max(400, 2500 - wave * 100),
+    missiles: 6 + Math.floor(base * 2.5),
+    uavs: Math.floor(base * 1.2),
+    clusters: Math.max(0, Math.floor((base - 2) * 0.8)),
+    heavies: Math.max(0, Math.floor((base - 3) * 0.6)),
+    speed: 0.9 + wave * 0.18,
+    spawnInterval: Math.max(300, 2500 - wave * 120),
   };
 }
 
