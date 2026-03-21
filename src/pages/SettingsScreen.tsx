@@ -17,8 +17,9 @@ const SettingsScreen = () => {
 
   const Toggle = ({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) => (
     <button
-      onClick={() => onChange(!value)}
-      className={`w-12 h-7 rounded-full transition-colors ${value ? "bg-primary" : "bg-muted"} relative`}
+      onClick={(e) => { e.stopPropagation(); onChange(!value); }}
+      className={`w-12 h-7 rounded-full transition-colors ${value ? "bg-primary" : "bg-muted"} relative cursor-pointer select-none`}
+      style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
     >
       <span className={`absolute top-1 w-5 h-5 rounded-full bg-card shadow transition-all ${value ? "left-6" : "left-1"}`} />
     </button>

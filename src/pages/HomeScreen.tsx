@@ -104,6 +104,7 @@ const HomeScreen = () => {
             )}
           </div>
         </button>
+        </div>
 
         <motion.img
           src={logoImage}
