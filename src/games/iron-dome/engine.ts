@@ -103,6 +103,9 @@ export function createInitialState(w: number, h: number): GameState {
     nextId: 1,
     tripleInterceptorTimer: 0,
     autoDefenseTimer: 0,
+    shieldTimer: 0,
+    empTimer: 0,
+    soundEvents: [],
   };
 }
 
