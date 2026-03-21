@@ -619,6 +619,30 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
     }
   }
 
+  // Update special timers
+  if (s.tripleInterceptorTimer > 0) {
+    s.tripleInterceptorTimer = Math.max(0, s.tripleInterceptorTimer - dt);
+  }
+  if (s.autoDefenseTimer > 0) {
+    s.autoDefenseTimer = Math.max(0, s.autoDefenseTimer - dt);
+    // Auto-defense: destroy nearest threat every ~300ms
+    if (s.threats.length > 0 && Math.random() < dt / 300) {
+      const groundY = h * GROUND_Y_RATIO;
+      const target = [...s.threats].sort((a, b) => b.y - a.y)[0];
+      s.threats = s.threats.filter(t => t.id !== target.id);
+      s.score += target.points;
+      s.totalIntercepted++;
+      s.explosions = [...s.explosions, {
+        x: target.x, y: target.y, radius: 2, maxRadius: 30,
+        alpha: 1, color: '#FFFF44', isGround: false
+      }];
+      s.floatingTexts = [...s.floatingTexts, {
+        x: target.x, y: target.y, text: `+${target.points} 🛡️`,
+        alpha: 1, vy: -1.5, color: '#FFFF88', size: 12,
+      }];
+    }
+  }
+
   // Check game over
   if (s.lives <= 0) {
     s.phase = 'game-over';
