@@ -22,6 +22,7 @@ const IronDomeGame: React.FC = () => {
   const musicRef = useRef<GameMusic>(new GameMusic());
   const animFrameRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
+  const lastStateUpdateRef = useRef<number>(0);
   const [phase, setPhase] = useState<GamePhase>('menu');
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [soundEnabled, setSoundEnabled] = useState(true);
