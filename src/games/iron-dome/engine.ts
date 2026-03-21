@@ -108,6 +108,7 @@ export function createInitialState(w: number, h: number): GameState {
     helicopterX: 0,
     autoFireTimer: 0,
     soundEvents: [],
+    screenShake: 0,
   };
 }
 
