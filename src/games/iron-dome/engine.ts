@@ -586,10 +586,10 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
 
             // Special missile color effects
             if (t.missileColor === 'green') {
-              s.tripleInterceptorTimer = 5000;
+              s.tripleInterceptorTimer = 10000;
               s.soundEvents.push('powerup-green');
               s.floatingTexts = [...s.floatingTexts, {
-                x: t.x, y: t.y - 30, text: '🟢 x3 INTERCEPTORS!',
+                x: t.x, y: t.y - 30, text: '🟢 x3 INTERCEPTORS 10s!',
                 alpha: 1, vy: -1, color: '#44FF44', size: 16,
               }];
             } else if (t.missileColor === 'blue') {
@@ -600,24 +600,24 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
                 alpha: 1, vy: -1, color: '#4488FF', size: 16,
               }];
             } else if (t.missileColor === 'yellow') {
-              s.autoDefenseTimer = 5000;
+              s.autoDefenseTimer = 10000;
               s.soundEvents.push('powerup-yellow');
               s.floatingTexts = [...s.floatingTexts, {
-                x: t.x, y: t.y - 30, text: '🟡 AUTO DEFENSE!',
+                x: t.x, y: t.y - 30, text: '🟡 AUTO DOME 10s!',
                 alpha: 1, vy: -1, color: '#FFFF44', size: 16,
               }];
             } else if (t.missileColor === 'purple') {
-              s.shieldTimer = 3000;
+              s.shieldTimer = 10000;
               s.soundEvents.push('powerup-purple');
               s.floatingTexts = [...s.floatingTexts, {
-                x: t.x, y: t.y - 30, text: '🟣 SHIELD ACTIVE!',
+                x: t.x, y: t.y - 30, text: '🟣 SHIELD 10s!',
                 alpha: 1, vy: -1, color: '#CC88FF', size: 16,
               }];
             } else if (t.missileColor === 'white') {
-              s.empTimer = 8000;
+              s.empTimer = 10000;
               s.soundEvents.push('powerup-white');
               s.floatingTexts = [...s.floatingTexts, {
-                x: t.x, y: t.y - 30, text: '⚪ EMP SLOWDOWN!',
+                x: t.x, y: t.y - 30, text: '⚪ EMP SLOWDOWN 10s!',
                 alpha: 1, vy: -1, color: '#FFFFFF', size: 16,
               }];
             }
