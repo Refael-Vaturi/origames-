@@ -416,6 +416,15 @@ const IronDomeGame: React.FC = () => {
         onTouchMove={(e) => e.preventDefault()}
       />
 
+      {/* Top-left back button - always visible */}
+      <button
+        onClick={() => navigate('/')}
+        className="absolute top-3 left-3 flex items-center gap-1.5 px-3 py-2 bg-black/40 rounded-lg backdrop-blur-sm border border-white/10 text-white/70 hover:text-white z-30 transition-colors"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        <span className="text-xs font-semibold">{T('backToMenu')}</span>
+      </button>
+
       {/* Top-right controls */}
       <div className="absolute top-3 right-3 flex items-center gap-2 z-30">
         {phase === 'menu' && (
