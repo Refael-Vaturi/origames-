@@ -151,6 +151,19 @@ function spawnThreat(state: GameState, type: ThreatType, w: number, h: number): 
 
   const evasive = state.mode === 'survival' && state.wave > 3 && Math.random() < Math.min(0.4, state.wave * 0.03);
 
+  // Determine missile color for missile type
+  let missileColor: MissileColor | undefined;
+  if (type === 'missile') {
+    const roll = Math.random() * 100;
+    if (roll < 1) {
+      missileColor = 'yellow'; // 1% chance
+    } else if (roll < 6) {
+      missileColor = 'green';  // 5% chance
+    } else {
+      missileColor = 'red';    // 94% (rest)
+    }
+  }
+
   return {
     id: state.nextId,
     type,
@@ -168,8 +181,9 @@ function spawnThreat(state: GameState, type: ThreatType, w: number, h: number): 
     evasive,
     evasiveTimer: 0,
     clusterTimer: type === 'cluster' ? CLUSTER_SPLIT_TIME : 0,
-    points: tc.points,
+    points: missileColor === 'green' ? 500 : missileColor === 'yellow' ? 1000 : tc.points,
     locked: false,
+    missileColor,
   };
 }
 
