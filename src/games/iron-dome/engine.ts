@@ -1,5 +1,5 @@
 import {
-  GameState, GamePhase, GameMode, Threat, ThreatType, Interceptor,
+  GameState, GamePhase, GameMode, Threat, ThreatType, MissileColor, Interceptor,
   Explosion, Particle, City, FloatingText, StoreItem
 } from './types';
 import { CAMPAIGN_WAVES, getSurvivalWave, buildSpawnQueue, THREAT_CONFIGS } from './waves';
