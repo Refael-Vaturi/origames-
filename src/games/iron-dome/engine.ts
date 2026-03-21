@@ -181,7 +181,7 @@ export function fireInterceptor(state: GameState, targetX: number, targetY: numb
   // Find nearest threat to click point and target it instead
   let finalTargetX = targetX;
   let finalTargetY = targetY;
-  let lockedThreatId: number | undefined;
+  let targetThreatId: number | undefined;
 
   if (state.threats.length > 0) {
     let nearestDist = Infinity;
@@ -202,7 +202,7 @@ export function fireInterceptor(state: GameState, targetX: number, targetY: numb
       const travelTime = travelDist / INTERCEPTOR_SPEED;
       finalTargetX = thr.x + Math.cos(thr.angle) * thr.speed * (travelTime * 0.6);
       finalTargetY = thr.y + Math.sin(thr.angle) * thr.speed * (travelTime * 0.6);
-      lockedThreatId = thr.id;
+      targetThreatId = thr.id;
     }
   }
 
@@ -219,7 +219,7 @@ export function fireInterceptor(state: GameState, targetX: number, targetY: numb
     speed: INTERCEPTOR_SPEED,
     angle,
     trail: [],
-    lockedThreatId,
+    targetThreatId,
   };
 
   const newAmmo = state.ammo - 1;
@@ -428,8 +428,8 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
     let i = { ...int };
 
     // If locked onto a threat, re-target it continuously
-    if (i.lockedThreatId != null) {
-      const target = s.threats.find(t => t.id === i.lockedThreatId);
+    if (i.targetThreatId != null) {
+      const target = s.threats.find(t => t.id === i.targetThreatId);
       if (target) {
         const dx = target.x - i.x;
         const dy = target.y - i.y;
