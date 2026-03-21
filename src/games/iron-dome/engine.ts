@@ -287,7 +287,7 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
     return state;
   }
 
-  let s = { ...state };
+  let s = { ...state, soundEvents: [] as string[] };
 
   // Wave intro countdown
   if (s.phase === 'wave-intro') {
