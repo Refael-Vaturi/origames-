@@ -546,12 +546,30 @@ function renderHUD(ctx: CanvasRenderingContext2D, state: GameState, w: number, h
     ctx.fillText('♥', hx, hy + heartSize * 0.3);
   }
 
-  // Wave
+  // Wave + Progress counter at top center
   ctx.fillStyle = COLORS.score;
   ctx.font = '14px monospace';
   ctx.textAlign = 'center';
   const totalWaves = state.mode === 'campaign' ? '10' : '∞';
-  ctx.fillText(`Wave ${state.wave}/${totalWaves}`, w / 2, 24);
+  ctx.fillText(`Wave ${state.wave}/${totalWaves}`, w / 2, 20);
+  
+  // Big progress counter
+  const destroyed = state.waveDestroyedThreats;
+  const total = state.waveTotalThreats;
+  const remaining = total - destroyed;
+  ctx.font = 'bold 18px monospace';
+  ctx.fillStyle = remaining <= 5 ? '#44FF88' : '#FFDD44';
+  ctx.fillText(`🎯 ${destroyed} / ${total}`, w / 2, 44);
+  
+  // Progress bar under it
+  const progBarW = 140;
+  const progBarH = 4;
+  const progX = w / 2 - progBarW / 2;
+  ctx.fillStyle = 'rgba(255,255,255,0.1)';
+  ctx.fillRect(progX, 50, progBarW, progBarH);
+  const progFill = total > 0 ? destroyed / total : 0;
+  ctx.fillStyle = remaining <= 5 ? '#44FF88' : '#FFDD44';
+  ctx.fillRect(progX, 50, progBarW * progFill, progBarH);
 
   // Score
   ctx.textAlign = 'right';
