@@ -509,27 +509,34 @@ function renderHUD(ctx: CanvasRenderingContext2D, state: GameState, w: number, h
   }
 
   // Special power timers
+  let timerY = 50;
+  const drawTimer = (text: string, color: string, borderColor: string, offset: number) => {
+    ctx.fillStyle = color;
+    ctx.font = 'bold 14px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(text, w / 2, timerY);
+    ctx.strokeStyle = borderColor;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(2 + offset, 2 + offset, w - 4 - offset * 2, h - 4 - offset * 2);
+    timerY += 20;
+  };
+
   if (state.tripleInterceptorTimer > 0) {
     const secs = (state.tripleInterceptorTimer / 1000).toFixed(1);
-    ctx.fillStyle = '#44FF44';
-    ctx.font = 'bold 16px monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText(`🟢 x3 INTERCEPTORS: ${secs}s`, w / 2, 50);
-    // Animated border
-    ctx.strokeStyle = `rgba(68,255,68,${0.3 + Math.sin(time * 0.01) * 0.2})`;
-    ctx.lineWidth = 2;
-    ctx.strokeRect(4, 4, w - 8, h - 8);
+    const color = state.tripleInterceptorTimer > 5000 ? '#4488FF' : '#44FF44';
+    const label = state.tripleInterceptorTimer > 5000 ? '🔵' : '🟢';
+    drawTimer(`${label} x3 INTERCEPTORS: ${secs}s`, color, `rgba(68,255,68,${0.3 + Math.sin(time * 0.01) * 0.2})`, 0);
   }
   if (state.autoDefenseTimer > 0) {
     const secs = (state.autoDefenseTimer / 1000).toFixed(1);
-    ctx.fillStyle = '#FFFF44';
-    ctx.font = 'bold 16px monospace';
-    ctx.textAlign = 'center';
-    const yPos = state.tripleInterceptorTimer > 0 ? 72 : 50;
-    ctx.fillText(`🟡 AUTO DEFENSE: ${secs}s`, w / 2, yPos);
-    // Animated border
-    ctx.strokeStyle = `rgba(255,255,68,${0.3 + Math.sin(time * 0.01) * 0.2})`;
-    ctx.lineWidth = 2;
-    ctx.strokeRect(6, 6, w - 12, h - 12);
+    drawTimer(`🟡 AUTO DEFENSE: ${secs}s`, '#FFFF44', `rgba(255,255,68,${0.3 + Math.sin(time * 0.01) * 0.2})`, 2);
+  }
+  if (state.shieldTimer > 0) {
+    const secs = (state.shieldTimer / 1000).toFixed(1);
+    drawTimer(`🟣 SHIELD: ${secs}s`, '#CC88FF', `rgba(180,100,255,${0.3 + Math.sin(time * 0.01) * 0.2})`, 4);
+  }
+  if (state.empTimer > 0) {
+    const secs = (state.empTimer / 1000).toFixed(1);
+    drawTimer(`⚪ EMP SLOWDOWN: ${secs}s`, '#FFFFFF', `rgba(255,255,255,${0.2 + Math.sin(time * 0.01) * 0.15})`, 6);
   }
 }
