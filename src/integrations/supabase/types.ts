@@ -226,6 +226,39 @@ export type Database = {
           },
         ]
       }
+      iron_dome_scores: {
+        Row: {
+          created_at: string
+          display_name: string
+          id: string
+          max_combo: number
+          mode: string
+          score: number
+          user_id: string
+          wave: number
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string
+          id?: string
+          max_combo?: number
+          mode?: string
+          score?: number
+          user_id: string
+          wave?: number
+        }
+        Update: {
+          created_at?: string
+          display_name?: string
+          id?: string
+          max_combo?: number
+          mode?: string
+          score?: number
+          user_id?: string
+          wave?: number
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           body: string | null
