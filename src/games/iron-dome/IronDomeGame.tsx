@@ -293,7 +293,7 @@ const IronDomeGame: React.FC = () => {
 
               <div className="flex flex-col gap-3 w-full mt-6">
                 <MenuButton icon={<Play className="w-5 h-5" />} label="Campaign" sub="Play 10 Waves" onClick={() => startGame('campaign')} color="cyan" />
-                <MenuButton icon={<Infinity className="w-5 h-5" />} label="Survival" sub="How long can you survive?" onClick={() => startGame('survival')} color="blue" />
+                <MenuButton icon={<InfinityIcon className="w-5 h-5" />} label="Survival" sub="How long can you survive?" onClick={() => startGame('survival')} color="blue" />
 
                 <div className="flex gap-3 mt-2">
                   <MenuButtonSmall icon="📖" label="Rules" onClick={() => {
