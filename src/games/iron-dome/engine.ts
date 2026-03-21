@@ -114,6 +114,8 @@ export function createInitialState(w: number, h: number): GameState {
     waveFastReload: false,
     waveAutoDefenseStart: 0,
     wavePerksDisplay: [],
+    waveTotalThreats: 0,
+    waveDestroyedThreats: 0,
   };
 }
 
