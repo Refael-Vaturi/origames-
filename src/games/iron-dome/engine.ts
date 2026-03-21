@@ -733,26 +733,19 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
     }
   }
 
-  // Helicopter - flies across top of screen shooting threats
+  // Helicopter - flies across top of screen, destroys threats directly below its searchlight
   if (s.helicopterTimer > 0) {
     s.helicopterTimer = Math.max(0, s.helicopterTimer - dt);
-    s.helicopterX += (w / 10000) * dt; // Cross screen in ~10s
-    if (s.helicopterX > w) s.helicopterX = 0; // Loop
+    s.helicopterX += (w / 10000) * dt;
+    if (s.helicopterX > w) s.helicopterX = 0;
 
-    // Shoot nearest threat from helicopter position every ~400ms
-    if (s.threats.length > 0 && Math.random() < dt / 400) {
-      const heliY = 40;
-      let nearest: typeof s.threats[0] | null = null;
-      let nearDist = Infinity;
-      s.threats.forEach(t => {
-        const dx = t.x - s.helicopterX;
-        const dy = t.y - heliY;
-        const d = Math.sqrt(dx * dx + dy * dy);
-        if (d < nearDist) { nearDist = d; nearest = t; }
-      });
-      if (nearest) {
-        const t = nearest as typeof s.threats[0];
-        s.threats = s.threats.filter(th => th.id !== t.id);
+    // Destroy any threat within the searchlight cone (below helicopter, within ±50px horizontal)
+    const heliY = 40;
+    const searchWidth = 50;
+    const threatsToKill: number[] = [];
+    s.threats.forEach(t => {
+      if (t.y > heliY && Math.abs(t.x - s.helicopterX) < searchWidth) {
+        threatsToKill.push(t.id);
         s.score += t.points;
         s.totalIntercepted++;
         s.explosions = [...s.explosions, {
@@ -764,32 +757,41 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
           alpha: 1, vy: -1.5, color: '#88CCFF', size: 12,
         }];
       }
+    });
+    if (threatsToKill.length > 0) {
+      s.threats = s.threats.filter(t => !threatsToKill.includes(t.id));
     }
   }
 
-  // Auto-fire: dome automatically fires at threats
+  // Auto-fire (blue): dome fires 3 interceptors every 500ms at lowest threats
   if (s.autoFireTimer > 0) {
     s.autoFireTimer = Math.max(0, s.autoFireTimer - dt);
-    if (s.threats.length > 0 && Math.random() < dt / 250) {
-      // Pick the lowest threat
-      const target = [...s.threats].sort((a, b) => b.y - a.y)[0];
-      const groundY = h * GROUND_Y_RATIO;
-      const launchX = w / 2;
-      const launchY = groundY - 5;
-      const dx = target.x - launchX;
-      const dy = target.y - launchY;
-      const angle = Math.atan2(dy, dx);
-      s.interceptors = [...s.interceptors, {
-        id: s.nextId++,
-        x: launchX,
-        y: launchY,
-        targetX: target.x,
-        targetY: target.y,
-        speed: INTERCEPTOR_SPEED,
-        angle,
-        trail: [],
-        targetThreatId: target.id,
-      }];
+    if (s.threats.length > 0) {
+      const fireRate = 500;
+      const shouldFire = Math.floor((s.autoFireTimer + dt) / fireRate) !== Math.floor(s.autoFireTimer / fireRate);
+      if (shouldFire) {
+        const groundY2 = h * GROUND_Y_RATIO;
+        const launchX = w / 2;
+        const launchY = groundY2 - 5;
+        const sorted = [...s.threats].sort((a, b) => b.y - a.y);
+        const targets = sorted.slice(0, 3);
+        targets.forEach(target => {
+          const dx2 = target.x - launchX;
+          const dy2 = target.y - launchY;
+          const angle = Math.atan2(dy2, dx2);
+          s.interceptors = [...s.interceptors, {
+            id: s.nextId++,
+            x: launchX,
+            y: launchY,
+            targetX: target.x,
+            targetY: target.y,
+            speed: INTERCEPTOR_SPEED,
+            angle,
+            trail: [],
+            targetThreatId: target.id,
+          }];
+        });
+      }
     }
   }
 
