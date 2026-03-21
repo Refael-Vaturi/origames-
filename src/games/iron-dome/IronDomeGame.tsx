@@ -1130,4 +1130,54 @@ const RuleSection: React.FC<{
   </div>
 );
 
+const PowerUpTimer: React.FC<{
+  emoji: string;
+  label: string;
+  timer: number;
+  maxTimer: number;
+  color: string;
+  glowColor: string;
+}> = ({ emoji, label, timer, maxTimer, color, glowColor }) => {
+  if (timer <= 0) return null;
+  const seconds = Math.ceil(timer / 1000);
+  const progress = timer / maxTimer;
+  
+  return (
+    <motion.div
+      initial={{ x: 80, opacity: 0 }}
+      animate={{ x: 0, opacity: 1 }}
+      exit={{ x: 80, opacity: 0 }}
+      className="relative flex items-center gap-2 px-3 py-2 rounded-xl border backdrop-blur-sm"
+      style={{
+        background: `linear-gradient(135deg, rgba(0,0,0,0.7), rgba(0,0,0,0.5))`,
+        borderColor: color + '40',
+        boxShadow: `0 0 20px ${glowColor}`,
+        minWidth: 100,
+      }}
+    >
+      <span className="text-lg">{emoji}</span>
+      <div className="flex flex-col items-start flex-1">
+        <span className="text-[10px] font-bold tracking-wider" style={{ color: color + 'AA' }}>{label}</span>
+        <motion.span
+          className="text-2xl font-black tabular-nums leading-none"
+          style={{ color, textShadow: `0 0 15px ${glowColor}` }}
+          key={seconds}
+          initial={{ scale: 1.4, opacity: 0.7 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.2 }}
+        >
+          {seconds}
+        </motion.span>
+      </div>
+      {/* Progress bar */}
+      <div className="absolute bottom-1 left-2 right-2 h-[3px] rounded-full bg-white/10 overflow-hidden">
+        <div
+          className="h-full rounded-full transition-all duration-200"
+          style={{ background: color, width: `${progress * 100}%` }}
+        />
+      </div>
+    </motion.div>
+  );
+};
+
 export default IronDomeGame;
