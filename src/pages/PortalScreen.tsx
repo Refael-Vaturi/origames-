@@ -185,7 +185,7 @@ const PortalScreen = () => {
                   animate={{ scale: [1, 1.05, 1] }}
                   transition={{ duration: 2, repeat: Infinity }}
                 >
-                  <span className="text-3xl">🕵️</span>
+                  <span className="text-3xl">{game.id === 'iron-dome' ? '🛡️' : '🕵️'}</span>
                 </motion.div>
               </div>
 

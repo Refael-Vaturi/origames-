@@ -45,6 +45,9 @@ const App = () => (
               {/* Portal - Main hub */}
               <Route path="/" element={<PortalScreen />} />
 
+              {/* Iron Dome game */}
+              <Route path="/iron-dome" element={<IronDomeGame />} />
+
               {/* Fake It Fast game routes */}
               <Route path="/fake-it-fast" element={<HomeScreen />} />
               <Route path="/fake-it-fast/welcome" element={<WelcomeScreen />} />
