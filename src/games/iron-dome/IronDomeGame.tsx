@@ -107,6 +107,12 @@ const IronDomeGame: React.FC = () => {
       if (stateRef.current) {
         stateRef.current = update(stateRef.current, dt, canvas.width, canvas.height, time);
 
+        // Process sound events from engine
+        if (stateRef.current.soundEvents.length > 0) {
+          stateRef.current.soundEvents.forEach(evt => playSoundRef.current(evt));
+          stateRef.current.soundEvents = [];
+        }
+
         if (stateRef.current.phase !== phase) {
           setPhase(stateRef.current.phase);
           setGameState({ ...stateRef.current });
