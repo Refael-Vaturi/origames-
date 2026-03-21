@@ -337,12 +337,13 @@ const IronDomeGame: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black overflow-hidden select-none">
+    <div className="fixed inset-0 bg-black overflow-hidden select-none touch-none">
       <canvas
         ref={canvasRef}
-        className="absolute inset-0 w-full h-full cursor-crosshair"
+        className="absolute inset-0 w-full h-full cursor-crosshair touch-none"
         onClick={handleCanvasClick}
         onTouchStart={handleCanvasClick}
+        onTouchMove={(e) => e.preventDefault()}
       />
 
       {/* Top-right controls */}
