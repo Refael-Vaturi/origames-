@@ -586,10 +586,10 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
 
             // Special missile color effects
             if (t.missileColor === 'green') {
-              s.tripleInterceptorTimer = 5000;
+              s.tripleInterceptorTimer = 10000;
               s.soundEvents.push('powerup-green');
               s.floatingTexts = [...s.floatingTexts, {
-                x: t.x, y: t.y - 30, text: '🟢 x3 INTERCEPTORS!',
+                x: t.x, y: t.y - 30, text: '🟢 x3 INTERCEPTORS 10s!',
                 alpha: 1, vy: -1, color: '#44FF44', size: 16,
               }];
             } else if (t.missileColor === 'blue') {
@@ -600,24 +600,24 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
                 alpha: 1, vy: -1, color: '#4488FF', size: 16,
               }];
             } else if (t.missileColor === 'yellow') {
-              s.autoDefenseTimer = 5000;
+              s.autoDefenseTimer = 10000;
               s.soundEvents.push('powerup-yellow');
               s.floatingTexts = [...s.floatingTexts, {
-                x: t.x, y: t.y - 30, text: '🟡 AUTO DEFENSE!',
+                x: t.x, y: t.y - 30, text: '🟡 AUTO DOME 10s!',
                 alpha: 1, vy: -1, color: '#FFFF44', size: 16,
               }];
             } else if (t.missileColor === 'purple') {
-              s.shieldTimer = 3000;
+              s.shieldTimer = 10000;
               s.soundEvents.push('powerup-purple');
               s.floatingTexts = [...s.floatingTexts, {
-                x: t.x, y: t.y - 30, text: '🟣 SHIELD ACTIVE!',
+                x: t.x, y: t.y - 30, text: '🟣 SHIELD 10s!',
                 alpha: 1, vy: -1, color: '#CC88FF', size: 16,
               }];
             } else if (t.missileColor === 'white') {
-              s.empTimer = 8000;
+              s.empTimer = 10000;
               s.soundEvents.push('powerup-white');
               s.floatingTexts = [...s.floatingTexts, {
-                x: t.x, y: t.y - 30, text: '⚪ EMP SLOWDOWN!',
+                x: t.x, y: t.y - 30, text: '⚪ EMP SLOWDOWN 10s!',
                 alpha: 1, vy: -1, color: '#FFFFFF', size: 16,
               }];
             }
@@ -692,21 +692,32 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
   }
   if (s.autoDefenseTimer > 0) {
     s.autoDefenseTimer = Math.max(0, s.autoDefenseTimer - dt);
-    // Auto-defense: destroy nearest threat every ~300ms
-    if (s.threats.length > 0 && Math.random() < dt / 300) {
-      const groundY = h * GROUND_Y_RATIO;
-      const target = [...s.threats].sort((a, b) => b.y - a.y)[0];
-      s.threats = s.threats.filter(t => t.id !== target.id);
-      s.score += target.points;
-      s.totalIntercepted++;
-      s.explosions = [...s.explosions, {
-        x: target.x, y: target.y, radius: 2, maxRadius: 30,
-        alpha: 1, color: '#FFFF44', isGround: false
-      }];
-      s.floatingTexts = [...s.floatingTexts, {
-        x: target.x, y: target.y, text: `+${target.points} 🛡️`,
-        alpha: 1, vy: -1.5, color: '#FFFF88', size: 12,
-      }];
+    // Auto-defense dome: destroy any threat entering the semicircle zone above ground
+    const groundY = h * GROUND_Y_RATIO;
+    const domeCenterX = w / 2;
+    const domeRadius = w * 0.45;
+    const threatsInDome: number[] = [];
+    s.threats.forEach(t => {
+      const dx = t.x - domeCenterX;
+      const dy = t.y - groundY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      // Only destroy if inside dome semicircle (above ground) and descending
+      if (dist < domeRadius && t.y < groundY && dy < 0) {
+        threatsInDome.push(t.id);
+        s.score += t.points;
+        s.totalIntercepted++;
+        s.explosions = [...s.explosions, {
+          x: t.x, y: t.y, radius: 2, maxRadius: 25,
+          alpha: 1, color: '#FFFF44', isGround: false
+        }];
+        s.floatingTexts = [...s.floatingTexts, {
+          x: t.x, y: t.y, text: `+${t.points} 🛡️`,
+          alpha: 1, vy: -1.5, color: '#FFFF88', size: 12,
+        }];
+      }
+    });
+    if (threatsInDome.length > 0) {
+      s.threats = s.threats.filter(t => !threatsInDome.includes(t.id));
     }
   }
 
