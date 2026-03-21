@@ -36,7 +36,7 @@ const LanguageSelector = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.95 }}
             transition={{ duration: 0.15 }}
-            className="absolute right-0 bottom-full mb-2 sm:bottom-auto sm:top-full sm:mb-0 sm:mt-2 z-[100] w-64 max-h-60 overflow-y-auto bg-card rounded-2xl shadow-card border border-border"
+            className="absolute right-0 top-full mt-2 z-[100] w-64 max-h-60 overflow-y-auto bg-card rounded-2xl shadow-card border border-border"
           >
             <div className="p-2">
               <p className="px-3 py-2 text-xs font-display font-semibold text-muted-foreground uppercase tracking-wider">
