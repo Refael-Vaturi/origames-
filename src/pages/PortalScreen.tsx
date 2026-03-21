@@ -179,6 +179,9 @@ const PortalScreen = () => {
                 <p className="font-display font-bold text-primary-foreground text-sm drop-shadow-lg text-start">
                   {game.name}
                 </p>
+                <p className="text-primary-foreground/70 text-[10px] font-body drop-shadow text-start mt-0.5">
+                  👥 {t("portal.players") || "Players"}: {game.players}
+                </p>
               </div>
 
               {/* Center logo area */}
