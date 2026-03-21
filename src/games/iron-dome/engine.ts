@@ -157,10 +157,12 @@ function spawnThreat(state: GameState, type: ThreatType, w: number, h: number): 
     const roll = Math.random() * 100;
     if (roll < 1) {
       missileColor = 'yellow'; // 1% chance
-    } else if (roll < 6) {
+    } else if (roll < 3) {
+      missileColor = 'blue';   // 2% chance
+    } else if (roll < 8) {
       missileColor = 'green';  // 5% chance
     } else {
-      missileColor = 'red';    // 94% (rest)
+      missileColor = 'red';    // 92% (rest)
     }
   }
 
