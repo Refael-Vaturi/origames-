@@ -694,13 +694,17 @@ const IronDomeGame: React.FC = () => {
               </div>
 
               {/* Score save status */}
-              <p className="text-center text-xs mb-3">
+              <div className="text-center text-xs mb-3">
                 {scoreSaved ? (
                   <span className="text-green-400">✅ {T('scoreSaved')}</span>
                 ) : !user ? (
-                  <span className="text-cyan-300/40">🔒 {T('loginToSave')}</span>
+                  <button onClick={() => { setShowAuthModal(true); setAuthMode('login'); }}
+                    className="text-cyan-300/70 hover:text-cyan-200 transition-colors flex items-center justify-center gap-1 w-full">
+                    <LogIn className="w-3 h-3" />
+                    <span>🔒 התחבר כדי לשמור ניקוד</span>
+                  </button>
                 ) : null}
-              </p>
+              </div>
 
               <div className="flex gap-3">
                 <button onClick={handleRestart} className="flex-1 py-3 bg-red-600/60 text-white rounded-xl font-bold hover:bg-red-500/60 transition-colors">
