@@ -131,6 +131,7 @@ const IronDomeGame: React.FC = () => {
 
   // Click to fire
   const handleCanvasClick = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
     if (!stateRef.current || stateRef.current.phase !== 'playing') return;
 
     const canvas = canvasRef.current;
@@ -139,6 +140,7 @@ const IronDomeGame: React.FC = () => {
     let x: number, y: number;
     if ('touches' in e) {
       const touch = e.touches[0] || (e as any).changedTouches[0];
+      if (!touch) return;
       const rect = canvas.getBoundingClientRect();
       x = touch.clientX - rect.left;
       y = touch.clientY - rect.top;
