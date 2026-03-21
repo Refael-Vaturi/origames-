@@ -35,6 +35,15 @@ const COLORS = {
 };
 
 export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: number, h: number, time: number) {
+  // Screen shake
+  if (state.screenShake > 0) {
+    const intensity = state.screenShake;
+    const sx = (Math.random() - 0.5) * intensity * 2;
+    const sy = (Math.random() - 0.5) * intensity * 2;
+    ctx.save();
+    ctx.translate(sx, sy);
+  }
+
   // Sky gradient
   const skyGrad = ctx.createLinearGradient(0, 0, 0, h * 0.75);
   skyGrad.addColorStop(0, COLORS.sky1);
