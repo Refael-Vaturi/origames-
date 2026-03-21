@@ -704,17 +704,17 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
   }
   if (s.autoDefenseTimer > 0) {
     s.autoDefenseTimer = Math.max(0, s.autoDefenseTimer - dt);
-    // Auto-defense dome: destroy any threat entering the semicircle zone above ground
-    const groundY = h * GROUND_Y_RATIO;
+    // Auto-defense dome: destroy threats that enter the lower portion of the dome (near ground)
+    const groundY2 = h * GROUND_Y_RATIO;
     const domeCenterX = w / 2;
     const domeRadius = w * 0.45;
     const threatsInDome: number[] = [];
     s.threats.forEach(t => {
       const dx = t.x - domeCenterX;
-      const dy = t.y - groundY;
+      const dy = t.y - groundY2;
       const dist = Math.sqrt(dx * dx + dy * dy);
-      // Only destroy if inside dome semicircle (above ground) and descending
-      if (dist < domeRadius && t.y < groundY && dy < 0) {
+      // Only destroy if inside dome semicircle AND below 70% of ground (close to cities)
+      if (dist < domeRadius && t.y > groundY2 * 0.7 && t.y < groundY2) {
         threatsInDome.push(t.id);
         s.score += t.points;
         s.totalIntercepted++;
