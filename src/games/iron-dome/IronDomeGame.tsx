@@ -252,6 +252,7 @@ const IronDomeGame: React.FC = () => {
   const startGame = (mode: 'campaign' | 'survival') => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    setScoreSaved(false);
     const s = createInitialState(canvas.width, canvas.height);
     s.mode = mode;
     stateRef.current = startWave(s, canvas.width, canvas.height);
