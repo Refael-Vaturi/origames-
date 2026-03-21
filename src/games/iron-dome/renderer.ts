@@ -76,6 +76,45 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   // Cities
   renderCities(ctx, state.cities, groundY, time);
 
+  // Auto-defense dome shield visual
+  if (state.autoDefenseTimer > 0) {
+    const domeCenterX = w / 2;
+    const domeRadius = w * 0.45;
+    const pulse = 0.15 + Math.sin(time * 0.005) * 0.08;
+    
+    // Dome semicircle
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(domeCenterX, groundY, domeRadius, Math.PI, 0);
+    ctx.closePath();
+    
+    // Gradient fill
+    const domeGrad = ctx.createRadialGradient(domeCenterX, groundY, 0, domeCenterX, groundY, domeRadius);
+    domeGrad.addColorStop(0, 'transparent');
+    domeGrad.addColorStop(0.7, `rgba(255,255,68,${pulse * 0.05})`);
+    domeGrad.addColorStop(0.9, `rgba(255,255,68,${pulse * 0.15})`);
+    domeGrad.addColorStop(1, `rgba(255,255,68,${pulse * 0.3})`);
+    ctx.fillStyle = domeGrad;
+    ctx.fill();
+    
+    // Dome border with hexagonal pattern effect
+    ctx.strokeStyle = `rgba(255,255,68,${pulse * 0.8})`;
+    ctx.lineWidth = 2;
+    ctx.setLineDash([8, 4]);
+    ctx.beginPath();
+    ctx.arc(domeCenterX, groundY, domeRadius, Math.PI, 0);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    
+    // Inner energy ring
+    ctx.strokeStyle = `rgba(255,200,44,${pulse * 0.5})`;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(domeCenterX, groundY, domeRadius * 0.7, Math.PI, 0);
+    ctx.stroke();
+    ctx.restore();
+  }
+
   // Iron Dome launcher
   renderLauncher(ctx, w, groundY, time, state);
 
