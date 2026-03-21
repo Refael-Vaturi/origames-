@@ -597,10 +597,10 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
                 alpha: 1, vy: -1, color: '#44FF44', size: 16,
               }];
             } else if (t.missileColor === 'blue') {
-              s.tripleInterceptorTimer = 10000;
+              s.autoFireTimer = 5000;
               s.soundEvents.push('powerup-blue');
               s.floatingTexts = [...s.floatingTexts, {
-                x: t.x, y: t.y - 30, text: '🔵 x3 INTERCEPTORS 10s!',
+                x: t.x, y: t.y - 30, text: '🔵 AUTO-FIRE 5s!',
                 alpha: 1, vy: -1, color: '#4488FF', size: 16,
               }];
             } else if (t.missileColor === 'yellow') {

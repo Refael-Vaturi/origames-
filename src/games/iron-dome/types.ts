@@ -137,6 +137,7 @@ export interface GameState {
   empTimer: number;
   helicopterTimer: number;
   helicopterX: number;
+  autoFireTimer: number;
   // Sound events queue (consumed by UI layer)
   soundEvents: string[];
 }
