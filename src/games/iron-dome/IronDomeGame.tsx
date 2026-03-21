@@ -204,12 +204,14 @@ const IronDomeGame: React.FC = () => {
       if (e.key === ' ') {
         e.preventDefault();
         if (canvasRef.current) {
+          const lw = window.innerWidth;
+          const lh = window.innerHeight;
           stateRef.current = fireInterceptor(
             stateRef.current,
-            canvasRef.current.width / 2,
-            canvasRef.current.height * 0.4,
-            canvasRef.current.width,
-            canvasRef.current.height
+            lw / 2,
+            lh * 0.4,
+            lw,
+            lh
           );
           playSound('fire');
         }
