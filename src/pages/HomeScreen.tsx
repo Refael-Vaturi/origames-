@@ -45,7 +45,7 @@ const HomeScreen = () => {
     setShowPlayerPicker(false);
     playWhoosh();
     const params = playerCount ? `?players=${playerCount}` : "";
-    navigate(`/matchmaking${params}`);
+    navigate(`/fake-it-fast/matchmaking${params}`);
   };
 
   const mainActions = [
