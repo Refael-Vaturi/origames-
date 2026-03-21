@@ -684,6 +684,12 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
   if (s.tripleInterceptorTimer > 0) {
     s.tripleInterceptorTimer = Math.max(0, s.tripleInterceptorTimer - dt);
   }
+  if (s.shieldTimer > 0) {
+    s.shieldTimer = Math.max(0, s.shieldTimer - dt);
+  }
+  if (s.empTimer > 0) {
+    s.empTimer = Math.max(0, s.empTimer - dt);
+  }
   if (s.autoDefenseTimer > 0) {
     s.autoDefenseTimer = Math.max(0, s.autoDefenseTimer - dt);
     // Auto-defense: destroy nearest threat every ~300ms
