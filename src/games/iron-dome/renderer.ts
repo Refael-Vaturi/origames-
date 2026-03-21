@@ -149,6 +149,11 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
 
   // HUD
   renderHUD(ctx, state, w, h, time);
+
+  // End screen shake
+  if (state.screenShake > 0) {
+    ctx.restore();
+  }
 }
 
 function renderHelicopter(ctx: CanvasRenderingContext2D, x: number, y: number, time: number) {

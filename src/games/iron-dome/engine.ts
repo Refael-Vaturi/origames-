@@ -708,6 +708,9 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
   if (s.empTimer > 0) {
     s.empTimer = Math.max(0, s.empTimer - dt);
   }
+  if (s.screenShake > 0) {
+    s.screenShake = Math.max(0, s.screenShake - dt * 0.03);
+  }
   if (s.autoDefenseTimer > 0) {
     s.autoDefenseTimer = Math.max(0, s.autoDefenseTimer - dt);
     // Auto-defense dome: destroy threats that enter the lower portion of the dome (near ground)
