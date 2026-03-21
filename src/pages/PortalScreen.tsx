@@ -27,6 +27,14 @@ const games: GameCard[] = [
     description: "🕵️ Find the fake before it fools everyone!",
     color: "from-[hsl(267,84%,58%)] to-[hsl(340,82%,62%)]",
   },
+  {
+    id: "iron-dome",
+    name: "Iron Dome",
+    image: ironDomeCard,
+    route: "/iron-dome",
+    description: "🛡️ Defend your cities from incoming missiles!",
+    color: "from-[hsl(190,80%,30%)] to-[hsl(210,80%,20%)]",
+  },
 ];
 
 const PortalScreen = () => {
