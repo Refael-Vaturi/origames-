@@ -109,6 +109,11 @@ export function createInitialState(w: number, h: number): GameState {
     autoFireTimer: 0,
     soundEvents: [],
     screenShake: 0,
+    waveExtraShots: 0,
+    waveTripleDome: false,
+    waveFastReload: false,
+    waveAutoDefenseStart: 0,
+    wavePerksDisplay: [],
   };
 }
 
