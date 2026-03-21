@@ -103,6 +103,9 @@ export function createInitialState(w: number, h: number): GameState {
     nextId: 1,
     tripleInterceptorTimer: 0,
     autoDefenseTimer: 0,
+    shieldTimer: 0,
+    empTimer: 0,
+    soundEvents: [],
   };
 }
 
@@ -155,14 +158,18 @@ function spawnThreat(state: GameState, type: ThreatType, w: number, h: number): 
   let missileColor: MissileColor | undefined;
   if (type === 'missile') {
     const roll = Math.random() * 100;
-    if (roll < 1) {
-      missileColor = 'yellow'; // 1% chance
-    } else if (roll < 3) {
-      missileColor = 'blue';   // 2% chance
-    } else if (roll < 8) {
-      missileColor = 'green';  // 5% chance
+    if (roll < 0.5) {
+      missileColor = 'white';   // 0.5% - EMP
+    } else if (roll < 1) {
+      missileColor = 'yellow';  // 0.5% - Auto defense
+    } else if (roll < 2) {
+      missileColor = 'purple';  // 1% - Shield
+    } else if (roll < 4) {
+      missileColor = 'blue';    // 2% - Triple 10s
+    } else if (roll < 9) {
+      missileColor = 'green';   // 5% - Triple 5s
     } else {
-      missileColor = 'red';    // 92% (rest)
+      missileColor = 'red';     // 91%
     }
   }
 
@@ -183,7 +190,7 @@ function spawnThreat(state: GameState, type: ThreatType, w: number, h: number): 
     evasive,
     evasiveTimer: 0,
     clusterTimer: type === 'cluster' ? CLUSTER_SPLIT_TIME : 0,
-    points: missileColor === 'green' ? 500 : missileColor === 'yellow' ? 1000 : missileColor === 'blue' ? 750 : tc.points,
+    points: missileColor === 'yellow' ? 1000 : missileColor === 'white' ? 1500 : missileColor === 'purple' ? 800 : missileColor === 'blue' ? 750 : missileColor === 'green' ? 500 : tc.points,
     locked: false,
     missileColor,
   };
@@ -280,7 +287,7 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
     return state;
   }
 
-  let s = { ...state };
+  let s = { ...state, soundEvents: [] as string[] };
 
   // Wave intro countdown
   if (s.phase === 'wave-intro') {
@@ -362,9 +369,10 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
       }
     }
 
-    // Move
-    threat.x += Math.cos(threat.angle) * threat.speed * (dt / 16);
-    threat.y += Math.sin(threat.angle) * threat.speed * (dt / 16);
+    // Move - EMP slows threats
+    const speedMult = s.empTimer > 0 ? 0.3 : 1;
+    threat.x += Math.cos(threat.angle) * threat.speed * speedMult * (dt / 16);
+    threat.y += Math.sin(threat.angle) * threat.speed * speedMult * (dt / 16);
 
     // Trail
     threat.trail = [...threat.trail, { x: threat.x, y: threat.y }];
@@ -390,7 +398,17 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
       if (hitCity) {
         hitCity.alive = false;
       }
-      livesLost++;
+      // Shield absorbs damage
+      if (s.shieldTimer > 0) {
+        s.soundEvents.push('shield-block');
+        s.floatingTexts = [...s.floatingTexts, {
+          x: threat.x, y: groundY - 20, text: '🛡️ BLOCKED!',
+          alpha: 1, vy: -1.5, color: '#CC88FF', size: 14,
+        }];
+        // Don't lose life, still explode visually
+      } else {
+        livesLost++;
+      }
       missed++;
 
       // Ground explosion
@@ -568,25 +586,39 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
 
             // Special missile color effects
             if (t.missileColor === 'green') {
-              // Triple interceptor for 5 seconds
               s.tripleInterceptorTimer = 5000;
+              s.soundEvents.push('powerup-green');
               s.floatingTexts = [...s.floatingTexts, {
                 x: t.x, y: t.y - 30, text: '🟢 x3 INTERCEPTORS!',
                 alpha: 1, vy: -1, color: '#44FF44', size: 16,
               }];
             } else if (t.missileColor === 'blue') {
-              // Triple interceptor for 10 seconds
               s.tripleInterceptorTimer = 10000;
+              s.soundEvents.push('powerup-blue');
               s.floatingTexts = [...s.floatingTexts, {
                 x: t.x, y: t.y - 30, text: '🔵 x3 INTERCEPTORS 10s!',
                 alpha: 1, vy: -1, color: '#4488FF', size: 16,
               }];
             } else if (t.missileColor === 'yellow') {
-              // Auto defense for 5 seconds
               s.autoDefenseTimer = 5000;
+              s.soundEvents.push('powerup-yellow');
               s.floatingTexts = [...s.floatingTexts, {
                 x: t.x, y: t.y - 30, text: '🟡 AUTO DEFENSE!',
                 alpha: 1, vy: -1, color: '#FFFF44', size: 16,
+              }];
+            } else if (t.missileColor === 'purple') {
+              s.shieldTimer = 3000;
+              s.soundEvents.push('powerup-purple');
+              s.floatingTexts = [...s.floatingTexts, {
+                x: t.x, y: t.y - 30, text: '🟣 SHIELD ACTIVE!',
+                alpha: 1, vy: -1, color: '#CC88FF', size: 16,
+              }];
+            } else if (t.missileColor === 'white') {
+              s.empTimer = 8000;
+              s.soundEvents.push('powerup-white');
+              s.floatingTexts = [...s.floatingTexts, {
+                x: t.x, y: t.y - 30, text: '⚪ EMP SLOWDOWN!',
+                alpha: 1, vy: -1, color: '#FFFFFF', size: 16,
               }];
             }
           }
@@ -651,6 +683,12 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
   // Update special timers
   if (s.tripleInterceptorTimer > 0) {
     s.tripleInterceptorTimer = Math.max(0, s.tripleInterceptorTimer - dt);
+  }
+  if (s.shieldTimer > 0) {
+    s.shieldTimer = Math.max(0, s.shieldTimer - dt);
+  }
+  if (s.empTimer > 0) {
+    s.empTimer = Math.max(0, s.empTimer - dt);
   }
   if (s.autoDefenseTimer > 0) {
     s.autoDefenseTimer = Math.max(0, s.autoDefenseTimer - dt);

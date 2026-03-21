@@ -1,5 +1,5 @@
 export type ThreatType = 'missile' | 'uav' | 'cluster' | 'submunition' | 'heavy';
-export type MissileColor = 'red' | 'green' | 'yellow' | 'blue';
+export type MissileColor = 'red' | 'green' | 'yellow' | 'blue' | 'purple' | 'white';
 
 export interface Threat {
   id: number;
@@ -133,4 +133,8 @@ export interface GameState {
   // Special missile effects
   tripleInterceptorTimer: number;
   autoDefenseTimer: number;
+  shieldTimer: number;
+  empTimer: number;
+  // Sound events queue (consumed by UI layer)
+  soundEvents: string[];
 }
