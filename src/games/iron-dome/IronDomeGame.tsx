@@ -18,6 +18,7 @@ const IronDomeGame: React.FC = () => {
   const navigate = useNavigate();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stateRef = useRef<GameState | null>(null);
+  const musicRef = useRef<GameMusic>(new GameMusic());
   const animFrameRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
   const [phase, setPhase] = useState<GamePhase>('menu');
