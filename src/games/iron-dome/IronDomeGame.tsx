@@ -180,8 +180,9 @@ const IronDomeGame: React.FC = () => {
 
         if (stateRef.current.phase !== phase) {
           setPhase(stateRef.current.phase);
-          setGameState({ ...stateRef.current });
         }
+        // Update gameState periodically for HUD timers
+        setGameState({ ...stateRef.current });
 
         ctx.save();
         ctx.clearRect(0, 0, canvas.width, canvas.height);
