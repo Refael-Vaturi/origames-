@@ -484,9 +484,19 @@ const IronDomeGame: React.FC = () => {
                 </div>
               </div>
 
-              {/* Stats */}
-              <div className="mt-4 px-4 py-3 bg-black/40 rounded-xl border border-cyan-900/30 text-center">
-                <p className="text-cyan-400/40 text-xs">{T('playersWorldwide')}</p>
+              {/* Auth status / Login button */}
+              <div className="mt-4 px-4 py-3 bg-black/40 rounded-xl border border-cyan-900/30 text-center w-full">
+                {user ? (
+                  <p className="text-green-400/70 text-xs">✅ מחובר — הניקוד ישמר בלידרבורד</p>
+                ) : (
+                  <button
+                    onClick={() => { setShowAuthModal(true); setAuthMode('login'); }}
+                    className="flex items-center justify-center gap-2 w-full text-cyan-300/70 hover:text-cyan-200 transition-colors"
+                  >
+                    <LogIn className="w-4 h-4" />
+                    <span className="text-xs font-bold">התחבר כדי לשמור ניקוד בלידרבורד</span>
+                  </button>
+                )}
               </div>
             </div>
           </motion.div>
