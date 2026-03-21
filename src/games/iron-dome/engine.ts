@@ -422,10 +422,28 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
     }
   });
 
-  // Update interceptors
+  // Update interceptors (homing toward locked threats)
   const newInterceptors: Interceptor[] = [];
   s.interceptors.forEach(int => {
     let i = { ...int };
+
+    // If locked onto a threat, re-target it continuously
+    if (i.lockedThreatId != null) {
+      const target = s.threats.find(t => t.id === i.lockedThreatId);
+      if (target) {
+        const dx = target.x - i.x;
+        const dy = target.y - i.y;
+        const targetAngle = Math.atan2(dy, dx);
+        // Smooth turning toward threat
+        let angleDiff = targetAngle - i.angle;
+        while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+        while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+        i.angle += angleDiff * 0.15; // Turn rate
+        i.targetX = target.x;
+        i.targetY = target.y;
+      }
+    }
+
     i.x += Math.cos(i.angle) * i.speed * (dt / 16);
     i.y += Math.sin(i.angle) * i.speed * (dt / 16);
 
@@ -436,7 +454,7 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
     const dx = i.targetX - i.x;
     const dy = i.targetY - i.y;
     const dist = Math.sqrt(dx * dx + dy * dy);
-    if (dist < 10) {
+    if (dist < 15) {
       // Explode at target
       s.explosions = [...s.explosions, {
         x: i.x, y: i.y, radius: 2, maxRadius: EXPLOSION_MAX_RADIUS,
