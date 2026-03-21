@@ -122,6 +122,39 @@ export function startWave(state: GameState, w: number, h: number): GameState {
     ? CAMPAIGN_WAVES[state.wave - 1]
     : getSurvivalWave(state.wave);
 
+  // Calculate wave-based passive perks
+  const wave = state.wave;
+  const perks: string[] = [];
+  let extraShots = 0;
+  let tripleDome = false;
+  let waveFastReload = false;
+  let autoDefenseStart = 0;
+
+  if (wave >= 3) {
+    extraShots = 1; // Double shot from wave 3
+    perks.push('🔫 יריות כפולות');
+  }
+  if (wave >= 4) {
+    waveFastReload = true; // Fast reload from wave 4
+    perks.push('⚡ טעינה מהירה');
+  }
+  if (wave >= 5) {
+    tripleDome = true; // 3 launchers from wave 5
+    perks.push('🛡️ 3 כיפות ברזל');
+  }
+  if (wave >= 7) {
+    extraShots = 2; // Triple shot from wave 7
+    perks[0] = '🔫 יריות משולשות'; // Replace double with triple
+  }
+  if (wave >= 8) {
+    autoDefenseStart = 3000; // 3s auto-defense at wave start from wave 8
+    perks.push('🟡 מגן אוטומטי 3 שניות');
+  }
+  if (wave >= 9) {
+    autoDefenseStart = 5000; // 5s auto-defense from wave 9
+    perks[perks.length - 1] = '🟡 מגן אוטומטי 5 שניות';
+  }
+
   return {
     ...state,
     phase: 'wave-intro',
@@ -133,6 +166,15 @@ export function startWave(state: GameState, w: number, h: number): GameState {
     explosions: [],
     particles: [],
     floatingTexts: [],
+    waveExtraShots: extraShots,
+    waveTripleDome: tripleDome,
+    waveFastReload: waveFastReload,
+    waveAutoDefenseStart: autoDefenseStart,
+    wavePerksDisplay: perks,
+    // Apply wave perks
+    tripleInterceptorTimer: tripleDome ? 999999 : 0,
+    autoDefenseTimer: autoDefenseStart,
+    fastReload: waveFastReload || state.fastReload,
   };
 }
 
