@@ -965,6 +965,98 @@ const IronDomeGame: React.FC = () => {
           🚀 {T('missile')} · ✈ {T('uav')} · 💣 {T('cluster')} (7s!) · ☢ {T('heavy')} (2 hits!) · ESC = {T('paused')}
         </div>
       )}
+
+      {/* Auth Modal */}
+      <AnimatePresence>
+        {showAuthModal && (
+          <motion.div
+            key="auth-modal"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 flex items-center justify-center z-50 bg-black/80"
+            onClick={(e) => { if (e.target === e.currentTarget) setShowAuthModal(false); }}
+          >
+            <motion.div
+              className="bg-[#0a1525] border border-cyan-900/40 rounded-2xl p-6 max-w-sm w-full mx-4"
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 className="text-xl font-bold text-cyan-400 text-center mb-4" style={{ fontFamily: "'Courier New', monospace" }}>
+                {authMode === 'login' ? '🔑 התחברות' : '📝 הרשמה'}
+              </h2>
+
+              <div className="flex flex-col gap-3">
+                {authMode === 'register' && (
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-400/50" />
+                    <input
+                      type="text"
+                      placeholder="שם תצוגה"
+                      value={authDisplayName}
+                      onChange={(e) => setAuthDisplayName(e.target.value)}
+                      className="w-full pl-10 pr-3 py-3 bg-black/40 border border-cyan-900/30 rounded-xl text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-cyan-500/50"
+                    />
+                  </div>
+                )}
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-400/50" />
+                  <input
+                    type="email"
+                    placeholder="אימייל"
+                    value={authEmail}
+                    onChange={(e) => setAuthEmail(e.target.value)}
+                    className="w-full pl-10 pr-3 py-3 bg-black/40 border border-cyan-900/30 rounded-xl text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-cyan-500/50"
+                    dir="ltr"
+                  />
+                </div>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-400/50" />
+                  <input
+                    type={showAuthPassword ? 'text' : 'password'}
+                    placeholder="סיסמה"
+                    value={authPassword}
+                    onChange={(e) => setAuthPassword(e.target.value)}
+                    className="w-full pl-10 pr-10 py-3 bg-black/40 border border-cyan-900/30 rounded-xl text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-cyan-500/50"
+                    dir="ltr"
+                    onKeyDown={(e) => { if (e.key === 'Enter') handleAuth(); }}
+                  />
+                  <button onClick={() => setShowAuthPassword(!showAuthPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-cyan-400/50 hover:text-cyan-300">
+                    {showAuthPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+
+                <button
+                  onClick={handleAuth}
+                  disabled={authLoading || !authEmail || !authPassword}
+                  className="w-full py-3 bg-gradient-to-r from-cyan-600 to-blue-600 text-white rounded-xl font-bold hover:from-cyan-500 hover:to-blue-500 transition-all disabled:opacity-40"
+                >
+                  {authLoading ? '⏳...' : authMode === 'login' ? 'התחבר' : 'הירשם'}
+                </button>
+
+                <p className="text-center text-xs text-cyan-300/50">
+                  {authMode === 'login' ? 'אין לך חשבון? ' : 'יש לך חשבון? '}
+                  <button
+                    onClick={() => setAuthMode(authMode === 'login' ? 'register' : 'login')}
+                    className="text-cyan-400 hover:text-cyan-300 font-bold"
+                  >
+                    {authMode === 'login' ? 'הירשם' : 'התחבר'}
+                  </button>
+                </p>
+
+                <button
+                  onClick={() => setShowAuthModal(false)}
+                  className="text-white/40 text-xs hover:text-white/60 transition-colors"
+                >
+                  ביטול
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
