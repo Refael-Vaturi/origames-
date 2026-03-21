@@ -1,0 +1,407 @@
+import { GameState, Threat, City, Interceptor, Explosion, Particle, FloatingText } from './types';
+
+const COLORS = {
+  sky1: '#0a0e1a',
+  sky2: '#0d1b2a',
+  sky3: '#1b2838',
+  ground: '#1a2a1a',
+  groundLine: '#2a4a2a',
+  cityDark: '#0a1520',
+  cityMid: '#121f2e',
+  cityLight: '#1a3040',
+  windowLit: '#FFDD44',
+  windowOff: '#0a1520',
+  missile: '#FF4444',
+  missileTrail: '#FF6644',
+  uav: '#44AAFF',
+  uavTrail: '#4488FF',
+  cluster: '#FF8800',
+  clusterTrail: '#FFAA44',
+  heavy: '#FF2222',
+  heavyTrail: '#FF4444',
+  submunition: '#FFAA00',
+  interceptor: '#44FF88',
+  interceptorTrail: '#22CC66',
+  explosionInner: '#FFFFFF',
+  explosionMid: '#FFDD44',
+  explosionOuter: '#FF6600',
+  groundExplosion: '#FF4400',
+  heart: '#FF4466',
+  heartEmpty: '#334455',
+  combo: '#FFDD44',
+  score: '#CCDDEE',
+  ammo: '#44AADD',
+  credits: '#44DD88',
+};
+
+export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: number, h: number, time: number) {
+  // Sky gradient
+  const skyGrad = ctx.createLinearGradient(0, 0, 0, h * 0.75);
+  skyGrad.addColorStop(0, COLORS.sky1);
+  skyGrad.addColorStop(0.5, COLORS.sky2);
+  skyGrad.addColorStop(1, COLORS.sky3);
+  ctx.fillStyle = skyGrad;
+  ctx.fillRect(0, 0, w, h);
+
+  // Stars
+  ctx.fillStyle = 'rgba(255,255,255,0.5)';
+  const starSeed = 42;
+  for (let i = 0; i < 80; i++) {
+    const sx = ((starSeed * (i + 1) * 7919) % w);
+    const sy = ((starSeed * (i + 1) * 6271) % (h * 0.6));
+    const ss = 0.5 + ((i * 3) % 3) * 0.5;
+    const twinkle = 0.3 + 0.7 * Math.sin(time * 0.001 + i * 0.5);
+    ctx.globalAlpha = twinkle * 0.6;
+    ctx.fillRect(sx, sy, ss, ss);
+  }
+  ctx.globalAlpha = 1;
+
+  // Ground
+  const groundY = h * 0.85;
+  const groundGrad = ctx.createLinearGradient(0, groundY, 0, h);
+  groundGrad.addColorStop(0, '#1a3020');
+  groundGrad.addColorStop(0.3, '#152a18');
+  groundGrad.addColorStop(1, '#0a1a0a');
+  ctx.fillStyle = groundGrad;
+  ctx.fillRect(0, groundY, w, h - groundY);
+
+  // Ground line
+  ctx.strokeStyle = '#2a5a2a';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(0, groundY);
+  ctx.lineTo(w, groundY);
+  ctx.stroke();
+
+  // Cities
+  renderCities(ctx, state.cities, groundY, time);
+
+  // Threats
+  state.threats.forEach(t => renderThreat(ctx, t, time));
+
+  // Interceptors
+  state.interceptors.forEach(i => renderInterceptor(ctx, i));
+
+  // Explosions
+  state.explosions.forEach(e => renderExplosion(ctx, e));
+
+  // Particles
+  state.particles.forEach(p => renderParticle(ctx, p));
+
+  // Floating texts
+  state.floatingTexts.forEach(ft => renderFloatingText(ctx, ft));
+
+  // HUD
+  renderHUD(ctx, state, w, h, time);
+}
+
+function renderCities(ctx: CanvasRenderingContext2D, cities: City[], groundY: number, time: number) {
+  cities.forEach(city => {
+    if (!city.alive) {
+      // Destroyed city - rubble
+      ctx.fillStyle = '#1a1a1a';
+      city.buildings.forEach(b => {
+        const rubbleH = b.h * 0.2;
+        ctx.fillRect(city.x + b.x, groundY - rubbleH, b.w, rubbleH);
+      });
+      // Smoke
+      ctx.fillStyle = 'rgba(80,80,80,0.3)';
+      const smokeY = groundY - 20 - Math.sin(time * 0.002) * 5;
+      ctx.beginPath();
+      ctx.arc(city.x + city.width / 2, smokeY, 15, 0, Math.PI * 2);
+      ctx.fill();
+      return;
+    }
+
+    city.buildings.forEach(b => {
+      const bx = city.x + b.x;
+      const by = groundY - b.h;
+
+      // Building body
+      ctx.fillStyle = b.color;
+      ctx.fillRect(bx, by, b.w, b.h);
+
+      // Building edge highlight
+      ctx.fillStyle = 'rgba(255,255,255,0.03)';
+      ctx.fillRect(bx, by, 1, b.h);
+
+      // Windows
+      b.windows.forEach(win => {
+        ctx.fillStyle = win.lit
+          ? (Math.random() > 0.998 ? COLORS.windowOff : COLORS.windowLit)
+          : COLORS.windowOff;
+        ctx.globalAlpha = win.lit ? 0.7 + Math.sin(time * 0.003 + win.x) * 0.1 : 0.3;
+        ctx.fillRect(bx + win.x, by + win.y, 3, 3);
+      });
+      ctx.globalAlpha = 1;
+    });
+  });
+}
+
+function renderThreat(ctx: CanvasRenderingContext2D, threat: Threat, time: number) {
+  const { type, x, y, trail, hp, maxHp, evasive } = threat;
+
+  // Trail
+  const trailColor = type === 'uav' ? COLORS.uavTrail
+    : type === 'cluster' ? COLORS.clusterTrail
+    : type === 'heavy' ? COLORS.heavyTrail
+    : type === 'submunition' ? COLORS.submunition
+    : COLORS.missileTrail;
+
+  trail.forEach((p, i) => {
+    const alpha = (i / trail.length) * 0.6;
+    ctx.fillStyle = trailColor;
+    ctx.globalAlpha = alpha;
+    const s = 1 + (i / trail.length) * 2;
+    ctx.fillRect(p.x - s / 2, p.y - s / 2, s, s);
+  });
+  ctx.globalAlpha = 1;
+
+  // Exhaust flame
+  const flameLen = 6 + Math.sin(time * 0.02) * 2;
+  const flameGrad = ctx.createRadialGradient(x, y, 1, x, y, flameLen);
+  flameGrad.addColorStop(0, '#FFFFFF');
+  flameGrad.addColorStop(0.3, type === 'uav' ? '#88CCFF' : '#FFAA44');
+  flameGrad.addColorStop(1, 'transparent');
+  ctx.fillStyle = flameGrad;
+  ctx.beginPath();
+  ctx.arc(x, y, flameLen, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Threat body
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(threat.angle);
+
+  if (type === 'missile' || type === 'submunition') {
+    const size = type === 'submunition' ? 4 : 6;
+    ctx.fillStyle = type === 'submunition' ? '#FFAA00' : '#CC3333';
+    ctx.beginPath();
+    ctx.moveTo(size, 0);
+    ctx.lineTo(-size, -size * 0.5);
+    ctx.lineTo(-size, size * 0.5);
+    ctx.closePath();
+    ctx.fill();
+  } else if (type === 'uav') {
+    ctx.fillStyle = '#3388CC';
+    ctx.beginPath();
+    ctx.moveTo(8, 0);
+    ctx.lineTo(-4, -6);
+    ctx.lineTo(-2, 0);
+    ctx.lineTo(-4, 6);
+    ctx.closePath();
+    ctx.fill();
+    // Blinking light
+    if (Math.sin(time * 0.005) > 0) {
+      ctx.fillStyle = '#FF0000';
+      ctx.beginPath();
+      ctx.arc(0, 0, 1.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  } else if (type === 'cluster') {
+    ctx.fillStyle = '#CC6600';
+    ctx.beginPath();
+    ctx.moveTo(8, 0);
+    ctx.lineTo(-6, -5);
+    ctx.lineTo(-4, 0);
+    ctx.lineTo(-6, 5);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#FF8800';
+    ctx.fillRect(-3, -2, 4, 4);
+  } else if (type === 'heavy') {
+    ctx.fillStyle = '#AA2222';
+    ctx.beginPath();
+    ctx.moveTo(10, 0);
+    ctx.lineTo(-8, -6);
+    ctx.lineTo(-6, 0);
+    ctx.lineTo(-8, 6);
+    ctx.closePath();
+    ctx.fill();
+    // HP indicator
+    if (hp < maxHp) {
+      ctx.fillStyle = '#FFAA00';
+      ctx.fillRect(-5, -8, 10 * (hp / maxHp), 2);
+      ctx.strokeStyle = '#888';
+      ctx.lineWidth = 0.5;
+      ctx.strokeRect(-5, -8, 10, 2);
+    }
+  }
+
+  ctx.restore();
+
+  // Evasive marker
+  if (evasive) {
+    ctx.fillStyle = '#FF4444';
+    ctx.font = 'bold 8px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('▼', x, y - 10);
+  }
+}
+
+function renderInterceptor(ctx: CanvasRenderingContext2D, int: Interceptor) {
+  // Trail
+  int.trail.forEach((p, i) => {
+    const alpha = (i / int.trail.length) * 0.5;
+    ctx.fillStyle = COLORS.interceptorTrail;
+    ctx.globalAlpha = alpha;
+    ctx.fillRect(p.x - 0.5, p.y - 0.5, 1, 1);
+  });
+  ctx.globalAlpha = 1;
+
+  // Body
+  ctx.save();
+  ctx.translate(int.x, int.y);
+  ctx.rotate(int.angle);
+  ctx.fillStyle = COLORS.interceptor;
+  ctx.beginPath();
+  ctx.moveTo(5, 0);
+  ctx.lineTo(-3, -2);
+  ctx.lineTo(-3, 2);
+  ctx.closePath();
+  ctx.fill();
+
+  // Glow
+  const glow = ctx.createRadialGradient(0, 0, 0, 0, 0, 6);
+  glow.addColorStop(0, 'rgba(68,255,136,0.3)');
+  glow.addColorStop(1, 'transparent');
+  ctx.fillStyle = glow;
+  ctx.beginPath();
+  ctx.arc(0, 0, 6, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
+
+function renderExplosion(ctx: CanvasRenderingContext2D, exp: Explosion) {
+  ctx.globalAlpha = exp.alpha;
+
+  if (exp.isGround) {
+    const grad = ctx.createRadialGradient(exp.x, exp.y, 0, exp.x, exp.y, exp.radius);
+    grad.addColorStop(0, '#FFFFFF');
+    grad.addColorStop(0.2, '#FFAA44');
+    grad.addColorStop(0.5, '#FF4400');
+    grad.addColorStop(1, 'transparent');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(exp.x, exp.y, exp.radius, 0, Math.PI * 2);
+    ctx.fill();
+  } else {
+    const grad = ctx.createRadialGradient(exp.x, exp.y, 0, exp.x, exp.y, exp.radius);
+    grad.addColorStop(0, COLORS.explosionInner);
+    grad.addColorStop(0.3, COLORS.explosionMid);
+    grad.addColorStop(0.7, COLORS.explosionOuter);
+    grad.addColorStop(1, 'transparent');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(exp.x, exp.y, exp.radius, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+}
+
+function renderParticle(ctx: CanvasRenderingContext2D, p: Particle) {
+  ctx.globalAlpha = p.life / p.maxLife;
+  ctx.fillStyle = p.color;
+  ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
+  ctx.globalAlpha = 1;
+}
+
+function renderFloatingText(ctx: CanvasRenderingContext2D, ft: FloatingText) {
+  ctx.globalAlpha = ft.alpha;
+  ctx.fillStyle = ft.color;
+  ctx.font = `bold ${ft.size}px 'Courier New', monospace`;
+  ctx.textAlign = 'center';
+  ctx.fillText(ft.text, ft.x, ft.y);
+  ctx.globalAlpha = 1;
+}
+
+function renderHUD(ctx: CanvasRenderingContext2D, state: GameState, w: number, h: number, time: number) {
+  // Lives (hearts)
+  const heartSize = 16;
+  for (let i = 0; i < state.maxLives; i++) {
+    const hx = 15 + i * (heartSize + 6);
+    const hy = 20;
+    ctx.fillStyle = i < state.lives ? COLORS.heart : COLORS.heartEmpty;
+    ctx.font = `${heartSize}px serif`;
+    ctx.fillText('♥', hx, hy + heartSize * 0.3);
+  }
+
+  // Wave
+  ctx.fillStyle = COLORS.score;
+  ctx.font = '14px monospace';
+  ctx.textAlign = 'center';
+  const totalWaves = state.mode === 'campaign' ? '10' : '∞';
+  ctx.fillText(`Wave ${state.wave}/${totalWaves}`, w / 2, 24);
+
+  // Score
+  ctx.textAlign = 'right';
+  ctx.fillStyle = COLORS.score;
+  ctx.font = 'bold 16px monospace';
+  ctx.fillText(`Score: ${state.score}`, w - 15, 24);
+
+  // Combo
+  if (state.combo > 0) {
+    ctx.textAlign = 'right';
+    ctx.fillStyle = COLORS.combo;
+    ctx.font = 'bold 14px monospace';
+    const pulse = 1 + Math.sin(time * 0.01) * 0.05;
+    ctx.save();
+    ctx.translate(w - 15, 44);
+    ctx.scale(pulse, pulse);
+    ctx.fillText(`x${state.comboMultiplier} (${state.combo})`, 0, 0);
+    ctx.restore();
+  }
+
+  // Ammo bar
+  const ammoBarW = 120;
+  const ammoBarH = 6;
+  const ammoX = 15;
+  const ammoY = h - 25;
+
+  ctx.fillStyle = '#1a2a3a';
+  ctx.fillRect(ammoX, ammoY, ammoBarW, ammoBarH);
+
+  if (state.reloading) {
+    const reloadProgress = 1 - (state.reloadTimer / (state.fastReload ? 300 : 1500));
+    ctx.fillStyle = '#886644';
+    ctx.fillRect(ammoX, ammoY, ammoBarW * reloadProgress, ammoBarH);
+    ctx.fillStyle = '#AAAAAA';
+    ctx.font = '10px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText('RELOADING...', ammoX, ammoY - 4);
+  } else {
+    ctx.fillStyle = COLORS.ammo;
+    ctx.fillRect(ammoX, ammoY, ammoBarW * (state.ammo / state.maxAmmo), ammoBarH);
+    ctx.fillStyle = COLORS.ammo;
+    ctx.font = '10px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText(`Ammo: ${state.ammo}/${state.maxAmmo}`, ammoX, ammoY - 4);
+  }
+
+  // Credits
+  ctx.fillStyle = COLORS.credits;
+  ctx.font = '12px monospace';
+  ctx.textAlign = 'right';
+  ctx.fillText(`💰 ${state.credits}`, w - 15, h - 15);
+
+  // Ability indicators
+  let abilityX = 15;
+  const abilityY = h - 50;
+  ctx.font = '10px monospace';
+  ctx.textAlign = 'left';
+
+  if (state.airSupportCharges > 0) {
+    ctx.fillStyle = '#AADDFF';
+    ctx.fillText(`[A] Air Support x${state.airSupportCharges}`, abilityX, abilityY);
+    abilityX += 140;
+  }
+  if (state.gpsJammerCharges > 0) {
+    ctx.fillStyle = '#AAFFAA';
+    ctx.fillText(`[G] GPS Jammer x${state.gpsJammerCharges}`, abilityX, abilityY);
+    abilityX += 150;
+  }
+  if (state.ironBeamActive) {
+    ctx.fillStyle = '#FFDDAA';
+    ctx.fillText(`[B] Iron Beam ON`, abilityX, abilityY);
+  }
+}

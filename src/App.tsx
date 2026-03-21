@@ -8,6 +8,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import PortalScreen from "./pages/PortalScreen";
+import IronDomeGame from "./games/iron-dome/IronDomeGame";
 import WelcomeScreen from "./pages/WelcomeScreen";
 import HomeScreen from "./pages/HomeScreen";
 import JoinByCodeScreen from "./pages/JoinByCodeScreen";
@@ -43,6 +44,9 @@ const App = () => (
             <Routes>
               {/* Portal - Main hub */}
               <Route path="/" element={<PortalScreen />} />
+
+              {/* Iron Dome game */}
+              <Route path="/iron-dome" element={<IronDomeGame />} />
 
               {/* Fake It Fast game routes */}
               <Route path="/fake-it-fast" element={<HomeScreen />} />

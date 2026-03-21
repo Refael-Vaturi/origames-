@@ -5,6 +5,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { UserCircle, Settings, LogIn } from "lucide-react";
 import LanguageSelector from "@/components/LanguageSelector";
 import fakeItFastCard from "@/assets/fake-it-fast-card.png";
+import ironDomeCard from "@/assets/iron-dome-card.png";
 import logoImage from "@/assets/ori-games-logo.png";
 
 interface GameCard {
@@ -25,6 +26,14 @@ const games: GameCard[] = [
     route: "/fake-it-fast",
     description: "🕵️ Find the fake before it fools everyone!",
     color: "from-[hsl(267,84%,58%)] to-[hsl(340,82%,62%)]",
+  },
+  {
+    id: "iron-dome",
+    name: "Iron Dome",
+    image: ironDomeCard,
+    route: "/iron-dome",
+    description: "🛡️ Defend your cities from incoming missiles!",
+    color: "from-[hsl(190,80%,30%)] to-[hsl(210,80%,20%)]",
   },
 ];
 
@@ -176,7 +185,7 @@ const PortalScreen = () => {
                   animate={{ scale: [1, 1.05, 1] }}
                   transition={{ duration: 2, repeat: Infinity }}
                 >
-                  <span className="text-3xl">🕵️</span>
+                  <span className="text-3xl">{game.id === 'iron-dome' ? '🛡️' : '🕵️'}</span>
                 </motion.div>
               </div>
 
