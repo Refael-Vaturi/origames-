@@ -50,10 +50,10 @@ const HomeScreen = () => {
 
   const mainActions = [
     { key: "home.startGlobal", icon: Gamepad2, variant: "hero" as const, action: handleGlobalGame },
-    { key: "home.practice", icon: Bot, variant: "game" as const, action: () => { playClick(); navigate("/practice"); } },
-    { key: "home.playFriends", icon: Users, variant: "accent" as const, action: () => { playClick(); navigate("/create-room"); } },
-    { key: "home.joinCode", icon: Hash, variant: "outline" as const, action: () => { playClick(); navigate("/join"); } },
-    { key: "home.tutorial", icon: GraduationCap, variant: "outline" as const, action: () => { playClick(); navigate("/tutorial"); } },
+    { key: "home.practice", icon: Bot, variant: "game" as const, action: () => { playClick(); navigate("/fake-it-fast/practice"); } },
+    { key: "home.playFriends", icon: Users, variant: "accent" as const, action: () => { playClick(); navigate("/fake-it-fast/create-room"); } },
+    { key: "home.joinCode", icon: Hash, variant: "outline" as const, action: () => { playClick(); navigate("/fake-it-fast/join"); } },
+    { key: "home.tutorial", icon: GraduationCap, variant: "outline" as const, action: () => { playClick(); navigate("/fake-it-fast/tutorial"); } },
   ];
 
   const playerOptions = [
