@@ -101,6 +101,8 @@ export function createInitialState(w: number, h: number): GameState {
     totalMissed: 0,
     totalFired: 0,
     nextId: 1,
+    tripleInterceptorTimer: 0,
+    autoDefenseTimer: 0,
   };
 }
 
