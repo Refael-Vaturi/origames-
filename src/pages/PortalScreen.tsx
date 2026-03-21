@@ -5,6 +5,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { UserCircle, Settings, LogIn } from "lucide-react";
 import LanguageSelector from "@/components/LanguageSelector";
 import fakeItFastCard from "@/assets/fake-it-fast-card.png";
+import ironDomeCard from "@/assets/iron-dome-card.png";
 import logoImage from "@/assets/ori-games-logo.png";
 
 interface GameCard {
