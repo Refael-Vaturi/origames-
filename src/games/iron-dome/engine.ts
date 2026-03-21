@@ -161,6 +161,16 @@ export function startWave(state: GameState, w: number, h: number): GameState {
 
   const spawnQueue = buildSpawnQueue(config);
 
+  // Calculate store-bought bonuses for wave start
+  const shieldCharges = state.storeItems.find(i => i.id === 'shield-charge')?.bought || 0;
+  const autoFireCharges = state.storeItems.find(i => i.id === 'auto-fire-charge')?.bought || 0;
+  const tripleDomeCharges = state.storeItems.find(i => i.id === 'triple-dome')?.bought || 0;
+
+  // Store-bought shield adds to auto defense
+  const storeShieldTime = shieldCharges * 5000; // 5s per charge
+  const storeAutoFireTime = autoFireCharges * 5000; // 5s per charge  
+  const storeTripleDomeTime = tripleDomeCharges * 15000; // 15s per charge
+
   return {
     ...state,
     phase: 'wave-intro',
@@ -179,9 +189,11 @@ export function startWave(state: GameState, w: number, h: number): GameState {
     wavePerksDisplay: perks,
     waveTotalThreats: spawnQueue.length,
     waveDestroyedThreats: 0,
-    // Apply wave perks
-    tripleInterceptorTimer: tripleDome ? 999999 : 0,
-    autoDefenseTimer: autoDefenseStart,
+    // Apply wave perks + store bonuses
+    tripleInterceptorTimer: tripleDome ? 999999 : storeTripleDomeTime,
+    autoDefenseTimer: Math.max(autoDefenseStart, storeShieldTime > 0 ? storeShieldTime : 0),
+    shieldTimer: storeShieldTime,
+    autoFireTimer: storeAutoFireTime,
     fastReload: waveFastReload || state.fastReload,
   };
 }
