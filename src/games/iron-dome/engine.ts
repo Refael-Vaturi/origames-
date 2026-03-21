@@ -560,6 +560,7 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
                 alpha: 1, vy: -1, color: '#FFFF44', size: 16,
               }];
             }
+          }
         }
       });
 
