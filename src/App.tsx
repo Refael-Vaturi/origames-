@@ -8,6 +8,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import PortalScreen from "./pages/PortalScreen";
+import IronDomeGame from "./games/iron-dome/IronDomeGame";
 import WelcomeScreen from "./pages/WelcomeScreen";
 import HomeScreen from "./pages/HomeScreen";
 import JoinByCodeScreen from "./pages/JoinByCodeScreen";
