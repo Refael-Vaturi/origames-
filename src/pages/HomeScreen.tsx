@@ -85,7 +85,6 @@ const HomeScreen = () => {
             className="flex items-center gap-3"
             onClick={() => user ? navigate("/profile") : navigate("/auth")}
           >
-        >
           <motion.div
             className="w-10 h-10 rounded-full gradient-hero flex items-center justify-center"
             whileHover={{ scale: 1.1 }}
