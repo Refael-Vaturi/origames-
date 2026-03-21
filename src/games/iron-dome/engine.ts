@@ -157,11 +157,13 @@ export function startWave(state: GameState, w: number, h: number): GameState {
     perks[perks.length - 1] = '🟡 מגן אוטומטי 5 שניות';
   }
 
+  const spawnQueue = buildSpawnQueue(config);
+
   return {
     ...state,
     phase: 'wave-intro',
     waveIntroTimer: 2000,
-    spawnQueue: buildSpawnQueue(config),
+    spawnQueue,
     spawnTimer: 0,
     threats: [],
     interceptors: [],
@@ -173,6 +175,8 @@ export function startWave(state: GameState, w: number, h: number): GameState {
     waveFastReload: waveFastReload,
     waveAutoDefenseStart: autoDefenseStart,
     wavePerksDisplay: perks,
+    waveTotalThreats: spawnQueue.length,
+    waveDestroyedThreats: 0,
     // Apply wave perks
     tripleInterceptorTimer: tripleDome ? 999999 : 0,
     autoDefenseTimer: autoDefenseStart,
