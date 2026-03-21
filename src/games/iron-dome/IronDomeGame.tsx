@@ -200,54 +200,88 @@ const IronDomeGame: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKey);
   }, []);
 
-  const playSound = (type: string) => {
+  const playSoundRef = useRef<(type: string) => void>(() => {});
+  playSoundRef.current = (type: string) => {
     if (!soundEnabled) return;
     try {
-      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const g = ctx.createGain();
+      g.connect(ctx.destination);
+
+      const makeOsc = (freq: number, oscType: OscillatorType, vol: number, dur: number, endFreq?: number) => {
+        const o = ctx.createOscillator();
+        const gn = ctx.createGain();
+        o.connect(gn); gn.connect(ctx.destination);
+        o.type = oscType; o.frequency.value = freq;
+        gn.gain.setValueAtTime(vol, ctx.currentTime);
+        gn.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+        if (endFreq) o.frequency.exponentialRampToValueAtTime(endFreq, ctx.currentTime + dur);
+        o.start(); o.stop(ctx.currentTime + dur);
+      };
 
       switch (type) {
-        case 'fire':
-          osc.frequency.value = 800;
-          gain.gain.value = 0.08;
-          osc.type = 'sine';
-          osc.start();
-          osc.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.15);
-          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
-          osc.stop(audioCtx.currentTime + 0.15);
-          break;
-        case 'airstrike':
-          osc.frequency.value = 300;
-          gain.gain.value = 0.1;
-          osc.type = 'sawtooth';
-          osc.start();
-          osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.5);
-          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
-          osc.stop(audioCtx.currentTime + 0.5);
-          break;
-        case 'jammer':
-          osc.frequency.value = 1200;
-          gain.gain.value = 0.06;
-          osc.type = 'square';
-          osc.start();
-          osc.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.3);
-          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
-          osc.stop(audioCtx.currentTime + 0.3);
-          break;
-        case 'beam':
-          osc.frequency.value = 2000;
-          gain.gain.value = 0.05;
-          osc.type = 'sine';
-          osc.start();
-          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
-          osc.stop(audioCtx.currentTime + 0.2);
-          break;
+        case 'fire': makeOsc(800, 'sine', 0.08, 0.15, 200); break;
+        case 'airstrike': makeOsc(300, 'sawtooth', 0.1, 0.5, 100); break;
+        case 'jammer': makeOsc(1200, 'square', 0.06, 0.3, 400); break;
+        case 'beam': makeOsc(2000, 'sine', 0.05, 0.2); break;
+        case 'powerup-green':
+          [523, 659, 784, 1047].forEach((f, i) => {
+            const o = ctx.createOscillator(); const gn = ctx.createGain();
+            o.connect(gn); gn.connect(ctx.destination);
+            o.type = 'sine'; o.frequency.value = f;
+            gn.gain.setValueAtTime(0.12, ctx.currentTime + i * 0.06);
+            gn.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.06 + 0.2);
+            o.start(ctx.currentTime + i * 0.06); o.stop(ctx.currentTime + i * 0.06 + 0.2);
+          }); break;
+        case 'powerup-blue':
+          [330, 440, 554, 659, 880].forEach((f, i) => {
+            const o = ctx.createOscillator(); const gn = ctx.createGain();
+            o.connect(gn); gn.connect(ctx.destination);
+            o.type = 'triangle'; o.frequency.value = f;
+            gn.gain.setValueAtTime(0.15, ctx.currentTime + i * 0.05);
+            gn.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.05 + 0.35);
+            o.start(ctx.currentTime + i * 0.05); o.stop(ctx.currentTime + i * 0.05 + 0.35);
+          }); break;
+        case 'powerup-yellow': {
+          const o = ctx.createOscillator(); const gn = ctx.createGain();
+          o.connect(gn); gn.connect(ctx.destination); o.type = 'sawtooth';
+          o.frequency.setValueAtTime(600, ctx.currentTime);
+          o.frequency.linearRampToValueAtTime(1200, ctx.currentTime + 0.15);
+          o.frequency.linearRampToValueAtTime(600, ctx.currentTime + 0.3);
+          o.frequency.linearRampToValueAtTime(1200, ctx.currentTime + 0.45);
+          gn.gain.setValueAtTime(0.1, ctx.currentTime);
+          gn.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+          o.start(); o.stop(ctx.currentTime + 0.5); break;
+        }
+        case 'powerup-purple':
+          [880, 1100, 1320, 880].forEach((f, i) => {
+            const o = ctx.createOscillator(); const gn = ctx.createGain();
+            o.connect(gn); gn.connect(ctx.destination);
+            o.type = 'sine'; o.frequency.value = f; o.detune.value = Math.sin(i) * 30;
+            gn.gain.setValueAtTime(0.1, ctx.currentTime + i * 0.08);
+            gn.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.08 + 0.3);
+            o.start(ctx.currentTime + i * 0.08); o.stop(ctx.currentTime + i * 0.08 + 0.3);
+          }); break;
+        case 'powerup-white': {
+          const bufLen = ctx.sampleRate * 0.4;
+          const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+          const d = buf.getChannelData(0);
+          for (let i = 0; i < bufLen; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / bufLen);
+          const src = ctx.createBufferSource(); src.buffer = buf;
+          const flt = ctx.createBiquadFilter(); flt.type = 'bandpass';
+          flt.frequency.setValueAtTime(2000, ctx.currentTime);
+          flt.frequency.exponentialRampToValueAtTime(200, ctx.currentTime + 0.4); flt.Q.value = 2;
+          const gn = ctx.createGain();
+          gn.gain.setValueAtTime(0.15, ctx.currentTime);
+          gn.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+          src.connect(flt).connect(gn).connect(ctx.destination);
+          src.start(); src.stop(ctx.currentTime + 0.4); break;
+        }
+        case 'shield-block': makeOsc(1500, 'square', 0.12, 0.15, 300); break;
       }
     } catch {}
   };
+  const playSound = (type: string) => playSoundRef.current(type);
 
   const startGame = (mode: 'campaign' | 'survival') => {
     const canvas = canvasRef.current;
