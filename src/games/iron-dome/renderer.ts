@@ -142,6 +142,58 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   renderHUD(ctx, state, w, h, time);
 }
 
+function renderHelicopter(ctx: CanvasRenderingContext2D, x: number, y: number, time: number) {
+  ctx.save();
+  ctx.translate(x, y);
+
+  // Body
+  ctx.fillStyle = '#4a6a4a';
+  ctx.beginPath();
+  ctx.ellipse(0, 0, 18, 8, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Cockpit
+  ctx.fillStyle = '#88CCFF';
+  ctx.beginPath();
+  ctx.ellipse(12, -2, 6, 5, 0.2, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Tail
+  ctx.fillStyle = '#3a5a3a';
+  ctx.fillRect(-28, -3, 14, 5);
+  ctx.fillRect(-32, -8, 6, 12);
+
+  // Main rotor (spinning)
+  const rotorAngle = time * 0.03;
+  ctx.strokeStyle = 'rgba(200,200,200,0.6)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(-22 * Math.cos(rotorAngle), -10);
+  ctx.lineTo(22 * Math.cos(rotorAngle), -10);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(-22 * Math.sin(rotorAngle), -10);
+  ctx.lineTo(22 * Math.sin(rotorAngle), -10);
+  ctx.stroke();
+
+  // Rotor hub
+  ctx.fillStyle = '#666';
+  ctx.beginPath();
+  ctx.arc(0, -10, 2, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Searchlight beam
+  ctx.fillStyle = 'rgba(255,255,200,0.05)';
+  ctx.beginPath();
+  ctx.moveTo(0, 8);
+  ctx.lineTo(-40, 200);
+  ctx.lineTo(40, 200);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.restore();
+}
+
 function renderCities(ctx: CanvasRenderingContext2D, cities: City[], groundY: number, time: number) {
   cities.forEach(city => {
     if (!city.alive) {
