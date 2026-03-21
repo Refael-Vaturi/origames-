@@ -616,6 +616,27 @@ const GameScreen = () => {
         </span>
       </header>
 
+      {/* My role indicator - always visible during gameplay */}
+      {currentRound && (
+        <div className={`px-4 py-2 flex items-center justify-center gap-2 text-sm font-display font-semibold ${
+          iAmFake
+            ? "bg-destructive/10 text-destructive border-b border-destructive/20"
+            : "bg-primary/10 text-primary border-b border-primary/20"
+        }`}>
+          {iAmFake ? (
+            <>
+              <Skull className="w-4 h-4" />
+              <span>{t("game.youAreFake")} — {t("game.noWordForYou")}</span>
+            </>
+          ) : (
+            <>
+              <Shield className="w-4 h-4" />
+              <span>{t("game.yourWord")}: <strong>{word}</strong></span>
+            </>
+          )}
+        </div>
+      )}
+
       {/* Phase content */}
       <div className="flex-1 flex flex-col items-center justify-center px-4 py-6">
         <AnimatePresence mode="wait">
