@@ -542,6 +542,15 @@ const IronDomeGame: React.FC = () => {
                 </div>
               </div>
 
+              {/* Score save status */}
+              <p className="text-center text-xs mb-3">
+                {scoreSaved ? (
+                  <span className="text-green-400">✅ {T('scoreSaved')}</span>
+                ) : !user ? (
+                  <span className="text-cyan-300/40">🔒 {T('loginToSave')}</span>
+                ) : null}
+              </p>
+
               <div className="flex gap-3">
                 <button onClick={handleRestart} className="flex-1 py-3 bg-red-600/60 text-white rounded-xl font-bold hover:bg-red-500/60 transition-colors">
                   {T('menu')}
