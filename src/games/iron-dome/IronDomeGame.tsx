@@ -134,7 +134,6 @@ const IronDomeGame: React.FC = () => {
         renderGame(ctx, stateRef.current, logicalW, logicalH, time);
         ctx.restore();
       }
-      }
 
       animFrameRef.current = requestAnimationFrame(loop);
     };
