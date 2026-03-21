@@ -32,7 +32,48 @@ const IronDomeGame: React.FC = () => {
 
   const T = useCallback((key: string) => ironT(key, language), [language]);
 
-  // Initialize canvas
+  const saveScore = useCallback(async (state: GameState) => {
+    if (!user || scoreSaved) return;
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('display_name')
+        .eq('user_id', user.id)
+        .single();
+
+      await supabase.from('iron_dome_scores').insert({
+        user_id: user.id,
+        display_name: profile?.display_name || 'Player',
+        score: state.score,
+        wave: state.wave,
+        max_combo: state.maxCombo,
+        mode: state.mode,
+      });
+      setScoreSaved(true);
+    } catch (e) {
+      console.error('Failed to save score:', e);
+    }
+  }, [user, scoreSaved]);
+
+  const fetchLeaderboard = useCallback(async (mode: 'campaign' | 'survival') => {
+    setLoadingLB(true);
+    const { data } = await supabase
+      .from('iron_dome_scores')
+      .select('*')
+      .eq('mode', mode)
+      .order('score', { ascending: false })
+      .limit(15);
+    setLeaderboardData(data || []);
+    setLoadingLB(false);
+  }, []);
+
+  // Auto-save score on game over or victory
+  useEffect(() => {
+    if ((phase === 'game-over' || phase === 'victory') && gameState && user && !scoreSaved) {
+      saveScore(gameState);
+    }
+  }, [phase, gameState, user, scoreSaved, saveScore]);
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
