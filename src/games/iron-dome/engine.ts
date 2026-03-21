@@ -108,6 +108,7 @@ export function createInitialState(w: number, h: number): GameState {
     helicopterX: 0,
     autoFireTimer: 0,
     soundEvents: [],
+    screenShake: 0,
   };
 }
 
@@ -416,6 +417,7 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
         // Don't lose life, still explode visually
       } else {
         livesLost++;
+        s.screenShake = 15; // Strong shake on hit
       }
       missed++;
 
@@ -705,6 +707,9 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
   }
   if (s.empTimer > 0) {
     s.empTimer = Math.max(0, s.empTimer - dt);
+  }
+  if (s.screenShake > 0) {
+    s.screenShake = Math.max(0, s.screenShake - dt * 0.03);
   }
   if (s.autoDefenseTimer > 0) {
     s.autoDefenseTimer = Math.max(0, s.autoDefenseTimer - dt);

@@ -140,4 +140,6 @@ export interface GameState {
   autoFireTimer: number;
   // Sound events queue (consumed by UI layer)
   soundEvents: string[];
+  // Screen shake
+  screenShake: number;
 }
