@@ -324,9 +324,12 @@ const IronDomeGame: React.FC = () => {
   const handleNextWave = () => {
     const canvas = canvasRef.current;
     if (!canvas || !stateRef.current) return;
-    stateRef.current = nextWave(stateRef.current, canvas.width, canvas.height);
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    stateRef.current = nextWave(stateRef.current, w, h);
     setPhase(stateRef.current.phase);
     setGameState({ ...stateRef.current });
+    if (musicEnabled) musicRef.current.setIntensity(stateRef.current.wave);
   };
 
   const handleBuyItem = (itemId: string) => {
