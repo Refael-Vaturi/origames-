@@ -256,16 +256,18 @@ function renderThreat(ctx: CanvasRenderingContext2D, threat: Threat, time: numbe
     ctx.closePath();
     ctx.fill();
     // Glow for special missiles
-    if (missileColor === 'green' || missileColor === 'yellow' || missileColor === 'blue') {
+    if (missileColor && missileColor !== 'red') {
       const glowColor = missileColor === 'green' ? 'rgba(0,255,0,0.3)'
         : missileColor === 'blue' ? 'rgba(68,136,255,0.4)'
+        : missileColor === 'purple' ? 'rgba(180,68,255,0.4)'
+        : missileColor === 'white' ? 'rgba(255,255,255,0.5)'
         : 'rgba(255,255,0,0.3)';
-      const mg = ctx.createRadialGradient(0, 0, 0, 0, 0, size * 2);
+      const mg = ctx.createRadialGradient(0, 0, 0, 0, 0, size * 2.5);
       mg.addColorStop(0, glowColor);
       mg.addColorStop(1, 'transparent');
       ctx.fillStyle = mg;
       ctx.beginPath();
-      ctx.arc(0, 0, size * 2, 0, Math.PI * 2);
+      ctx.arc(0, 0, size * 2.5, 0, Math.PI * 2);
       ctx.fill();
     }
   } else if (type === 'uav') {
