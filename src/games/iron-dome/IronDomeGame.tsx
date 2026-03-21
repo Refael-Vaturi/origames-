@@ -607,6 +607,15 @@ const IronDomeGame: React.FC = () => {
                 </div>
               </div>
 
+              {/* Score save status */}
+              <p className="text-center text-xs mb-3">
+                {scoreSaved ? (
+                  <span className="text-green-400">✅ {T('scoreSaved')}</span>
+                ) : !user ? (
+                  <span className="text-cyan-300/40">🔒 {T('loginToSave')}</span>
+                ) : null}
+              </p>
+
               <button onClick={handleRestart} className="w-full py-3 bg-gradient-to-r from-yellow-600 to-orange-600 text-white rounded-xl font-bold text-lg hover:from-yellow-500 hover:to-orange-500 transition-all">
                 {T('backToMenu')}
               </button>
