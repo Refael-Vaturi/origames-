@@ -183,7 +183,7 @@ function spawnThreat(state: GameState, type: ThreatType, w: number, h: number): 
     evasive,
     evasiveTimer: 0,
     clusterTimer: type === 'cluster' ? CLUSTER_SPLIT_TIME : 0,
-    points: missileColor === 'green' ? 500 : missileColor === 'yellow' ? 1000 : tc.points,
+    points: missileColor === 'green' ? 500 : missileColor === 'yellow' ? 1000 : missileColor === 'blue' ? 750 : tc.points,
     locked: false,
     missileColor,
   };
