@@ -7,6 +7,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/contexts/AuthContext";
+import PortalScreen from "./pages/PortalScreen";
 import WelcomeScreen from "./pages/WelcomeScreen";
 import HomeScreen from "./pages/HomeScreen";
 import JoinByCodeScreen from "./pages/JoinByCodeScreen";
@@ -40,12 +41,29 @@ const App = () => (
           <LevelUpWrapper />
           <BrowserRouter>
             <Routes>
-              <Route path="/" element={<HomeScreen />} />
-              <Route path="/welcome" element={<WelcomeScreen />} />
+              {/* Portal - Main hub */}
+              <Route path="/" element={<PortalScreen />} />
+
+              {/* Fake It Fast game routes */}
+              <Route path="/fake-it-fast" element={<HomeScreen />} />
+              <Route path="/fake-it-fast/welcome" element={<WelcomeScreen />} />
+              <Route path="/fake-it-fast/join" element={<JoinByCodeScreen />} />
+              <Route path="/fake-it-fast/create-room" element={<CreateRoomScreen />} />
+              <Route path="/fake-it-fast/lobby" element={<LobbyScreen />} />
+              <Route path="/fake-it-fast/matchmaking" element={<MatchmakingScreen />} />
+              <Route path="/fake-it-fast/tutorial" element={<TutorialScreen />} />
+              <Route path="/fake-it-fast/practice" element={<PracticeScreen />} />
+              <Route path="/fake-it-fast/game" element={<GameScreen />} />
+              <Route path="/fake-it-fast/results" element={<ResultsScreen />} />
+
+              {/* Shared routes */}
               <Route path="/auth" element={<AuthScreen />} />
               <Route path="/profile" element={<ProfileScreen />} />
               <Route path="/settings" element={<SettingsScreen />} />
               <Route path="/friends" element={<FriendsScreen />} />
+
+              {/* Legacy redirects */}
+              <Route path="/welcome" element={<WelcomeScreen />} />
               <Route path="/join" element={<JoinByCodeScreen />} />
               <Route path="/create-room" element={<CreateRoomScreen />} />
               <Route path="/lobby" element={<LobbyScreen />} />
@@ -54,6 +72,7 @@ const App = () => (
               <Route path="/practice" element={<PracticeScreen />} />
               <Route path="/game" element={<GameScreen />} />
               <Route path="/results" element={<ResultsScreen />} />
+
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
