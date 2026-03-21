@@ -148,4 +148,6 @@ export interface GameState {
   waveFastReload: boolean; // fast reload for the wave
   waveAutoDefenseStart: number; // auto-defense seconds at wave start
   wavePerksDisplay: string[]; // perk names to show on wave intro
+  waveTotalThreats: number; // total threats spawned this wave
+  waveDestroyedThreats: number; // threats destroyed this wave
 }
