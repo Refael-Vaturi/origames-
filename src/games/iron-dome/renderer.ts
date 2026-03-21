@@ -346,7 +346,9 @@ function renderThreat(ctx: CanvasRenderingContext2D, threat: Threat, time: numbe
   ctx.rotate(threat.angle);
 
   if (type === 'missile' || type === 'submunition') {
-    const size = type === 'submunition' ? 7 : 10;
+    // Armored missiles (hp > 1) are bigger and look different
+    const isArmored = type === 'missile' && maxHp > 1;
+    const size = type === 'submunition' ? 7 : isArmored ? 10 + maxHp * 3 : 10;
     const missileColor = threat.missileColor;
     const bodyColor = missileColor === 'green' ? '#22CC44'
       : missileColor === 'yellow' ? '#DDCC00'
@@ -354,7 +356,10 @@ function renderThreat(ctx: CanvasRenderingContext2D, threat: Threat, time: numbe
       : missileColor === 'purple' ? '#9944CC'
       : missileColor === 'white' ? '#CCCCCC'
       : missileColor === 'pink' ? '#DD5588'
-      : type === 'submunition' ? '#FFAA00' : '#CC3333';
+      : type === 'submunition' ? '#FFAA00'
+      : isArmored ? (maxHp >= 3 ? '#881111' : '#AA3333') : '#CC3333';
+    
+    // Main body
     ctx.fillStyle = bodyColor;
     ctx.beginPath();
     ctx.moveTo(size, 0);
@@ -363,6 +368,42 @@ function renderThreat(ctx: CanvasRenderingContext2D, threat: Threat, time: numbe
     ctx.lineTo(-size, size * 0.5);
     ctx.closePath();
     ctx.fill();
+    
+    // Armored missiles: extra detail - plating/stripes
+    if (isArmored) {
+      // Metal plating stripes
+      ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+      ctx.lineWidth = 1;
+      for (let s2 = -size * 0.3; s2 <= size * 0.5; s2 += size * 0.25) {
+        ctx.beginPath();
+        ctx.moveTo(s2, -size * 0.4);
+        ctx.lineTo(s2, size * 0.4);
+        ctx.stroke();
+      }
+      // Warhead tip (darker)
+      ctx.fillStyle = maxHp >= 3 ? '#440000' : '#662222';
+      ctx.beginPath();
+      ctx.moveTo(size, 0);
+      ctx.lineTo(size * 0.5, -size * 0.35);
+      ctx.lineTo(size * 0.5, size * 0.35);
+      ctx.closePath();
+      ctx.fill();
+      // Fins (bigger missiles have fins)
+      ctx.fillStyle = bodyColor;
+      ctx.beginPath();
+      ctx.moveTo(-size * 0.8, -size * 0.5);
+      ctx.lineTo(-size * 1.1, -size * 0.85);
+      ctx.lineTo(-size * 0.6, -size * 0.45);
+      ctx.closePath();
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(-size * 0.8, size * 0.5);
+      ctx.lineTo(-size * 1.1, size * 0.85);
+      ctx.lineTo(-size * 0.6, size * 0.45);
+      ctx.closePath();
+      ctx.fill();
+    }
+    
     // Nose highlight
     ctx.fillStyle = 'rgba(255,255,255,0.3)';
     ctx.beginPath();
@@ -371,6 +412,25 @@ function renderThreat(ctx: CanvasRenderingContext2D, threat: Threat, time: numbe
     ctx.lineTo(size * 0.5, size * 0.2);
     ctx.closePath();
     ctx.fill();
+    
+    // HP bar for armored missiles
+    if (isArmored && hp < maxHp) {
+      ctx.fillStyle = '#FFAA00';
+      ctx.fillRect(-size * 0.7, -size * 0.8, size * 1.4 * (hp / maxHp), 3);
+      ctx.strokeStyle = '#888';
+      ctx.lineWidth = 0.5;
+      ctx.strokeRect(-size * 0.7, -size * 0.8, size * 1.4, 3);
+    }
+    // HP indicator for full-health armored (show pips)
+    if (isArmored && hp === maxHp) {
+      for (let i = 0; i < maxHp; i++) {
+        ctx.fillStyle = '#FF4444';
+        ctx.beginPath();
+        ctx.arc(-size * 0.5 + i * 6, -size * 0.75, 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    
     // Glow for special missiles
     if (missileColor && missileColor !== 'red') {
       const glowColor = missileColor === 'green' ? 'rgba(0,255,0,0.3)'
