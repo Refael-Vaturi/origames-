@@ -452,14 +452,6 @@ const IronDomeGame: React.FC = () => {
           >
             <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/60" />
             <div className="relative z-10 flex flex-col items-center gap-4 px-4 max-w-md w-full">
-              {/* Back button */}
-              <button
-                onClick={() => navigate('/')}
-                className="absolute top-4 left-4 flex items-center gap-1.5 px-3 py-2 bg-black/40 rounded-lg backdrop-blur-sm border border-white/10 text-white/70 hover:text-white"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                <span className="text-xs font-semibold">{T('backToMenu')}</span>
-              </button>
 
               <motion.h1
                 className="text-5xl md:text-7xl font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-cyan-300 bg-clip-text text-transparent drop-shadow-2xl"
