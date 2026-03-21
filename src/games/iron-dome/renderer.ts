@@ -592,15 +592,14 @@ function renderHUD(ctx: CanvasRenderingContext2D, state: GameState, w: number, h
   ctx.font = '10px monospace';
   ctx.textAlign = 'left';
 
-  // Air support indicator removed - now triggered by pink missile
   if (state.gpsJammerCharges > 0) {
     ctx.fillStyle = '#AAFFAA';
-    ctx.fillText(`[G] GPS Jammer x${state.gpsJammerCharges}`, abilityX, abilityY);
+    ctx.fillText(`GPS Jammer x${state.gpsJammerCharges}`, abilityX, abilityY);
     abilityX += 150;
   }
   if (state.ironBeamActive) {
     ctx.fillStyle = '#FFDDAA';
-    ctx.fillText(`[B] Iron Beam ON`, abilityX, abilityY);
+    ctx.fillText(`Iron Beam ON`, abilityX, abilityY);
   }
 
   // Special power timers - sidebar on the right
