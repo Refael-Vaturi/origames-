@@ -106,6 +106,7 @@ export function createInitialState(w: number, h: number): GameState {
     empTimer: 0,
     helicopterTimer: 0,
     helicopterX: 0,
+    autoFireTimer: 0,
     soundEvents: [],
   };
 }
@@ -596,10 +597,10 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
                 alpha: 1, vy: -1, color: '#44FF44', size: 16,
               }];
             } else if (t.missileColor === 'blue') {
-              s.tripleInterceptorTimer = 10000;
+              s.autoFireTimer = 5000;
               s.soundEvents.push('powerup-blue');
               s.floatingTexts = [...s.floatingTexts, {
-                x: t.x, y: t.y - 30, text: '🔵 x3 INTERCEPTORS 10s!',
+                x: t.x, y: t.y - 30, text: '🔵 AUTO-FIRE 5s!',
                 alpha: 1, vy: -1, color: '#4488FF', size: 16,
               }];
             } else if (t.missileColor === 'yellow') {
@@ -763,6 +764,32 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
           alpha: 1, vy: -1.5, color: '#88CCFF', size: 12,
         }];
       }
+    }
+  }
+
+  // Auto-fire: dome automatically fires at threats
+  if (s.autoFireTimer > 0) {
+    s.autoFireTimer = Math.max(0, s.autoFireTimer - dt);
+    if (s.threats.length > 0 && Math.random() < dt / 250) {
+      // Pick the lowest threat
+      const target = [...s.threats].sort((a, b) => b.y - a.y)[0];
+      const groundY = h * GROUND_Y_RATIO;
+      const launchX = w / 2;
+      const launchY = groundY - 5;
+      const dx = target.x - launchX;
+      const dy = target.y - launchY;
+      const angle = Math.atan2(dy, dx);
+      s.interceptors = [...s.interceptors, {
+        id: s.nextId++,
+        x: launchX,
+        y: launchY,
+        targetX: target.x,
+        targetY: target.y,
+        speed: INTERCEPTOR_SPEED,
+        angle,
+        trail: [],
+        targetThreatId: target.id,
+      }];
     }
   }
 
