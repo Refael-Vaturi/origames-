@@ -281,6 +281,15 @@ const IronDomeGame: React.FC = () => {
           src.start(); src.stop(ctx.currentTime + 0.4); break;
         }
         case 'shield-block': makeOsc(1500, 'square', 0.12, 0.15, 300); break;
+        case 'powerup-pink':
+          [440, 660, 880, 1100, 880].forEach((f, i) => {
+            const o = ctx.createOscillator(); const gn = ctx.createGain();
+            o.connect(gn); gn.connect(ctx.destination);
+            o.type = 'sawtooth'; o.frequency.value = f;
+            gn.gain.setValueAtTime(0.08, ctx.currentTime + i * 0.07);
+            gn.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.07 + 0.25);
+            o.start(ctx.currentTime + i * 0.07); o.stop(ctx.currentTime + i * 0.07 + 0.25);
+          }); break;
       }
     } catch {}
   };
