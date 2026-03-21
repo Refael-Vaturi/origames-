@@ -236,6 +236,8 @@ function renderThreat(ctx: CanvasRenderingContext2D, threat: Threat, time: numbe
     const bodyColor = missileColor === 'green' ? '#22CC44'
       : missileColor === 'yellow' ? '#DDCC00'
       : missileColor === 'blue' ? '#2266DD'
+      : missileColor === 'purple' ? '#9944CC'
+      : missileColor === 'white' ? '#CCCCCC'
       : type === 'submunition' ? '#FFAA00' : '#CC3333';
     ctx.fillStyle = bodyColor;
     ctx.beginPath();
