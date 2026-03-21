@@ -23,6 +23,10 @@ const IronDomeGame: React.FC = () => {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [musicEnabled, setMusicEnabled] = useState(true);
+  const [leaderboardData, setLeaderboardData] = useState<any[]>([]);
+  const [leaderboardMode, setLeaderboardMode] = useState<'campaign' | 'survival'>('campaign');
+  const [scoreSaved, setScoreSaved] = useState(false);
+  const [loadingLB, setLoadingLB] = useState(false);
   const { user } = useAuth();
   const { language } = useLanguage();
 
