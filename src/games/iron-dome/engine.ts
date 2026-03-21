@@ -369,9 +369,10 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
       }
     }
 
-    // Move
-    threat.x += Math.cos(threat.angle) * threat.speed * (dt / 16);
-    threat.y += Math.sin(threat.angle) * threat.speed * (dt / 16);
+    // Move - EMP slows threats
+    const speedMult = s.empTimer > 0 ? 0.3 : 1;
+    threat.x += Math.cos(threat.angle) * threat.speed * speedMult * (dt / 16);
+    threat.y += Math.sin(threat.angle) * threat.speed * speedMult * (dt / 16);
 
     // Trail
     threat.trail = [...threat.trail, { x: threat.x, y: threat.y }];
