@@ -79,10 +79,17 @@ const IronDomeGame: React.FC = () => {
     if (!canvas) return;
 
     const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      canvas.style.width = `${w}px`;
+      canvas.style.height = `${h}px`;
+      const ctx = canvas.getContext('2d');
+      if (ctx) ctx.scale(dpr, dpr);
       if (!stateRef.current || stateRef.current.phase === 'menu') {
-        stateRef.current = createInitialState(canvas.width, canvas.height);
+        stateRef.current = createInitialState(w, h);
         setGameState(stateRef.current);
         setPhase('menu');
       }
@@ -104,8 +111,12 @@ const IronDomeGame: React.FC = () => {
       const dt = lastTimeRef.current ? Math.min(time - lastTimeRef.current, 50) : 16;
       lastTimeRef.current = time;
 
+      // Use logical (CSS) dimensions, not canvas pixel dimensions
+      const logicalW = window.innerWidth;
+      const logicalH = window.innerHeight;
+
       if (stateRef.current) {
-        stateRef.current = update(stateRef.current, dt, canvas.width, canvas.height, time);
+        stateRef.current = update(stateRef.current, dt, logicalW, logicalH, time);
 
         // Process sound events from engine
         if (stateRef.current.soundEvents.length > 0) {
@@ -118,8 +129,10 @@ const IronDomeGame: React.FC = () => {
           setGameState({ ...stateRef.current });
         }
 
+        ctx.save();
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        renderGame(ctx, stateRef.current, canvas.width, canvas.height, time);
+        renderGame(ctx, stateRef.current, logicalW, logicalH, time);
+        ctx.restore();
       }
 
       animFrameRef.current = requestAnimationFrame(loop);
@@ -131,6 +144,7 @@ const IronDomeGame: React.FC = () => {
 
   // Click to fire
   const handleCanvasClick = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
     if (!stateRef.current || stateRef.current.phase !== 'playing') return;
 
     const canvas = canvasRef.current;
@@ -139,6 +153,7 @@ const IronDomeGame: React.FC = () => {
     let x: number, y: number;
     if ('touches' in e) {
       const touch = e.touches[0] || (e as any).changedTouches[0];
+      if (!touch) return;
       const rect = canvas.getBoundingClientRect();
       x = touch.clientX - rect.left;
       y = touch.clientY - rect.top;
@@ -148,9 +163,11 @@ const IronDomeGame: React.FC = () => {
       y = e.clientY - rect.top;
     }
 
-    if (y > canvas.height * 0.85) return;
+    const logicalH = window.innerHeight;
+    const logicalW = window.innerWidth;
+    if (y > logicalH * 0.85) return;
 
-    stateRef.current = fireInterceptor(stateRef.current, x, y, canvas.width, canvas.height);
+    stateRef.current = fireInterceptor(stateRef.current, x, y, logicalW, logicalH);
     playSound('fire');
   }, []);
 
@@ -174,7 +191,7 @@ const IronDomeGame: React.FC = () => {
       // Air support removed - now triggered by pink missile only
       if (e.key === 'g' || e.key === 'G') {
         if (canvasRef.current) {
-          stateRef.current = activateGPSJammer(stateRef.current, canvasRef.current.width);
+          stateRef.current = activateGPSJammer(stateRef.current, window.innerWidth);
         }
         playSound('jammer');
       }
@@ -187,12 +204,14 @@ const IronDomeGame: React.FC = () => {
       if (e.key === ' ') {
         e.preventDefault();
         if (canvasRef.current) {
+          const lw = window.innerWidth;
+          const lh = window.innerHeight;
           stateRef.current = fireInterceptor(
             stateRef.current,
-            canvasRef.current.width / 2,
-            canvasRef.current.height * 0.4,
-            canvasRef.current.width,
-            canvasRef.current.height
+            lw / 2,
+            lh * 0.4,
+            lw,
+            lh
           );
           playSound('fire');
         }
@@ -335,12 +354,13 @@ const IronDomeGame: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black overflow-hidden select-none">
+    <div className="fixed inset-0 bg-black overflow-hidden select-none touch-none">
       <canvas
         ref={canvasRef}
-        className="absolute inset-0 w-full h-full cursor-crosshair"
+        className="absolute inset-0 w-full h-full cursor-crosshair touch-none"
         onClick={handleCanvasClick}
         onTouchStart={handleCanvasClick}
+        onTouchMove={(e) => e.preventDefault()}
       />
 
       {/* Top-right controls */}
