@@ -201,6 +201,8 @@ function renderThreat(ctx: CanvasRenderingContext2D, threat: Threat, time: numbe
     : threat.missileColor === 'green' ? '#44FF66'
     : threat.missileColor === 'yellow' ? '#FFFF44'
     : threat.missileColor === 'blue' ? '#4488FF'
+    : threat.missileColor === 'purple' ? '#CC66FF'
+    : threat.missileColor === 'white' ? '#FFFFFF'
     : COLORS.missileTrail;
 
   trail.forEach((p, i) => {
