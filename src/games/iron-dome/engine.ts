@@ -231,6 +231,23 @@ function spawnThreat(state: GameState, type: ThreatType, w: number, h: number): 
     }
   }
 
+  // Advanced waves: missiles get more HP and are bigger
+  let hp = tc.hp;
+  const wave = state.wave;
+  if (type === 'missile' && (!missileColor || missileColor === 'red')) {
+    if (wave >= 7) {
+      // 40% chance of armored missile (2HP) from wave 7
+      if (Math.random() < 0.4) hp = 2;
+    }
+    if (wave >= 9) {
+      // 20% chance of heavy armored (3HP) from wave 9
+      if (Math.random() < 0.2) hp = 3;
+    }
+  }
+  if (type === 'heavy') {
+    hp = Math.min(tc.hp + Math.floor((wave - 1) / 3), 5); // heavies get tougher
+  }
+
   return {
     id: state.nextId,
     type,
@@ -241,14 +258,14 @@ function spawnThreat(state: GameState, type: ThreatType, w: number, h: number): 
     targetX,
     targetY,
     speed,
-    hp: tc.hp,
-    maxHp: tc.hp,
+    hp,
+    maxHp: hp,
     angle,
     trail: [],
     evasive,
     evasiveTimer: 0,
     clusterTimer: type === 'cluster' ? CLUSTER_SPLIT_TIME : 0,
-    points: missileColor === 'yellow' ? 1000 : missileColor === 'white' ? 1500 : missileColor === 'purple' ? 800 : missileColor === 'blue' ? 750 : missileColor === 'green' ? 500 : missileColor === 'pink' ? 600 : tc.points,
+    points: missileColor === 'yellow' ? 1000 : missileColor === 'white' ? 1500 : missileColor === 'purple' ? 800 : missileColor === 'blue' ? 750 : missileColor === 'green' ? 500 : missileColor === 'pink' ? 600 : hp > 1 ? tc.points * hp : tc.points,
     locked: false,
     missileColor,
   };
