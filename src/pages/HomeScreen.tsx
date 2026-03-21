@@ -74,9 +74,17 @@ const HomeScreen = () => {
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
       >
-        <button
-          className="flex items-center gap-3"
-          onClick={() => user ? navigate("/profile") : navigate("/auth")}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => navigate("/")}
+            className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <button
+            className="flex items-center gap-3"
+            onClick={() => user ? navigate("/profile") : navigate("/auth")}
+          >
         >
           <motion.div
             className="w-10 h-10 rounded-full gradient-hero flex items-center justify-center"
