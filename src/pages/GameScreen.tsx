@@ -228,20 +228,6 @@ const GameScreen = () => {
       .channel(`game-data-${roomId}`)
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "game_rounds", filter: `room_id=eq.${roomId}` },
-        (payload) => {
-          const round = payload.new as GameRound;
-          // Only accept round if we don't have one yet
-          setCurrentRound((prev) => {
-            if (prev) return prev; // already have a round, ignore
-            setPhase("secret");
-            setTimer(5);
-            return round;
-          });
-        },
-      )
-      .on(
-        "postgres_changes",
         { event: "INSERT", schema: "public", table: "game_scores", filter: `room_id=eq.${roomId}` },
         (payload) => {
           const score = payload.new as GameScore;
