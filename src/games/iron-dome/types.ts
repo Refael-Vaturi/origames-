@@ -90,7 +90,7 @@ export interface StoreItem {
   bought: number;
 }
 
-export type GamePhase = 'menu' | 'playing' | 'wave-intro' | 'wave-clear' | 'store' | 'game-over' | 'victory' | 'paused' | 'rules';
+export type GamePhase = 'menu' | 'playing' | 'wave-intro' | 'wave-clear' | 'store' | 'game-over' | 'victory' | 'paused' | 'rules' | 'leaderboard';
 export type GameMode = 'campaign' | 'survival';
 
 export interface GameState {
