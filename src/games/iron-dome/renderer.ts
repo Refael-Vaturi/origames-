@@ -532,11 +532,7 @@ function renderHUD(ctx: CanvasRenderingContext2D, state: GameState, w: number, h
   ctx.font = '10px monospace';
   ctx.textAlign = 'left';
 
-  if (state.airSupportCharges > 0) {
-    ctx.fillStyle = '#AADDFF';
-    ctx.fillText(`[A] Air Support x${state.airSupportCharges}`, abilityX, abilityY);
-    abilityX += 140;
-  }
+  // Air support indicator removed - now triggered by pink missile
   if (state.gpsJammerCharges > 0) {
     ctx.fillStyle = '#AAFFAA';
     ctx.fillText(`[G] GPS Jammer x${state.gpsJammerCharges}`, abilityX, abilityY);

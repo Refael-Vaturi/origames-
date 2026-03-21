@@ -733,6 +733,40 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
     }
   }
 
+  // Helicopter - flies across top of screen shooting threats
+  if (s.helicopterTimer > 0) {
+    s.helicopterTimer = Math.max(0, s.helicopterTimer - dt);
+    s.helicopterX += (w / 10000) * dt; // Cross screen in ~10s
+    if (s.helicopterX > w) s.helicopterX = 0; // Loop
+
+    // Shoot nearest threat from helicopter position every ~400ms
+    if (s.threats.length > 0 && Math.random() < dt / 400) {
+      const heliY = 40;
+      let nearest: typeof s.threats[0] | null = null;
+      let nearDist = Infinity;
+      s.threats.forEach(t => {
+        const dx = t.x - s.helicopterX;
+        const dy = t.y - heliY;
+        const d = Math.sqrt(dx * dx + dy * dy);
+        if (d < nearDist) { nearDist = d; nearest = t; }
+      });
+      if (nearest) {
+        const t = nearest as typeof s.threats[0];
+        s.threats = s.threats.filter(th => th.id !== t.id);
+        s.score += t.points;
+        s.totalIntercepted++;
+        s.explosions = [...s.explosions, {
+          x: t.x, y: t.y, radius: 2, maxRadius: 20,
+          alpha: 1, color: '#88CCFF', isGround: false
+        }];
+        s.floatingTexts = [...s.floatingTexts, {
+          x: t.x, y: t.y, text: `+${t.points} 🚁`,
+          alpha: 1, vy: -1.5, color: '#88CCFF', size: 12,
+        }];
+      }
+    }
+  }
+
   // Check game over
   if (s.lives <= 0) {
     s.phase = 'game-over';

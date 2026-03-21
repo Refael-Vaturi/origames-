@@ -171,10 +171,7 @@ const IronDomeGame: React.FC = () => {
 
       if (stateRef.current.phase !== 'playing') return;
 
-      if (e.key === 'a' || e.key === 'A') {
-        stateRef.current = activateAirSupport(stateRef.current);
-        playSound('airstrike');
-      }
+      // Air support removed - now triggered by pink missile only
       if (e.key === 'g' || e.key === 'G') {
         if (canvasRef.current) {
           stateRef.current = activateGPSJammer(stateRef.current, canvasRef.current.width);
