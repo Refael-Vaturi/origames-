@@ -35,9 +35,9 @@ const SettingsScreen = () => {
   );
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 py-8">
+    <div className="min-h-screen bg-background flex flex-col items-center px-4 py-8 overflow-y-auto">
       <motion.div
-        className="w-full max-w-sm"
+        className="w-full max-w-sm my-auto"
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: "spring", duration: 0.6 }}
