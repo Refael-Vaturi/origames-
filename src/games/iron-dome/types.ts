@@ -20,6 +20,7 @@ export interface Threat {
   clusterTimer: number;
   points: number;
   locked: boolean;
+  missileColor?: MissileColor;
 }
 
 export interface Interceptor {
