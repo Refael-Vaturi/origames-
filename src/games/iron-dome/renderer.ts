@@ -238,52 +238,56 @@ function renderCities(ctx: CanvasRenderingContext2D, cities: City[], groundY: nu
 }
 
 function renderLauncher(ctx: CanvasRenderingContext2D, w: number, groundY: number, time: number, state: GameState) {
-  const cx = w / 2;
   const baseY = groundY;
-
-  // Base platform
-  ctx.fillStyle = '#2a3a2a';
-  ctx.fillRect(cx - 30, baseY - 8, 60, 8);
-  ctx.fillStyle = '#3a4a3a';
-  ctx.fillRect(cx - 28, baseY - 10, 56, 4);
-
-  // Dome shape
-  ctx.strokeStyle = '#4a6a4a';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.arc(cx, baseY - 8, 22, Math.PI, 0);
-  ctx.stroke();
-
-  // Inner dome glow
-  const domeGlow = ctx.createRadialGradient(cx, baseY - 14, 2, cx, baseY - 14, 20);
-  domeGlow.addColorStop(0, 'rgba(68,255,136,0.15)');
-  domeGlow.addColorStop(1, 'transparent');
-  ctx.fillStyle = domeGlow;
-  ctx.beginPath();
-  ctx.arc(cx, baseY - 14, 20, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Launcher tubes (3 tubes)
-  for (let i = -1; i <= 1; i++) {
-    const tubeX = cx + i * 10;
-    ctx.fillStyle = '#4a5a4a';
-    ctx.fillRect(tubeX - 3, baseY - 28, 6, 20);
-    ctx.fillStyle = '#5a6a5a';
-    ctx.fillRect(tubeX - 2, baseY - 28, 4, 2);
-  }
-
-  // Active glow when firing (pulse)
   const pulse = 0.5 + Math.sin(time * 0.008) * 0.3;
-  ctx.fillStyle = `rgba(68,255,136,${pulse * 0.2})`;
-  ctx.beginPath();
-  ctx.arc(cx, baseY - 18, 28, 0, Math.PI * 2);
-  ctx.fill();
 
-  // "IRON DOME" label
-  ctx.fillStyle = `rgba(68,255,136,${0.5 + pulse * 0.3})`;
-  ctx.font = 'bold 7px monospace';
-  ctx.textAlign = 'center';
-  ctx.fillText('IRON DOME', cx, baseY + 10);
+  const drawSingleLauncher = (cx: number, label: string, glowColor: string) => {
+    ctx.fillStyle = '#2a3a2a';
+    ctx.fillRect(cx - 20, baseY - 6, 40, 6);
+    ctx.fillStyle = '#3a4a3a';
+    ctx.fillRect(cx - 18, baseY - 8, 36, 3);
+
+    ctx.strokeStyle = '#4a6a4a';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(cx, baseY - 6, 16, Math.PI, 0);
+    ctx.stroke();
+
+    const domeGlow = ctx.createRadialGradient(cx, baseY - 10, 2, cx, baseY - 10, 14);
+    domeGlow.addColorStop(0, glowColor);
+    domeGlow.addColorStop(1, 'transparent');
+    ctx.fillStyle = domeGlow;
+    ctx.beginPath();
+    ctx.arc(cx, baseY - 10, 14, 0, Math.PI * 2);
+    ctx.fill();
+
+    for (let i = -1; i <= 1; i++) {
+      const tubeX = cx + i * 8;
+      ctx.fillStyle = '#4a5a4a';
+      ctx.fillRect(tubeX - 2, baseY - 22, 4, 16);
+      ctx.fillStyle = '#5a6a5a';
+      ctx.fillRect(tubeX - 1.5, baseY - 22, 3, 2);
+    }
+
+    ctx.fillStyle = `rgba(68,255,136,${pulse * 0.2})`;
+    ctx.beginPath();
+    ctx.arc(cx, baseY - 14, 20, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = `rgba(68,255,136,${0.5 + pulse * 0.3})`;
+    ctx.font = 'bold 6px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(label, cx, baseY + 8);
+  };
+
+  // Always draw center launcher
+  drawSingleLauncher(w / 2, 'IRON DOME', 'rgba(68,255,136,0.15)');
+
+  // Draw side launchers when green power-up is active
+  if (state.tripleInterceptorTimer > 0) {
+    drawSingleLauncher(w * 0.15, 'DOME L', 'rgba(68,255,136,0.25)');
+    drawSingleLauncher(w * 0.85, 'DOME R', 'rgba(68,255,136,0.25)');
+  }
 }
 
 function renderThreat(ctx: CanvasRenderingContext2D, threat: Threat, time: number) {
