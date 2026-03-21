@@ -25,7 +25,7 @@ const HomeScreen = () => {
   useEffect(() => {
     const seen = localStorage.getItem("fif-tutorial-seen");
     if (!seen) {
-      navigate("/tutorial?first=1", { replace: true });
+      navigate("/fake-it-fast/tutorial?first=1", { replace: true });
     }
   }, [navigate]);
 
