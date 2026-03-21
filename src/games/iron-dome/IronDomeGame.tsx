@@ -163,9 +163,11 @@ const IronDomeGame: React.FC = () => {
       y = e.clientY - rect.top;
     }
 
-    if (y > canvas.height * 0.85) return;
+    const logicalH = window.innerHeight;
+    const logicalW = window.innerWidth;
+    if (y > logicalH * 0.85) return;
 
-    stateRef.current = fireInterceptor(stateRef.current, x, y, canvas.width, canvas.height);
+    stateRef.current = fireInterceptor(stateRef.current, x, y, logicalW, logicalH);
     playSound('fire');
   }, []);
 
