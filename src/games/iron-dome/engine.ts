@@ -543,7 +543,23 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
                 size: 1 + Math.random() * 2,
               }];
             }
-          }
+
+            // Special missile color effects
+            if (t.missileColor === 'green') {
+              // Triple interceptor for 5 seconds
+              s.tripleInterceptorTimer = 5000;
+              s.floatingTexts = [...s.floatingTexts, {
+                x: t.x, y: t.y - 30, text: '🟢 x3 INTERCEPTORS!',
+                alpha: 1, vy: -1, color: '#44FF44', size: 16,
+              }];
+            } else if (t.missileColor === 'yellow') {
+              // Auto defense for 5 seconds
+              s.autoDefenseTimer = 5000;
+              s.floatingTexts = [...s.floatingTexts, {
+                x: t.x, y: t.y - 30, text: '🟡 AUTO DEFENSE!',
+                alpha: 1, vy: -1, color: '#FFFF44', size: 16,
+              }];
+            }
         }
       });
 
