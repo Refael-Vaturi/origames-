@@ -417,6 +417,7 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
         // Don't lose life, still explode visually
       } else {
         livesLost++;
+        s.screenShake = 15; // Strong shake on hit
       }
       missed++;
 
