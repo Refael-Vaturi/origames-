@@ -143,25 +143,16 @@ const IronDomeGame: React.FC = () => {
   }, [phase]);
 
   // Click to fire
-  const handleCanvasClick = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+  const handleCanvasClick = useCallback((e: React.PointerEvent) => {
     e.preventDefault();
     if (!stateRef.current || stateRef.current.phase !== 'playing') return;
 
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    let x: number, y: number;
-    if ('touches' in e) {
-      const touch = e.touches[0] || (e as any).changedTouches[0];
-      if (!touch) return;
-      const rect = canvas.getBoundingClientRect();
-      x = touch.clientX - rect.left;
-      y = touch.clientY - rect.top;
-    } else {
-      const rect = canvas.getBoundingClientRect();
-      x = e.clientX - rect.left;
-      y = e.clientY - rect.top;
-    }
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
 
     const logicalH = window.innerHeight;
     const logicalW = window.innerWidth;
@@ -358,8 +349,7 @@ const IronDomeGame: React.FC = () => {
       <canvas
         ref={canvasRef}
         className="absolute inset-0 w-full h-full cursor-crosshair touch-none"
-        onClick={handleCanvasClick}
-        onTouchStart={handleCanvasClick}
+        onPointerDown={handleCanvasClick}
         onTouchMove={(e) => e.preventDefault()}
       />
 
