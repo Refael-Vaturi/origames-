@@ -44,7 +44,9 @@ const SettingsScreen = () => {
       >
         <div className="bg-card rounded-3xl p-6 shadow-card">
           <div className="flex items-center gap-3 mb-6">
-            <button onClick={() => navigate(-1)} className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground">
+            <button onClick={() => navigate("/")} className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground active:bg-muted/80"
+              style={{ WebkitTapHighlightColor: 'transparent' }}
+            >
               <ArrowLeft className="w-5 h-5" />
             </button>
             <h1 className="font-display text-2xl font-bold text-foreground">{t("settings.title")}</h1>
