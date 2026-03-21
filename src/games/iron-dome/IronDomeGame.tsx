@@ -42,6 +42,31 @@ const IronDomeGame: React.FC = () => {
 
   const T = useCallback((key: string) => ironT(key, language), [language]);
 
+  const handleAuth = async () => {
+    setAuthLoading(true);
+    try {
+      if (authMode === 'register') {
+        const { error } = await supabase.auth.signUp({
+          email: authEmail,
+          password: authPassword,
+          options: { data: { display_name: authDisplayName || 'Player' }, emailRedirectTo: window.location.origin },
+        });
+        if (error) throw error;
+        toast({ title: 'נרשמת בהצלחה! בדוק את המייל לאימות' });
+        setShowAuthModal(false);
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({ email: authEmail, password: authPassword });
+        if (error) throw error;
+        toast({ title: 'התחברת בהצלחה!' });
+        setShowAuthModal(false);
+      }
+    } catch (e: any) {
+      toast({ title: e.message || 'שגיאה', variant: 'destructive' });
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
   const saveScore = useCallback(async (state: GameState) => {
     if (!user || scoreSaved) return;
     try {
