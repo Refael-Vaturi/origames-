@@ -241,14 +241,34 @@ export function fireInterceptor(state: GameState, targetX: number, targetY: numb
   const newAmmo = state.ammo - 1;
   const needReload = newAmmo <= 0;
 
+  const interceptors = [interceptor];
+
+  // Triple interceptor mode: fire 2 extra spread interceptors
+  if (state.tripleInterceptorTimer > 0) {
+    for (let spread = 0; spread < 2; spread++) {
+      const spreadAngle = angle + (spread === 0 ? -0.2 : 0.2);
+      interceptors.push({
+        id: state.nextId + 1 + spread,
+        x: launchX + (spread === 0 ? -30 : 30),
+        y: launchY,
+        targetX: finalTargetX + (spread === 0 ? -40 : 40),
+        targetY: finalTargetY,
+        speed: INTERCEPTOR_SPEED,
+        angle: spreadAngle,
+        trail: [],
+        targetThreatId,
+      });
+    }
+  }
+
   return {
     ...state,
-    interceptors: [...state.interceptors, interceptor],
+    interceptors: [...state.interceptors, ...interceptors],
     ammo: newAmmo,
     reloading: needReload,
     reloadTimer: needReload ? (state.fastReload ? FAST_RELOAD_TIME : RELOAD_TIME) : 0,
     totalFired: state.totalFired + 1,
-    nextId: state.nextId + 1,
+    nextId: state.nextId + interceptors.length,
   };
 }
 
