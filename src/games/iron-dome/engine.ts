@@ -109,6 +109,11 @@ export function createInitialState(w: number, h: number): GameState {
     autoFireTimer: 0,
     soundEvents: [],
     screenShake: 0,
+    waveExtraShots: 0,
+    waveTripleDome: false,
+    waveFastReload: false,
+    waveAutoDefenseStart: 0,
+    wavePerksDisplay: [],
   };
 }
 
@@ -116,6 +121,39 @@ export function startWave(state: GameState, w: number, h: number): GameState {
   const config = state.mode === 'campaign'
     ? CAMPAIGN_WAVES[state.wave - 1]
     : getSurvivalWave(state.wave);
+
+  // Calculate wave-based passive perks
+  const wave = state.wave;
+  const perks: string[] = [];
+  let extraShots = 0;
+  let tripleDome = false;
+  let waveFastReload = false;
+  let autoDefenseStart = 0;
+
+  if (wave >= 3) {
+    extraShots = 1; // Double shot from wave 3
+    perks.push('🔫 יריות כפולות');
+  }
+  if (wave >= 4) {
+    waveFastReload = true; // Fast reload from wave 4
+    perks.push('⚡ טעינה מהירה');
+  }
+  if (wave >= 5) {
+    tripleDome = true; // 3 launchers from wave 5
+    perks.push('🛡️ 3 כיפות ברזל');
+  }
+  if (wave >= 7) {
+    extraShots = 2; // Triple shot from wave 7
+    perks[0] = '🔫 יריות משולשות'; // Replace double with triple
+  }
+  if (wave >= 8) {
+    autoDefenseStart = 3000; // 3s auto-defense at wave start from wave 8
+    perks.push('🟡 מגן אוטומטי 3 שניות');
+  }
+  if (wave >= 9) {
+    autoDefenseStart = 5000; // 5s auto-defense from wave 9
+    perks[perks.length - 1] = '🟡 מגן אוטומטי 5 שניות';
+  }
 
   return {
     ...state,
@@ -128,6 +166,15 @@ export function startWave(state: GameState, w: number, h: number): GameState {
     explosions: [],
     particles: [],
     floatingTexts: [],
+    waveExtraShots: extraShots,
+    waveTripleDome: tripleDome,
+    waveFastReload: waveFastReload,
+    waveAutoDefenseStart: autoDefenseStart,
+    wavePerksDisplay: perks,
+    // Apply wave perks
+    tripleInterceptorTimer: tripleDome ? 999999 : 0,
+    autoDefenseTimer: autoDefenseStart,
+    fastReload: waveFastReload || state.fastReload,
   };
 }
 
@@ -257,7 +304,39 @@ export function fireInterceptor(state: GameState, targetX: number, targetY: numb
 
   const interceptors = [interceptor];
 
-  // Triple dome mode (green): fire from 2 extra launchers on left and right sides
+  // Wave perk: extra shots from center (double/triple)
+  if (state.waveExtraShots >= 1) {
+    const spreadAngle = 0.15;
+    const extraAngle1 = angle + spreadAngle;
+    interceptors.push({
+      id: state.nextId + 1,
+      x: launchX,
+      y: launchY,
+      targetX: launchX + Math.cos(extraAngle1) * 400,
+      targetY: launchY + Math.sin(extraAngle1) * 400,
+      speed: INTERCEPTOR_SPEED,
+      angle: extraAngle1,
+      trail: [],
+      targetThreatId,
+    });
+  }
+  if (state.waveExtraShots >= 2) {
+    const spreadAngle = -0.15;
+    const extraAngle2 = angle + spreadAngle;
+    interceptors.push({
+      id: state.nextId + 2,
+      x: launchX,
+      y: launchY,
+      targetX: launchX + Math.cos(extraAngle2) * 400,
+      targetY: launchY + Math.sin(extraAngle2) * 400,
+      speed: INTERCEPTOR_SPEED,
+      angle: extraAngle2,
+      trail: [],
+      targetThreatId,
+    });
+  }
+
+  // Triple dome mode (green or wave perk): fire from 2 extra launchers on left and right sides
   if (state.tripleInterceptorTimer > 0) {
     const leftX = w * 0.15;
     const rightX = w * 0.85;
@@ -266,7 +345,7 @@ export function fireInterceptor(state: GameState, targetX: number, targetY: numb
       const dy2 = finalTargetY - launchY;
       const sideAngle = Math.atan2(dy2, dx2);
       interceptors.push({
-        id: state.nextId + 1 + idx,
+        id: state.nextId + 3 + idx,
         x: lx,
         y: launchY,
         targetX: finalTargetX,

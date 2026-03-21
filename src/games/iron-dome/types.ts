@@ -142,4 +142,10 @@ export interface GameState {
   soundEvents: string[];
   // Screen shake
   screenShake: number;
+  // Wave-based passive perks
+  waveExtraShots: number; // 0=normal, 1=double, 2=triple from center
+  waveTripleDome: boolean; // 3 launchers for the whole wave
+  waveFastReload: boolean; // fast reload for the wave
+  waveAutoDefenseStart: number; // auto-defense seconds at wave start
+  wavePerksDisplay: string[]; // perk names to show on wave intro
 }

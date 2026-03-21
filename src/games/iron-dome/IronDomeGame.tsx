@@ -490,6 +490,28 @@ const IronDomeGame: React.FC = () => {
                   ? `${gameState.wave} / 10`
                   : T('surviveAsLong')}
               </motion.p>
+              {/* Wave Perks Display */}
+              {gameState.wavePerksDisplay && gameState.wavePerksDisplay.length > 0 && (
+                <motion.div
+                  className="mt-4 flex flex-col items-center gap-1"
+                  initial={{ y: 30, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.5 }}
+                >
+                  <p className="text-yellow-400/80 text-xs font-bold tracking-widest mb-1">⚡ כוחות גל ⚡</p>
+                  {gameState.wavePerksDisplay.map((perk, i) => (
+                    <motion.p
+                      key={i}
+                      className="text-yellow-300/90 text-sm font-bold"
+                      initial={{ x: -20, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      transition={{ delay: 0.6 + i * 0.1 }}
+                    >
+                      {perk}
+                    </motion.p>
+                  ))}
+                </motion.div>
+              )}
             </div>
           </motion.div>
         )}
