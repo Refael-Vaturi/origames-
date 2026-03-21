@@ -286,8 +286,6 @@ const IronDomeGame: React.FC = () => {
                 <ArrowLeft className="w-4 h-4" />
                 <span className="text-xs font-semibold">{T('backToMenu')}</span>
               </button>
-                <ArrowLeft className="w-5 h-5" />
-              </button>
 
               <motion.h1
                 className="text-5xl md:text-7xl font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-cyan-300 bg-clip-text text-transparent drop-shadow-2xl"
