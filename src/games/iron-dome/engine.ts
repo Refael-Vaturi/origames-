@@ -57,10 +57,12 @@ function createCities(w: number, h: number): City[] {
 
 function createDefaultStoreItems(): StoreItem[] {
   return [
-    { id: 'first-aid', name: 'First Aid', icon: '🩹', description: '+1 life', cost: 5, maxBuys: 2, bought: 0 },
-    { id: 'fast-reload', name: 'Fast Reload', icon: '⚡', description: 'Missiles reload faster', cost: 10, maxBuys: 1, bought: 0 },
-    { id: 'gps-jammer', name: 'GPS Jammer', icon: '📡', description: 'Diverts ~25% threats [G]', cost: 7, maxBuys: 3, bought: 0 },
-    { id: 'iron-beam', name: 'Iron Beam', icon: '🔆', description: 'Laser auto-target [B]', cost: 15, maxBuys: 1, bought: 0 },
+    { id: 'first-aid', name: 'First Aid', icon: '🩹', description: '+1 חיים', cost: 3, maxBuys: 3, bought: 0 },
+    { id: 'extra-ammo', name: 'Extra Ammo', icon: '🎯', description: '+5 תחמושת מקסימלית', cost: 4, maxBuys: 3, bought: 0 },
+    { id: 'fast-reload', name: 'Fast Reload', icon: '⚡', description: 'טעינה מהירה לצמיתות', cost: 8, maxBuys: 1, bought: 0 },
+    { id: 'shield-charge', name: 'Shield', icon: '🟣', description: 'מגן 10 שניות בתחילת הגל', cost: 6, maxBuys: 2, bought: 0 },
+    { id: 'auto-fire-charge', name: 'Auto Fire', icon: '🔵', description: 'ירי אוטומטי 5 שניות בתחילת הגל', cost: 7, maxBuys: 2, bought: 0 },
+    { id: 'triple-dome', name: 'Triple Dome', icon: '🟢', description: '3 כיפות ברזל 15 שניות בתחילת הגל', cost: 10, maxBuys: 2, bought: 0 },
   ];
 }
 
@@ -159,6 +161,16 @@ export function startWave(state: GameState, w: number, h: number): GameState {
 
   const spawnQueue = buildSpawnQueue(config);
 
+  // Calculate store-bought bonuses for wave start
+  const shieldCharges = state.storeItems.find(i => i.id === 'shield-charge')?.bought || 0;
+  const autoFireCharges = state.storeItems.find(i => i.id === 'auto-fire-charge')?.bought || 0;
+  const tripleDomeCharges = state.storeItems.find(i => i.id === 'triple-dome')?.bought || 0;
+
+  // Store-bought shield adds to auto defense
+  const storeShieldTime = shieldCharges * 5000; // 5s per charge
+  const storeAutoFireTime = autoFireCharges * 5000; // 5s per charge  
+  const storeTripleDomeTime = tripleDomeCharges * 15000; // 15s per charge
+
   return {
     ...state,
     phase: 'wave-intro',
@@ -177,9 +189,11 @@ export function startWave(state: GameState, w: number, h: number): GameState {
     wavePerksDisplay: perks,
     waveTotalThreats: spawnQueue.length,
     waveDestroyedThreats: 0,
-    // Apply wave perks
-    tripleInterceptorTimer: tripleDome ? 999999 : 0,
-    autoDefenseTimer: autoDefenseStart,
+    // Apply wave perks + store bonuses
+    tripleInterceptorTimer: tripleDome ? 999999 : storeTripleDomeTime,
+    autoDefenseTimer: Math.max(autoDefenseStart, storeShieldTime > 0 ? storeShieldTime : 0),
+    shieldTimer: storeShieldTime,
+    autoFireTimer: storeAutoFireTime,
     fastReload: waveFastReload || state.fastReload,
   };
 }
@@ -948,19 +962,23 @@ export function buyStoreItem(state: GameState, itemId: string): GameState {
 
   switch (itemId) {
     case 'first-aid':
-      s.lives = Math.min(s.maxLives + 2, s.lives + 1);
+      s.lives = Math.min(s.maxLives + 3, s.lives + 1);
       break;
-    case 'air-support':
-      s.airSupportCharges += 1;
+    case 'extra-ammo':
+      s.maxAmmo += 5;
+      s.ammo = s.maxAmmo;
       break;
     case 'fast-reload':
       s.fastReload = true;
       break;
-    case 'gps-jammer':
-      s.gpsJammerCharges += 1;
+    case 'shield-charge':
+      // Will be applied at wave start
       break;
-    case 'iron-beam':
-      // Iron beam is available but starts OFF
+    case 'auto-fire-charge':
+      // Will be applied at wave start
+      break;
+    case 'triple-dome':
+      // Will be applied at wave start
       break;
   }
 

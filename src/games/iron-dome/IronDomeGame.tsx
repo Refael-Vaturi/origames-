@@ -628,25 +628,39 @@ const IronDomeGame: React.FC = () => {
               <p className="text-cyan-300/40 text-xs text-center mb-4">{T('waveCompleted').replace('{n}', String(gameState.wave))}</p>
               <p className="text-green-400 text-center text-sm mb-4">💰 {T('credits')}: {gameState.credits}</p>
 
-              <div className="flex flex-col gap-2 mb-4">
-                {gameState.storeItems.map(item => (
-                  <button
-                    key={item.id}
-                    onClick={() => handleBuyItem(item.id)}
-                    disabled={item.bought >= item.maxBuys || gameState.credits < item.cost}
-                    className="flex items-center gap-3 p-3 bg-black/40 rounded-xl border border-cyan-900/20 hover:border-cyan-600/40 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-left"
-                  >
-                    <span className="text-2xl">{item.icon}</span>
-                    <div className="flex-1">
-                      <p className="text-white text-sm font-bold">{item.name}</p>
-                      <p className="text-cyan-300/50 text-xs">{item.description}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-green-400 text-sm font-bold">{item.cost} 💰</p>
-                      <p className="text-cyan-300/30 text-xs">{item.bought}/{item.maxBuys}</p>
-                    </div>
-                  </button>
-                ))}
+              <div className="flex flex-col gap-2 mb-4 max-h-[40vh] overflow-y-auto">
+                {gameState.storeItems.map(item => {
+                  const isSoldOut = item.bought >= item.maxBuys;
+                  const cantAfford = gameState.credits < item.cost;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => handleBuyItem(item.id)}
+                      disabled={isSoldOut || cantAfford}
+                      className={`flex items-center gap-3 p-3 rounded-xl border transition-all text-left ${
+                        isSoldOut
+                          ? 'bg-green-900/20 border-green-900/30 opacity-60'
+                          : cantAfford
+                          ? 'bg-black/40 border-cyan-900/20 opacity-40 cursor-not-allowed'
+                          : 'bg-black/40 border-cyan-900/20 hover:border-cyan-600/40 hover:bg-cyan-900/20'
+                      }`}
+                    >
+                      <span className="text-2xl">{item.icon}</span>
+                      <div className="flex-1">
+                        <p className="text-white text-sm font-bold">{item.name}</p>
+                        <p className="text-cyan-300/50 text-xs">{item.description}</p>
+                      </div>
+                      <div className="text-right">
+                        {isSoldOut ? (
+                          <p className="text-green-400 text-xs font-bold">✅ נקנה</p>
+                        ) : (
+                          <p className="text-green-400 text-sm font-bold">{item.cost} 💰</p>
+                        )}
+                        <p className="text-cyan-300/30 text-xs">{item.bought}/{item.maxBuys}</p>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
 
               <button
