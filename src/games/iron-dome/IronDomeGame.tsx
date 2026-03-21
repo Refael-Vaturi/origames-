@@ -341,7 +341,10 @@ const IronDomeGame: React.FC = () => {
   const handleRestart = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    stateRef.current = createInitialState(canvas.width, canvas.height);
+    musicRef.current.stop();
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    stateRef.current = createInitialState(w, h);
     setPhase('menu');
     setGameState(stateRef.current);
   };
