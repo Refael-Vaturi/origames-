@@ -443,4 +443,29 @@ function renderHUD(ctx: CanvasRenderingContext2D, state: GameState, w: number, h
     ctx.fillStyle = '#FFDDAA';
     ctx.fillText(`[B] Iron Beam ON`, abilityX, abilityY);
   }
+
+  // Special power timers
+  if (state.tripleInterceptorTimer > 0) {
+    const secs = (state.tripleInterceptorTimer / 1000).toFixed(1);
+    ctx.fillStyle = '#44FF44';
+    ctx.font = 'bold 16px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(`🟢 x3 INTERCEPTORS: ${secs}s`, w / 2, 50);
+    // Animated border
+    ctx.strokeStyle = `rgba(68,255,68,${0.3 + Math.sin(time * 0.01) * 0.2})`;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(4, 4, w - 8, h - 8);
+  }
+  if (state.autoDefenseTimer > 0) {
+    const secs = (state.autoDefenseTimer / 1000).toFixed(1);
+    ctx.fillStyle = '#FFFF44';
+    ctx.font = 'bold 16px monospace';
+    ctx.textAlign = 'center';
+    const yPos = state.tripleInterceptorTimer > 0 ? 72 : 50;
+    ctx.fillText(`🟡 AUTO DEFENSE: ${secs}s`, w / 2, yPos);
+    // Animated border
+    ctx.strokeStyle = `rgba(255,255,68,${0.3 + Math.sin(time * 0.01) * 0.2})`;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(6, 6, w - 12, h - 12);
+  }
 }
