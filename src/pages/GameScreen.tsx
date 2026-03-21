@@ -617,7 +617,7 @@ const GameScreen = () => {
       </header>
 
       {/* My role indicator - always visible during gameplay */}
-      {currentRound && phase !== "loading" && (
+      {currentRound && (
         <div className={`px-4 py-2 flex items-center justify-center gap-2 text-sm font-display font-semibold ${
           iAmFake
             ? "bg-destructive/10 text-destructive border-b border-destructive/20"
