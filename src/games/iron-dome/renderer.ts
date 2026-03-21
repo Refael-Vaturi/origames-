@@ -76,6 +76,9 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   // Cities
   renderCities(ctx, state.cities, groundY, time);
 
+  // Iron Dome launcher
+  renderLauncher(ctx, w, groundY, time, state);
+
   // Threats
   state.threats.forEach(t => renderThreat(ctx, t, time));
 
