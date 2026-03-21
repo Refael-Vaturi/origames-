@@ -69,6 +69,25 @@ const IronDomeGame: React.FC = () => {
     setLoadingLB(false);
   }, []);
 
+  // Music toggle & cleanup
+  useEffect(() => {
+    if (musicEnabled && musicRef.current.isPlaying()) {
+      musicRef.current.setVolume(0.12);
+    } else if (!musicEnabled && musicRef.current.isPlaying()) {
+      musicRef.current.setVolume(0);
+    }
+  }, [musicEnabled]);
+
+  useEffect(() => {
+    if ((phase === 'game-over' || phase === 'victory') && musicRef.current.isPlaying()) {
+      musicRef.current.stop();
+    }
+  }, [phase]);
+
+  useEffect(() => {
+    return () => { musicRef.current.stop(); };
+  }, []);
+
   // Auto-save score on game over or victory
   useEffect(() => {
     if ((phase === 'game-over' || phase === 'victory') && gameState && user && !scoreSaved) {
