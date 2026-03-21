@@ -76,6 +76,9 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   // Cities
   renderCities(ctx, state.cities, groundY, time);
 
+  // Iron Dome launcher
+  renderLauncher(ctx, w, groundY, time, state);
+
   // Threats
   state.threats.forEach(t => renderThreat(ctx, t, time));
 
@@ -138,6 +141,55 @@ function renderCities(ctx: CanvasRenderingContext2D, cities: City[], groundY: nu
   });
 }
 
+function renderLauncher(ctx: CanvasRenderingContext2D, w: number, groundY: number, time: number, state: GameState) {
+  const cx = w / 2;
+  const baseY = groundY;
+
+  // Base platform
+  ctx.fillStyle = '#2a3a2a';
+  ctx.fillRect(cx - 30, baseY - 8, 60, 8);
+  ctx.fillStyle = '#3a4a3a';
+  ctx.fillRect(cx - 28, baseY - 10, 56, 4);
+
+  // Dome shape
+  ctx.strokeStyle = '#4a6a4a';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(cx, baseY - 8, 22, Math.PI, 0);
+  ctx.stroke();
+
+  // Inner dome glow
+  const domeGlow = ctx.createRadialGradient(cx, baseY - 14, 2, cx, baseY - 14, 20);
+  domeGlow.addColorStop(0, 'rgba(68,255,136,0.15)');
+  domeGlow.addColorStop(1, 'transparent');
+  ctx.fillStyle = domeGlow;
+  ctx.beginPath();
+  ctx.arc(cx, baseY - 14, 20, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Launcher tubes (3 tubes)
+  for (let i = -1; i <= 1; i++) {
+    const tubeX = cx + i * 10;
+    ctx.fillStyle = '#4a5a4a';
+    ctx.fillRect(tubeX - 3, baseY - 28, 6, 20);
+    ctx.fillStyle = '#5a6a5a';
+    ctx.fillRect(tubeX - 2, baseY - 28, 4, 2);
+  }
+
+  // Active glow when firing (pulse)
+  const pulse = 0.5 + Math.sin(time * 0.008) * 0.3;
+  ctx.fillStyle = `rgba(68,255,136,${pulse * 0.2})`;
+  ctx.beginPath();
+  ctx.arc(cx, baseY - 18, 28, 0, Math.PI * 2);
+  ctx.fill();
+
+  // "IRON DOME" label
+  ctx.fillStyle = `rgba(68,255,136,${0.5 + pulse * 0.3})`;
+  ctx.font = 'bold 7px monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('IRON DOME', cx, baseY + 10);
+}
+
 function renderThreat(ctx: CanvasRenderingContext2D, threat: Threat, time: number) {
   const { type, x, y, trail, hp, maxHp, evasive } = threat;
 
@@ -148,6 +200,7 @@ function renderThreat(ctx: CanvasRenderingContext2D, threat: Threat, time: numbe
     : type === 'submunition' ? COLORS.submunition
     : threat.missileColor === 'green' ? '#44FF66'
     : threat.missileColor === 'yellow' ? '#FFFF44'
+    : threat.missileColor === 'blue' ? '#4488FF'
     : COLORS.missileTrail;
 
   trail.forEach((p, i) => {
@@ -180,6 +233,7 @@ function renderThreat(ctx: CanvasRenderingContext2D, threat: Threat, time: numbe
     const missileColor = threat.missileColor;
     const bodyColor = missileColor === 'green' ? '#22CC44'
       : missileColor === 'yellow' ? '#DDCC00'
+      : missileColor === 'blue' ? '#2266DD'
       : type === 'submunition' ? '#FFAA00' : '#CC3333';
     ctx.fillStyle = bodyColor;
     ctx.beginPath();
@@ -198,8 +252,10 @@ function renderThreat(ctx: CanvasRenderingContext2D, threat: Threat, time: numbe
     ctx.closePath();
     ctx.fill();
     // Glow for special missiles
-    if (missileColor === 'green' || missileColor === 'yellow') {
-      const glowColor = missileColor === 'green' ? 'rgba(0,255,0,0.3)' : 'rgba(255,255,0,0.3)';
+    if (missileColor === 'green' || missileColor === 'yellow' || missileColor === 'blue') {
+      const glowColor = missileColor === 'green' ? 'rgba(0,255,0,0.3)'
+        : missileColor === 'blue' ? 'rgba(68,136,255,0.4)'
+        : 'rgba(255,255,0,0.3)';
       const mg = ctx.createRadialGradient(0, 0, 0, 0, 0, size * 2);
       mg.addColorStop(0, glowColor);
       mg.addColorStop(1, 'transparent');

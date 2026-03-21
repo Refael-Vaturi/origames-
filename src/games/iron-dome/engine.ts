@@ -157,10 +157,12 @@ function spawnThreat(state: GameState, type: ThreatType, w: number, h: number): 
     const roll = Math.random() * 100;
     if (roll < 1) {
       missileColor = 'yellow'; // 1% chance
-    } else if (roll < 6) {
+    } else if (roll < 3) {
+      missileColor = 'blue';   // 2% chance
+    } else if (roll < 8) {
       missileColor = 'green';  // 5% chance
     } else {
-      missileColor = 'red';    // 94% (rest)
+      missileColor = 'red';    // 92% (rest)
     }
   }
 
@@ -181,7 +183,7 @@ function spawnThreat(state: GameState, type: ThreatType, w: number, h: number): 
     evasive,
     evasiveTimer: 0,
     clusterTimer: type === 'cluster' ? CLUSTER_SPLIT_TIME : 0,
-    points: missileColor === 'green' ? 500 : missileColor === 'yellow' ? 1000 : tc.points,
+    points: missileColor === 'green' ? 500 : missileColor === 'yellow' ? 1000 : missileColor === 'blue' ? 750 : tc.points,
     locked: false,
     missileColor,
   };
@@ -571,6 +573,13 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
               s.floatingTexts = [...s.floatingTexts, {
                 x: t.x, y: t.y - 30, text: '🟢 x3 INTERCEPTORS!',
                 alpha: 1, vy: -1, color: '#44FF44', size: 16,
+              }];
+            } else if (t.missileColor === 'blue') {
+              // Triple interceptor for 10 seconds
+              s.tripleInterceptorTimer = 10000;
+              s.floatingTexts = [...s.floatingTexts, {
+                x: t.x, y: t.y - 30, text: '🔵 x3 INTERCEPTORS 10s!',
+                alpha: 1, vy: -1, color: '#4488FF', size: 16,
               }];
             } else if (t.missileColor === 'yellow') {
               // Auto defense for 5 seconds
