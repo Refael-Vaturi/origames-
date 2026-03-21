@@ -174,57 +174,81 @@ function renderThreat(ctx: CanvasRenderingContext2D, threat: Threat, time: numbe
   ctx.rotate(threat.angle);
 
   if (type === 'missile' || type === 'submunition') {
-    const size = type === 'submunition' ? 4 : 6;
+    const size = type === 'submunition' ? 7 : 10;
     ctx.fillStyle = type === 'submunition' ? '#FFAA00' : '#CC3333';
     ctx.beginPath();
     ctx.moveTo(size, 0);
     ctx.lineTo(-size, -size * 0.5);
+    ctx.lineTo(-size * 0.7, 0);
     ctx.lineTo(-size, size * 0.5);
+    ctx.closePath();
+    ctx.fill();
+    // Nose highlight
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.beginPath();
+    ctx.moveTo(size, 0);
+    ctx.lineTo(size * 0.5, -size * 0.2);
+    ctx.lineTo(size * 0.5, size * 0.2);
     ctx.closePath();
     ctx.fill();
   } else if (type === 'uav') {
     ctx.fillStyle = '#3388CC';
     ctx.beginPath();
-    ctx.moveTo(8, 0);
-    ctx.lineTo(-4, -6);
-    ctx.lineTo(-2, 0);
-    ctx.lineTo(-4, 6);
+    ctx.moveTo(12, 0);
+    ctx.lineTo(-6, -9);
+    ctx.lineTo(-3, 0);
+    ctx.lineTo(-6, 9);
     ctx.closePath();
     ctx.fill();
+    // Wings
+    ctx.fillStyle = '#2266AA';
+    ctx.fillRect(-4, -12, 8, 3);
+    ctx.fillRect(-4, 9, 8, 3);
     // Blinking light
     if (Math.sin(time * 0.005) > 0) {
       ctx.fillStyle = '#FF0000';
       ctx.beginPath();
-      ctx.arc(0, 0, 1.5, 0, Math.PI * 2);
+      ctx.arc(0, 0, 2, 0, Math.PI * 2);
       ctx.fill();
     }
   } else if (type === 'cluster') {
     ctx.fillStyle = '#CC6600';
     ctx.beginPath();
-    ctx.moveTo(8, 0);
-    ctx.lineTo(-6, -5);
-    ctx.lineTo(-4, 0);
-    ctx.lineTo(-6, 5);
+    ctx.moveTo(12, 0);
+    ctx.lineTo(-8, -7);
+    ctx.lineTo(-5, 0);
+    ctx.lineTo(-8, 7);
     ctx.closePath();
     ctx.fill();
     ctx.fillStyle = '#FF8800';
-    ctx.fillRect(-3, -2, 4, 4);
+    ctx.fillRect(-4, -3, 6, 6);
+    // Stripe
+    ctx.fillStyle = '#FFAA44';
+    ctx.fillRect(-2, -4, 2, 8);
   } else if (type === 'heavy') {
     ctx.fillStyle = '#AA2222';
     ctx.beginPath();
-    ctx.moveTo(10, 0);
-    ctx.lineTo(-8, -6);
-    ctx.lineTo(-6, 0);
-    ctx.lineTo(-8, 6);
+    ctx.moveTo(14, 0);
+    ctx.lineTo(-10, -8);
+    ctx.lineTo(-7, 0);
+    ctx.lineTo(-10, 8);
+    ctx.closePath();
+    ctx.fill();
+    // Warhead
+    ctx.fillStyle = '#881111';
+    ctx.beginPath();
+    ctx.moveTo(14, 0);
+    ctx.lineTo(8, -4);
+    ctx.lineTo(8, 4);
     ctx.closePath();
     ctx.fill();
     // HP indicator
     if (hp < maxHp) {
       ctx.fillStyle = '#FFAA00';
-      ctx.fillRect(-5, -8, 10 * (hp / maxHp), 2);
+      ctx.fillRect(-7, -11, 14 * (hp / maxHp), 3);
       ctx.strokeStyle = '#888';
       ctx.lineWidth = 0.5;
-      ctx.strokeRect(-5, -8, 10, 2);
+      ctx.strokeRect(-7, -11, 14, 3);
     }
   }
 

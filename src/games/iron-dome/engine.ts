@@ -178,19 +178,48 @@ export function fireInterceptor(state: GameState, targetX: number, targetY: numb
   const launchX = w / 2;
   const launchY = groundY - 5;
 
-  const dx = targetX - launchX;
-  const dy = targetY - launchY;
+  // Find nearest threat to click point and target it instead
+  let finalTargetX = targetX;
+  let finalTargetY = targetY;
+  let targetThreatId: number | undefined;
+
+  if (state.threats.length > 0) {
+    let nearestDist = Infinity;
+    let nearestThreat: Threat | null = null;
+    state.threats.forEach(t => {
+      const dx = t.x - targetX;
+      const dy = t.y - targetY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < nearestDist && dist < 200) { // Lock on if within 200px of click
+        nearestDist = dist;
+        nearestThreat = t;
+      }
+    });
+    if (nearestThreat) {
+      // Predict where the threat will be when interceptor arrives
+      const thr = nearestThreat as Threat;
+      const travelDist = Math.sqrt((thr.x - launchX) ** 2 + (thr.y - launchY) ** 2);
+      const travelTime = travelDist / INTERCEPTOR_SPEED;
+      finalTargetX = thr.x + Math.cos(thr.angle) * thr.speed * (travelTime * 0.6);
+      finalTargetY = thr.y + Math.sin(thr.angle) * thr.speed * (travelTime * 0.6);
+      targetThreatId = thr.id;
+    }
+  }
+
+  const dx = finalTargetX - launchX;
+  const dy = finalTargetY - launchY;
   const angle = Math.atan2(dy, dx);
 
   const interceptor: Interceptor = {
     id: state.nextId,
     x: launchX,
     y: launchY,
-    targetX,
-    targetY,
+    targetX: finalTargetX,
+    targetY: finalTargetY,
     speed: INTERCEPTOR_SPEED,
     angle,
     trail: [],
+    targetThreatId,
   };
 
   const newAmmo = state.ammo - 1;
@@ -393,10 +422,28 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
     }
   });
 
-  // Update interceptors
+  // Update interceptors (homing toward locked threats)
   const newInterceptors: Interceptor[] = [];
   s.interceptors.forEach(int => {
     let i = { ...int };
+
+    // If locked onto a threat, re-target it continuously
+    if (i.targetThreatId != null) {
+      const target = s.threats.find(t => t.id === i.targetThreatId);
+      if (target) {
+        const dx = target.x - i.x;
+        const dy = target.y - i.y;
+        const targetAngle = Math.atan2(dy, dx);
+        // Smooth turning toward threat
+        let angleDiff = targetAngle - i.angle;
+        while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+        while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+        i.angle += angleDiff * 0.15; // Turn rate
+        i.targetX = target.x;
+        i.targetY = target.y;
+      }
+    }
+
     i.x += Math.cos(i.angle) * i.speed * (dt / 16);
     i.y += Math.sin(i.angle) * i.speed * (dt / 16);
 
@@ -407,7 +454,7 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
     const dx = i.targetX - i.x;
     const dy = i.targetY - i.y;
     const dist = Math.sqrt(dx * dx + dy * dy);
-    if (dist < 10) {
+    if (dist < 15) {
       // Explode at target
       s.explosions = [...s.explosions, {
         x: i.x, y: i.y, radius: 2, maxRadius: EXPLOSION_MAX_RADIUS,
