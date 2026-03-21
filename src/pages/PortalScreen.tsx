@@ -15,6 +15,7 @@ interface GameCard {
   route: string;
   description: string;
   color: string;
+  players: string;
   comingSoon?: boolean;
 }
 
@@ -26,6 +27,7 @@ const games: GameCard[] = [
     route: "/fake-it-fast",
     description: "🕵️ Find the fake before it fools everyone!",
     color: "from-[hsl(267,84%,58%)] to-[hsl(340,82%,62%)]",
+    players: "3+",
   },
   {
     id: "iron-dome",
@@ -34,6 +36,7 @@ const games: GameCard[] = [
     route: "/iron-dome",
     description: "🛡️ Defend your cities from incoming missiles!",
     color: "from-[hsl(190,80%,30%)] to-[hsl(210,80%,20%)]",
+    players: "1",
   },
 ];
 
