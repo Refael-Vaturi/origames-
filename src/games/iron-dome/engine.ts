@@ -398,7 +398,17 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
       if (hitCity) {
         hitCity.alive = false;
       }
-      livesLost++;
+      // Shield absorbs damage
+      if (s.shieldTimer > 0) {
+        s.soundEvents.push('shield-block');
+        s.floatingTexts = [...s.floatingTexts, {
+          x: threat.x, y: groundY - 20, text: '🛡️ BLOCKED!',
+          alpha: 1, vy: -1.5, color: '#CC88FF', size: 14,
+        }];
+        // Don't lose life, still explode visually
+      } else {
+        livesLost++;
+      }
       missed++;
 
       // Ground explosion
