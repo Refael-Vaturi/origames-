@@ -304,7 +304,39 @@ export function fireInterceptor(state: GameState, targetX: number, targetY: numb
 
   const interceptors = [interceptor];
 
-  // Triple dome mode (green): fire from 2 extra launchers on left and right sides
+  // Wave perk: extra shots from center (double/triple)
+  if (state.waveExtraShots >= 1) {
+    const spreadAngle = 0.15;
+    const extraAngle1 = angle + spreadAngle;
+    interceptors.push({
+      id: state.nextId + 1,
+      x: launchX,
+      y: launchY,
+      targetX: launchX + Math.cos(extraAngle1) * 400,
+      targetY: launchY + Math.sin(extraAngle1) * 400,
+      speed: INTERCEPTOR_SPEED,
+      angle: extraAngle1,
+      trail: [],
+      targetThreatId,
+    });
+  }
+  if (state.waveExtraShots >= 2) {
+    const spreadAngle = -0.15;
+    const extraAngle2 = angle + spreadAngle;
+    interceptors.push({
+      id: state.nextId + 2,
+      x: launchX,
+      y: launchY,
+      targetX: launchX + Math.cos(extraAngle2) * 400,
+      targetY: launchY + Math.sin(extraAngle2) * 400,
+      speed: INTERCEPTOR_SPEED,
+      angle: extraAngle2,
+      trail: [],
+      targetThreatId,
+    });
+  }
+
+  // Triple dome mode (green or wave perk): fire from 2 extra launchers on left and right sides
   if (state.tripleInterceptorTimer > 0) {
     const leftX = w * 0.15;
     const rightX = w * 0.85;
@@ -313,7 +345,7 @@ export function fireInterceptor(state: GameState, targetX: number, targetY: numb
       const dy2 = finalTargetY - launchY;
       const sideAngle = Math.atan2(dy2, dx2);
       interceptors.push({
-        id: state.nextId + 1 + idx,
+        id: state.nextId + 3 + idx,
         x: lx,
         y: launchY,
         targetX: finalTargetX,
