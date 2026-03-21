@@ -358,8 +358,7 @@ const IronDomeGame: React.FC = () => {
       <canvas
         ref={canvasRef}
         className="absolute inset-0 w-full h-full cursor-crosshair touch-none"
-        onClick={handleCanvasClick}
-        onTouchStart={handleCanvasClick}
+        onPointerDown={handleCanvasClick}
         onTouchMove={(e) => e.preventDefault()}
       />
 
