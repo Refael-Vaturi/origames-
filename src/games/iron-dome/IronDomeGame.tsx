@@ -354,7 +354,14 @@ const IronDomeGame: React.FC = () => {
                       setPhase('rules');
                     }
                   }} />
-                  <MenuButtonSmall icon="🏆" label={T('leaderboard')} onClick={() => {}} />
+                  <MenuButtonSmall icon="🏆" label={T('leaderboard')} onClick={() => {
+                    fetchLeaderboard('campaign');
+                    setLeaderboardMode('campaign');
+                    if (stateRef.current) {
+                      stateRef.current.phase = 'leaderboard';
+                      setPhase('leaderboard');
+                    }
+                  }} />
                 </div>
               </div>
 
