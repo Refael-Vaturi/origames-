@@ -181,9 +181,13 @@ const IronDomeGame: React.FC = () => {
 
         if (stateRef.current.phase !== phase) {
           setPhase(stateRef.current.phase);
+          setGameState({ ...stateRef.current });
+          lastStateUpdateRef.current = time;
+        } else if (time - lastStateUpdateRef.current > 200) {
+          // Throttled update for HUD timers (5x per second)
+          setGameState({ ...stateRef.current });
+          lastStateUpdateRef.current = time;
         }
-        // Update gameState periodically for HUD timers
-        setGameState({ ...stateRef.current });
 
         ctx.save();
         ctx.clearRect(0, 0, canvas.width, canvas.height);
