@@ -130,4 +130,7 @@ export interface GameState {
   totalMissed: number;
   totalFired: number;
   nextId: number;
+  // Special missile effects
+  tripleInterceptorTimer: number;
+  autoDefenseTimer: number;
 }
