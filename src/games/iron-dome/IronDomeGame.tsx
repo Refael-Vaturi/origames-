@@ -32,6 +32,13 @@ const IronDomeGame: React.FC = () => {
   const [loadingLB, setLoadingLB] = useState(false);
   const { user } = useAuth();
   const { language } = useLanguage();
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+  const [authEmail, setAuthEmail] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [authDisplayName, setAuthDisplayName] = useState('');
+  const [authLoading, setAuthLoading] = useState(false);
+  const [showAuthPassword, setShowAuthPassword] = useState(false);
 
   const T = useCallback((key: string) => ironT(key, language), [language]);
 
