@@ -311,11 +311,14 @@ const IronDomeGame: React.FC = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     setScoreSaved(false);
-    const s = createInitialState(canvas.width, canvas.height);
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    const s = createInitialState(w, h);
     s.mode = mode;
-    stateRef.current = startWave(s, canvas.width, canvas.height);
+    stateRef.current = startWave(s, w, h);
     setPhase(stateRef.current.phase);
     setGameState({ ...stateRef.current });
+    if (musicEnabled) musicRef.current.start(1);
   };
 
   const handleNextWave = () => {
