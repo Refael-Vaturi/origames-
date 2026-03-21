@@ -586,25 +586,39 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
 
             // Special missile color effects
             if (t.missileColor === 'green') {
-              // Triple interceptor for 5 seconds
               s.tripleInterceptorTimer = 5000;
+              s.soundEvents.push('powerup-green');
               s.floatingTexts = [...s.floatingTexts, {
                 x: t.x, y: t.y - 30, text: '🟢 x3 INTERCEPTORS!',
                 alpha: 1, vy: -1, color: '#44FF44', size: 16,
               }];
             } else if (t.missileColor === 'blue') {
-              // Triple interceptor for 10 seconds
               s.tripleInterceptorTimer = 10000;
+              s.soundEvents.push('powerup-blue');
               s.floatingTexts = [...s.floatingTexts, {
                 x: t.x, y: t.y - 30, text: '🔵 x3 INTERCEPTORS 10s!',
                 alpha: 1, vy: -1, color: '#4488FF', size: 16,
               }];
             } else if (t.missileColor === 'yellow') {
-              // Auto defense for 5 seconds
               s.autoDefenseTimer = 5000;
+              s.soundEvents.push('powerup-yellow');
               s.floatingTexts = [...s.floatingTexts, {
                 x: t.x, y: t.y - 30, text: '🟡 AUTO DEFENSE!',
                 alpha: 1, vy: -1, color: '#FFFF44', size: 16,
+              }];
+            } else if (t.missileColor === 'purple') {
+              s.shieldTimer = 3000;
+              s.soundEvents.push('powerup-purple');
+              s.floatingTexts = [...s.floatingTexts, {
+                x: t.x, y: t.y - 30, text: '🟣 SHIELD ACTIVE!',
+                alpha: 1, vy: -1, color: '#CC88FF', size: 16,
+              }];
+            } else if (t.missileColor === 'white') {
+              s.empTimer = 8000;
+              s.soundEvents.push('powerup-white');
+              s.floatingTexts = [...s.floatingTexts, {
+                x: t.x, y: t.y - 30, text: '⚪ EMP SLOWDOWN!',
+                alpha: 1, vy: -1, color: '#FFFFFF', size: 16,
               }];
             }
           }
