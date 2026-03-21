@@ -15,6 +15,7 @@ interface GameCard {
   route: string;
   description: string;
   color: string;
+  players: string;
   comingSoon?: boolean;
 }
 
@@ -26,6 +27,7 @@ const games: GameCard[] = [
     route: "/fake-it-fast",
     description: "🕵️ Find the fake before it fools everyone!",
     color: "from-[hsl(267,84%,58%)] to-[hsl(340,82%,62%)]",
+    players: "3+",
   },
   {
     id: "iron-dome",
@@ -34,6 +36,7 @@ const games: GameCard[] = [
     route: "/iron-dome",
     description: "🛡️ Defend your cities from incoming missiles!",
     color: "from-[hsl(190,80%,30%)] to-[hsl(210,80%,20%)]",
+    players: "1",
   },
 ];
 
@@ -175,6 +178,9 @@ const PortalScreen = () => {
               <div className="absolute top-0 left-0 right-0 p-3 z-10">
                 <p className="font-display font-bold text-primary-foreground text-sm drop-shadow-lg text-start">
                   {game.name}
+                </p>
+                <p className="text-primary-foreground/70 text-[10px] font-body drop-shadow text-start mt-0.5">
+                  👥 {t("portal.players") || "Players"}: {game.players}
                 </p>
               </div>
 

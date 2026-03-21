@@ -281,9 +281,10 @@ const IronDomeGame: React.FC = () => {
               {/* Back button */}
               <button
                 onClick={() => navigate('/')}
-                className="absolute top-4 left-4 p-2 bg-black/40 rounded-lg backdrop-blur-sm border border-white/10 text-white/70 hover:text-white"
+                className="absolute top-4 left-4 flex items-center gap-1.5 px-3 py-2 bg-black/40 rounded-lg backdrop-blur-sm border border-white/10 text-white/70 hover:text-white"
               >
-                <ArrowLeft className="w-5 h-5" />
+                <ArrowLeft className="w-4 h-4" />
+                <span className="text-xs font-semibold">{T('backToMenu')}</span>
               </button>
 
               <motion.h1

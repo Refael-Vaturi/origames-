@@ -77,9 +77,10 @@ const HomeScreen = () => {
         <div className="flex items-center gap-2">
           <button
             onClick={() => navigate("/")}
-            className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-4 h-4" />
+            <span className="text-xs font-display font-semibold">{t("game.backHome")}</span>
           </button>
           <button
             className="flex items-center gap-3"
