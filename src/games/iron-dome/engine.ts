@@ -649,7 +649,7 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
             s.maxCombo = Math.max(s.maxCombo, s.combo);
             s.comboMultiplier = Math.min(5, Math.floor(s.combo / 5) + 1);
             s.totalIntercepted++;
-
+            s.waveDestroyedThreats++;
             // Credits from combo milestones
             const comboCredits: Record<number, number> = { 5: 3, 10: 5, 15: 8, 20: 12, 30: 20 };
             if (comboCredits[s.combo]) {
