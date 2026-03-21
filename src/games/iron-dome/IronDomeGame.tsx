@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Play, Infinity as InfinityIcon, BookOpen, Trophy, Volume2, VolumeX, Music, Pause } from 'lucide-react';
+import { ArrowLeft, Play, Infinity as InfinityIcon, BookOpen, Trophy, Volume2, VolumeX, Music, Pause, LogIn, Mail, Lock, Eye, EyeOff, User } from 'lucide-react';
 import {
   createInitialState, startWave, fireInterceptor, update, nextWave,
   buyStoreItem, activateAirSupport, activateGPSJammer, renderGame,
@@ -13,6 +13,7 @@ import { t as ironT } from './i18n';
 import LanguageSelector from '@/components/LanguageSelector';
 import { supabase } from '@/integrations/supabase/client';
 import { GameMusic } from './music';
+import { toast } from '@/hooks/use-toast';
 
 const IronDomeGame: React.FC = () => {
   const navigate = useNavigate();
@@ -31,8 +32,40 @@ const IronDomeGame: React.FC = () => {
   const [loadingLB, setLoadingLB] = useState(false);
   const { user } = useAuth();
   const { language } = useLanguage();
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+  const [authEmail, setAuthEmail] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [authDisplayName, setAuthDisplayName] = useState('');
+  const [authLoading, setAuthLoading] = useState(false);
+  const [showAuthPassword, setShowAuthPassword] = useState(false);
 
   const T = useCallback((key: string) => ironT(key, language), [language]);
+
+  const handleAuth = async () => {
+    setAuthLoading(true);
+    try {
+      if (authMode === 'register') {
+        const { error } = await supabase.auth.signUp({
+          email: authEmail,
+          password: authPassword,
+          options: { data: { display_name: authDisplayName || 'Player' }, emailRedirectTo: window.location.origin },
+        });
+        if (error) throw error;
+        toast({ title: 'נרשמת בהצלחה! בדוק את המייל לאימות' });
+        setShowAuthModal(false);
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({ email: authEmail, password: authPassword });
+        if (error) throw error;
+        toast({ title: 'התחברת בהצלחה!' });
+        setShowAuthModal(false);
+      }
+    } catch (e: any) {
+      toast({ title: e.message || 'שגיאה', variant: 'destructive' });
+    } finally {
+      setAuthLoading(false);
+    }
+  };
 
   const saveScore = useCallback(async (state: GameState) => {
     if (!user || scoreSaved) return;
@@ -451,9 +484,19 @@ const IronDomeGame: React.FC = () => {
                 </div>
               </div>
 
-              {/* Stats */}
-              <div className="mt-4 px-4 py-3 bg-black/40 rounded-xl border border-cyan-900/30 text-center">
-                <p className="text-cyan-400/40 text-xs">{T('playersWorldwide')}</p>
+              {/* Auth status / Login button */}
+              <div className="mt-4 px-4 py-3 bg-black/40 rounded-xl border border-cyan-900/30 text-center w-full">
+                {user ? (
+                  <p className="text-green-400/70 text-xs">✅ מחובר — הניקוד ישמר בלידרבורד</p>
+                ) : (
+                  <button
+                    onClick={() => { setShowAuthModal(true); setAuthMode('login'); }}
+                    className="flex items-center justify-center gap-2 w-full text-cyan-300/70 hover:text-cyan-200 transition-colors"
+                  >
+                    <LogIn className="w-4 h-4" />
+                    <span className="text-xs font-bold">התחבר כדי לשמור ניקוד בלידרבורד</span>
+                  </button>
+                )}
               </div>
             </div>
           </motion.div>
@@ -651,13 +694,17 @@ const IronDomeGame: React.FC = () => {
               </div>
 
               {/* Score save status */}
-              <p className="text-center text-xs mb-3">
+              <div className="text-center text-xs mb-3">
                 {scoreSaved ? (
                   <span className="text-green-400">✅ {T('scoreSaved')}</span>
                 ) : !user ? (
-                  <span className="text-cyan-300/40">🔒 {T('loginToSave')}</span>
+                  <button onClick={() => { setShowAuthModal(true); setAuthMode('login'); }}
+                    className="text-cyan-300/70 hover:text-cyan-200 transition-colors flex items-center justify-center gap-1 w-full">
+                    <LogIn className="w-3 h-3" />
+                    <span>🔒 התחבר כדי לשמור ניקוד</span>
+                  </button>
                 ) : null}
-              </p>
+              </div>
 
               <div className="flex gap-3">
                 <button onClick={handleRestart} className="flex-1 py-3 bg-red-600/60 text-white rounded-xl font-bold hover:bg-red-500/60 transition-colors">
@@ -716,13 +763,17 @@ const IronDomeGame: React.FC = () => {
               </div>
 
               {/* Score save status */}
-              <p className="text-center text-xs mb-3">
+              <div className="text-center text-xs mb-3">
                 {scoreSaved ? (
                   <span className="text-green-400">✅ {T('scoreSaved')}</span>
                 ) : !user ? (
-                  <span className="text-cyan-300/40">🔒 {T('loginToSave')}</span>
+                  <button onClick={() => { setShowAuthModal(true); setAuthMode('login'); }}
+                    className="text-cyan-300/70 hover:text-cyan-200 transition-colors flex items-center justify-center gap-1 w-full">
+                    <LogIn className="w-3 h-3" />
+                    <span>🔒 התחבר כדי לשמור ניקוד</span>
+                  </button>
                 ) : null}
-              </p>
+              </div>
 
               <button onClick={handleRestart} className="w-full py-3 bg-gradient-to-r from-yellow-600 to-orange-600 text-white rounded-xl font-bold text-lg hover:from-yellow-500 hover:to-orange-500 transition-all">
                 {T('backToMenu')}
@@ -914,6 +965,98 @@ const IronDomeGame: React.FC = () => {
           🚀 {T('missile')} · ✈ {T('uav')} · 💣 {T('cluster')} (7s!) · ☢ {T('heavy')} (2 hits!) · ESC = {T('paused')}
         </div>
       )}
+
+      {/* Auth Modal */}
+      <AnimatePresence>
+        {showAuthModal && (
+          <motion.div
+            key="auth-modal"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 flex items-center justify-center z-50 bg-black/80"
+            onClick={(e) => { if (e.target === e.currentTarget) setShowAuthModal(false); }}
+          >
+            <motion.div
+              className="bg-[#0a1525] border border-cyan-900/40 rounded-2xl p-6 max-w-sm w-full mx-4"
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 className="text-xl font-bold text-cyan-400 text-center mb-4" style={{ fontFamily: "'Courier New', monospace" }}>
+                {authMode === 'login' ? '🔑 התחברות' : '📝 הרשמה'}
+              </h2>
+
+              <div className="flex flex-col gap-3">
+                {authMode === 'register' && (
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-400/50" />
+                    <input
+                      type="text"
+                      placeholder="שם תצוגה"
+                      value={authDisplayName}
+                      onChange={(e) => setAuthDisplayName(e.target.value)}
+                      className="w-full pl-10 pr-3 py-3 bg-black/40 border border-cyan-900/30 rounded-xl text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-cyan-500/50"
+                    />
+                  </div>
+                )}
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-400/50" />
+                  <input
+                    type="email"
+                    placeholder="אימייל"
+                    value={authEmail}
+                    onChange={(e) => setAuthEmail(e.target.value)}
+                    className="w-full pl-10 pr-3 py-3 bg-black/40 border border-cyan-900/30 rounded-xl text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-cyan-500/50"
+                    dir="ltr"
+                  />
+                </div>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-400/50" />
+                  <input
+                    type={showAuthPassword ? 'text' : 'password'}
+                    placeholder="סיסמה"
+                    value={authPassword}
+                    onChange={(e) => setAuthPassword(e.target.value)}
+                    className="w-full pl-10 pr-10 py-3 bg-black/40 border border-cyan-900/30 rounded-xl text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-cyan-500/50"
+                    dir="ltr"
+                    onKeyDown={(e) => { if (e.key === 'Enter') handleAuth(); }}
+                  />
+                  <button onClick={() => setShowAuthPassword(!showAuthPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-cyan-400/50 hover:text-cyan-300">
+                    {showAuthPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+
+                <button
+                  onClick={handleAuth}
+                  disabled={authLoading || !authEmail || !authPassword}
+                  className="w-full py-3 bg-gradient-to-r from-cyan-600 to-blue-600 text-white rounded-xl font-bold hover:from-cyan-500 hover:to-blue-500 transition-all disabled:opacity-40"
+                >
+                  {authLoading ? '⏳...' : authMode === 'login' ? 'התחבר' : 'הירשם'}
+                </button>
+
+                <p className="text-center text-xs text-cyan-300/50">
+                  {authMode === 'login' ? 'אין לך חשבון? ' : 'יש לך חשבון? '}
+                  <button
+                    onClick={() => setAuthMode(authMode === 'login' ? 'register' : 'login')}
+                    className="text-cyan-400 hover:text-cyan-300 font-bold"
+                  >
+                    {authMode === 'login' ? 'הירשם' : 'התחבר'}
+                  </button>
+                </p>
+
+                <button
+                  onClick={() => setShowAuthModal(false)}
+                  className="text-white/40 text-xs hover:text-white/60 transition-colors"
+                >
+                  ביטול
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
