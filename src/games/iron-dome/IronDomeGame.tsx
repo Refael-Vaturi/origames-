@@ -12,11 +12,13 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { t as ironT } from './i18n';
 import LanguageSelector from '@/components/LanguageSelector';
 import { supabase } from '@/integrations/supabase/client';
+import { GameMusic } from './music';
 
 const IronDomeGame: React.FC = () => {
   const navigate = useNavigate();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stateRef = useRef<GameState | null>(null);
+  const musicRef = useRef<GameMusic>(new GameMusic());
   const animFrameRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
   const [phase, setPhase] = useState<GamePhase>('menu');
@@ -65,6 +67,25 @@ const IronDomeGame: React.FC = () => {
       .limit(15);
     setLeaderboardData(data || []);
     setLoadingLB(false);
+  }, []);
+
+  // Music toggle & cleanup
+  useEffect(() => {
+    if (musicEnabled && musicRef.current.isPlaying()) {
+      musicRef.current.setVolume(0.12);
+    } else if (!musicEnabled && musicRef.current.isPlaying()) {
+      musicRef.current.setVolume(0);
+    }
+  }, [musicEnabled]);
+
+  useEffect(() => {
+    if ((phase === 'game-over' || phase === 'victory') && musicRef.current.isPlaying()) {
+      musicRef.current.stop();
+    }
+  }, [phase]);
+
+  useEffect(() => {
+    return () => { musicRef.current.stop(); };
   }, []);
 
   // Auto-save score on game over or victory
@@ -309,19 +330,25 @@ const IronDomeGame: React.FC = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     setScoreSaved(false);
-    const s = createInitialState(canvas.width, canvas.height);
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    const s = createInitialState(w, h);
     s.mode = mode;
-    stateRef.current = startWave(s, canvas.width, canvas.height);
+    stateRef.current = startWave(s, w, h);
     setPhase(stateRef.current.phase);
     setGameState({ ...stateRef.current });
+    if (musicEnabled) musicRef.current.start(1);
   };
 
   const handleNextWave = () => {
     const canvas = canvasRef.current;
     if (!canvas || !stateRef.current) return;
-    stateRef.current = nextWave(stateRef.current, canvas.width, canvas.height);
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    stateRef.current = nextWave(stateRef.current, w, h);
     setPhase(stateRef.current.phase);
     setGameState({ ...stateRef.current });
+    if (musicEnabled) musicRef.current.setIntensity(stateRef.current.wave);
   };
 
   const handleBuyItem = (itemId: string) => {
@@ -333,7 +360,10 @@ const IronDomeGame: React.FC = () => {
   const handleRestart = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    stateRef.current = createInitialState(canvas.width, canvas.height);
+    musicRef.current.stop();
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    stateRef.current = createInitialState(w, h);
     setPhase('menu');
     setGameState(stateRef.current);
   };
