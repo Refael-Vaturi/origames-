@@ -57,10 +57,12 @@ function createCities(w: number, h: number): City[] {
 
 function createDefaultStoreItems(): StoreItem[] {
   return [
-    { id: 'first-aid', name: 'First Aid', icon: '🩹', description: '+1 life', cost: 5, maxBuys: 2, bought: 0 },
-    { id: 'fast-reload', name: 'Fast Reload', icon: '⚡', description: 'Missiles reload faster', cost: 10, maxBuys: 1, bought: 0 },
-    { id: 'gps-jammer', name: 'GPS Jammer', icon: '📡', description: 'Diverts ~25% threats [G]', cost: 7, maxBuys: 3, bought: 0 },
-    { id: 'iron-beam', name: 'Iron Beam', icon: '🔆', description: 'Laser auto-target [B]', cost: 15, maxBuys: 1, bought: 0 },
+    { id: 'first-aid', name: 'First Aid', icon: '🩹', description: '+1 חיים', cost: 3, maxBuys: 3, bought: 0 },
+    { id: 'extra-ammo', name: 'Extra Ammo', icon: '🎯', description: '+5 תחמושת מקסימלית', cost: 4, maxBuys: 3, bought: 0 },
+    { id: 'fast-reload', name: 'Fast Reload', icon: '⚡', description: 'טעינה מהירה לצמיתות', cost: 8, maxBuys: 1, bought: 0 },
+    { id: 'shield-charge', name: 'Shield', icon: '🟣', description: 'מגן 10 שניות בתחילת הגל', cost: 6, maxBuys: 2, bought: 0 },
+    { id: 'auto-fire-charge', name: 'Auto Fire', icon: '🔵', description: 'ירי אוטומטי 5 שניות בתחילת הגל', cost: 7, maxBuys: 2, bought: 0 },
+    { id: 'triple-dome', name: 'Triple Dome', icon: '🟢', description: '3 כיפות ברזל 15 שניות בתחילת הגל', cost: 10, maxBuys: 2, bought: 0 },
   ];
 }
 
