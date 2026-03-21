@@ -1,5 +1,5 @@
 export type ThreatType = 'missile' | 'uav' | 'cluster' | 'submunition' | 'heavy';
-export type MissileColor = 'red' | 'green' | 'yellow' | 'blue';
+export type MissileColor = 'red' | 'green' | 'yellow' | 'blue' | 'purple' | 'white';
 
 export interface Threat {
   id: number;
