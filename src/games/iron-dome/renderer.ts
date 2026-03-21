@@ -302,6 +302,7 @@ function renderThreat(ctx: CanvasRenderingContext2D, threat: Threat, time: numbe
         : missileColor === 'blue' ? 'rgba(68,136,255,0.4)'
         : missileColor === 'purple' ? 'rgba(180,68,255,0.4)'
         : missileColor === 'white' ? 'rgba(255,255,255,0.5)'
+        : missileColor === 'pink' ? 'rgba(255,100,170,0.4)'
         : 'rgba(255,255,0,0.3)';
       const mg = ctx.createRadialGradient(0, 0, 0, 0, 0, size * 2.5);
       mg.addColorStop(0, glowColor);
