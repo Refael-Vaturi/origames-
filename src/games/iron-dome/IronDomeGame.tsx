@@ -12,6 +12,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { t as ironT } from './i18n';
 import LanguageSelector from '@/components/LanguageSelector';
 import { supabase } from '@/integrations/supabase/client';
+import { GameMusic } from './music';
 
 const IronDomeGame: React.FC = () => {
   const navigate = useNavigate();
