@@ -256,22 +256,26 @@ export function fireInterceptor(state: GameState, targetX: number, targetY: numb
 
   const interceptors = [interceptor];
 
-  // Triple interceptor mode: fire 2 extra spread interceptors
+  // Triple dome mode (green): fire from 2 extra launchers on left and right sides
   if (state.tripleInterceptorTimer > 0) {
-    for (let spread = 0; spread < 2; spread++) {
-      const spreadAngle = angle + (spread === 0 ? -0.2 : 0.2);
+    const leftX = w * 0.15;
+    const rightX = w * 0.85;
+    [leftX, rightX].forEach((lx, idx) => {
+      const dx2 = finalTargetX - lx;
+      const dy2 = finalTargetY - launchY;
+      const sideAngle = Math.atan2(dy2, dx2);
       interceptors.push({
-        id: state.nextId + 1 + spread,
-        x: launchX + (spread === 0 ? -30 : 30),
+        id: state.nextId + 1 + idx,
+        x: lx,
         y: launchY,
-        targetX: finalTargetX + (spread === 0 ? -40 : 40),
+        targetX: finalTargetX,
         targetY: finalTargetY,
         speed: INTERCEPTOR_SPEED,
-        angle: spreadAngle,
+        angle: sideAngle,
         trail: [],
         targetThreatId,
       });
-    }
+    });
   }
 
   return {
