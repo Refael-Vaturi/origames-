@@ -960,6 +960,18 @@ const IronDomeGame: React.FC = () => {
         </button>
       )}
 
+      {/* Big Power-up Timers on right side */}
+      {phase === 'playing' && gameState && (
+        <div className="absolute top-16 right-3 z-20 flex flex-col gap-2 pointer-events-none">
+          <PowerUpTimer emoji="🟢" label="x3" timer={gameState.tripleInterceptorTimer} maxTimer={10000} color="#44FF44" glowColor="rgba(68,255,68,0.4)" />
+          <PowerUpTimer emoji="🔵" label="AUTO" timer={gameState.autoFireTimer} maxTimer={5000} color="#4488FF" glowColor="rgba(68,136,255,0.4)" />
+          <PowerUpTimer emoji="🟡" label="DOME" timer={gameState.autoDefenseTimer} maxTimer={10000} color="#FFFF44" glowColor="rgba(255,255,68,0.4)" />
+          <PowerUpTimer emoji="🟣" label="SHIELD" timer={gameState.shieldTimer} maxTimer={10000} color="#CC88FF" glowColor="rgba(180,100,255,0.4)" />
+          <PowerUpTimer emoji="⚪" label="EMP" timer={gameState.empTimer} maxTimer={10000} color="#FFFFFF" glowColor="rgba(255,255,255,0.3)" />
+          <PowerUpTimer emoji="🚁" label="HELI" timer={gameState.helicopterTimer} maxTimer={10000} color="#FF88AA" glowColor="rgba(255,136,170,0.4)" />
+        </div>
+      )}
+
       {/* Bottom info bar during gameplay */}
       {phase === 'playing' && (
         <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20 text-white/30 text-[10px] font-mono pointer-events-none">
