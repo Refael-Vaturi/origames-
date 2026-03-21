@@ -130,6 +130,11 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   // Particles
   state.particles.forEach(p => renderParticle(ctx, p));
 
+  // Helicopter visual
+  if (state.helicopterTimer > 0) {
+    renderHelicopter(ctx, state.helicopterX, 40, time);
+  }
+
   // Floating texts
   state.floatingTexts.forEach(ft => renderFloatingText(ctx, ft));
 
