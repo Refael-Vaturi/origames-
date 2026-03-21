@@ -620,57 +620,5 @@ function renderHUD(ctx: CanvasRenderingContext2D, state: GameState, w: number, h
     ctx.fillText(`Iron Beam ON`, abilityX, abilityY);
   }
 
-  // Special power timers - sidebar on the right
-  let timerY = 60;
-  const timerX = w - 12;
-  const drawTimer = (emoji: string, secs: string, color: string, barColor: string, progress: number) => {
-    // Background pill
-    ctx.fillStyle = 'rgba(0,0,0,0.5)';
-    const pillW = 110;
-    const pillH = 24;
-    const px = timerX - pillW;
-    ctx.beginPath();
-    ctx.roundRect(px, timerY - 14, pillW, pillH, 6);
-    ctx.fill();
-    
-    // Progress bar
-    ctx.fillStyle = barColor;
-    ctx.beginPath();
-    ctx.roundRect(px + 2, timerY + 6, (pillW - 4) * progress, 3, 2);
-    ctx.fill();
-    
-    // Text
-    ctx.fillStyle = color;
-    ctx.font = 'bold 11px monospace';
-    ctx.textAlign = 'right';
-    ctx.fillText(`${emoji} ${secs}s`, timerX - 6, timerY);
-    
-    timerY += 30;
-  };
-
-  if (state.tripleInterceptorTimer > 0) {
-    const secs = (state.tripleInterceptorTimer / 1000).toFixed(1);
-    const isBlue = state.tripleInterceptorTimer > 5000;
-    drawTimer(isBlue ? '🔵' : '🟢', secs, isBlue ? '#4488FF' : '#44FF44', isBlue ? 'rgba(68,136,255,0.6)' : 'rgba(68,255,68,0.6)', state.tripleInterceptorTimer / 10000);
-  }
-  if (state.autoDefenseTimer > 0) {
-    const secs = (state.autoDefenseTimer / 1000).toFixed(1);
-    drawTimer('🟡', secs, '#FFFF44', 'rgba(255,255,68,0.6)', state.autoDefenseTimer / 10000);
-  }
-  if (state.shieldTimer > 0) {
-    const secs = (state.shieldTimer / 1000).toFixed(1);
-    drawTimer('🟣', secs, '#CC88FF', 'rgba(180,100,255,0.6)', state.shieldTimer / 10000);
-  }
-  if (state.empTimer > 0) {
-    const secs = (state.empTimer / 1000).toFixed(1);
-    drawTimer('⚪', secs, '#FFFFFF', 'rgba(255,255,255,0.5)', state.empTimer / 10000);
-  }
-  if (state.helicopterTimer > 0) {
-    const secs = (state.helicopterTimer / 1000).toFixed(1);
-    drawTimer('🚁', secs, '#FF88AA', 'rgba(255,136,170,0.6)', state.helicopterTimer / 10000);
-  }
-  if (state.autoFireTimer > 0) {
-    const secs = (state.autoFireTimer / 1000).toFixed(1);
-    drawTimer('🔵', secs, '#4488FF', 'rgba(68,136,255,0.6)', state.autoFireTimer / 5000);
-  }
+  // Special power timers are now rendered in React overlay (IronDomeGame.tsx)
 }

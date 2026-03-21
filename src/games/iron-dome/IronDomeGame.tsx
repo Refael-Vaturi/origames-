@@ -22,6 +22,7 @@ const IronDomeGame: React.FC = () => {
   const musicRef = useRef<GameMusic>(new GameMusic());
   const animFrameRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
+  const lastStateUpdateRef = useRef<number>(0);
   const [phase, setPhase] = useState<GamePhase>('menu');
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [soundEnabled, setSoundEnabled] = useState(true);
@@ -181,6 +182,11 @@ const IronDomeGame: React.FC = () => {
         if (stateRef.current.phase !== phase) {
           setPhase(stateRef.current.phase);
           setGameState({ ...stateRef.current });
+          lastStateUpdateRef.current = time;
+        } else if (time - lastStateUpdateRef.current > 200) {
+          // Throttled update for HUD timers (5x per second)
+          setGameState({ ...stateRef.current });
+          lastStateUpdateRef.current = time;
         }
 
         ctx.save();
@@ -960,6 +966,18 @@ const IronDomeGame: React.FC = () => {
         </button>
       )}
 
+      {/* Big Power-up Timers on right side */}
+      {phase === 'playing' && gameState && (
+        <div className="absolute top-16 right-3 z-20 flex flex-col gap-2 pointer-events-none">
+          <PowerUpTimer emoji="🟢" label="x3" timer={gameState.tripleInterceptorTimer} maxTimer={10000} color="#44FF44" glowColor="rgba(68,255,68,0.4)" />
+          <PowerUpTimer emoji="🔵" label="AUTO" timer={gameState.autoFireTimer} maxTimer={5000} color="#4488FF" glowColor="rgba(68,136,255,0.4)" />
+          <PowerUpTimer emoji="🟡" label="DOME" timer={gameState.autoDefenseTimer} maxTimer={10000} color="#FFFF44" glowColor="rgba(255,255,68,0.4)" />
+          <PowerUpTimer emoji="🟣" label="SHIELD" timer={gameState.shieldTimer} maxTimer={10000} color="#CC88FF" glowColor="rgba(180,100,255,0.4)" />
+          <PowerUpTimer emoji="⚪" label="EMP" timer={gameState.empTimer} maxTimer={10000} color="#FFFFFF" glowColor="rgba(255,255,255,0.3)" />
+          <PowerUpTimer emoji="🚁" label="HELI" timer={gameState.helicopterTimer} maxTimer={10000} color="#FF88AA" glowColor="rgba(255,136,170,0.4)" />
+        </div>
+      )}
+
       {/* Bottom info bar during gameplay */}
       {phase === 'playing' && (
         <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20 text-white/30 text-[10px] font-mono pointer-events-none">
@@ -1117,5 +1135,55 @@ const RuleSection: React.FC<{
     </div>
   </div>
 );
+
+const PowerUpTimer: React.FC<{
+  emoji: string;
+  label: string;
+  timer: number;
+  maxTimer: number;
+  color: string;
+  glowColor: string;
+}> = ({ emoji, label, timer, maxTimer, color, glowColor }) => {
+  if (timer <= 0) return null;
+  const seconds = Math.ceil(timer / 1000);
+  const progress = timer / maxTimer;
+  
+  return (
+    <motion.div
+      initial={{ x: 80, opacity: 0 }}
+      animate={{ x: 0, opacity: 1 }}
+      exit={{ x: 80, opacity: 0 }}
+      className="relative flex items-center gap-2 px-3 py-2 rounded-xl border backdrop-blur-sm"
+      style={{
+        background: `linear-gradient(135deg, rgba(0,0,0,0.7), rgba(0,0,0,0.5))`,
+        borderColor: color + '40',
+        boxShadow: `0 0 20px ${glowColor}`,
+        minWidth: 100,
+      }}
+    >
+      <span className="text-lg">{emoji}</span>
+      <div className="flex flex-col items-start flex-1">
+        <span className="text-[10px] font-bold tracking-wider" style={{ color: color + 'AA' }}>{label}</span>
+        <motion.span
+          className="text-2xl font-black tabular-nums leading-none"
+          style={{ color, textShadow: `0 0 15px ${glowColor}` }}
+          key={seconds}
+          initial={{ scale: 1.4, opacity: 0.7 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.2 }}
+        >
+          {seconds}
+        </motion.span>
+      </div>
+      {/* Progress bar */}
+      <div className="absolute bottom-1 left-2 right-2 h-[3px] rounded-full bg-white/10 overflow-hidden">
+        <div
+          className="h-full rounded-full transition-all duration-200"
+          style={{ background: color, width: `${progress * 100}%` }}
+        />
+      </div>
+    </motion.div>
+  );
+};
 
 export default IronDomeGame;
