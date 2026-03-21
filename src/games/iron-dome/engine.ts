@@ -950,19 +950,23 @@ export function buyStoreItem(state: GameState, itemId: string): GameState {
 
   switch (itemId) {
     case 'first-aid':
-      s.lives = Math.min(s.maxLives + 2, s.lives + 1);
+      s.lives = Math.min(s.maxLives + 3, s.lives + 1);
       break;
-    case 'air-support':
-      s.airSupportCharges += 1;
+    case 'extra-ammo':
+      s.maxAmmo += 5;
+      s.ammo = s.maxAmmo;
       break;
     case 'fast-reload':
       s.fastReload = true;
       break;
-    case 'gps-jammer':
-      s.gpsJammerCharges += 1;
+    case 'shield-charge':
+      // Will be applied at wave start
       break;
-    case 'iron-beam':
-      // Iron beam is available but starts OFF
+    case 'auto-fire-charge':
+      // Will be applied at wave start
+      break;
+    case 'triple-dome':
+      // Will be applied at wave start
       break;
   }
 
