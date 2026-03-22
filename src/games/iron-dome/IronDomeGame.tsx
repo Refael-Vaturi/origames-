@@ -128,8 +128,8 @@ const IronDomeGame: React.FC = () => {
       setAuthLoading(false);
     }
   };
-    }
-  };
+
+
 
   const saveScore = useCallback(async (state: GameState) => {
     if (!user || scoreSaved) return;
