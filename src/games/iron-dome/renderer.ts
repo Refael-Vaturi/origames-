@@ -1,4 +1,5 @@
 import { GameState, Threat, City, Interceptor, Explosion, Particle, FloatingText } from './types';
+import { t as ironT } from './i18n';
 
 const COLORS = {
   sky1: '#0a0e1a',
