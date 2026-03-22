@@ -38,36 +38,96 @@ const IronDomeGame: React.FC = () => {
   languageRef.current = language;
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+  const [authMethod, setAuthMethod] = useState<'username' | 'email'>('username');
   const [authEmail, setAuthEmail] = useState('');
+  const [authUsername, setAuthUsername] = useState('');
   const [authPassword, setAuthPassword] = useState('');
   const [authDisplayName, setAuthDisplayName] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
   const [showAuthPassword, setShowAuthPassword] = useState(false);
 
   const T = useCallback((key: string) => ironT(key, language), [language]);
+  const { t: appT } = useLanguage();
+
+  const usernameToEmail = (u: string) => `${u.toLowerCase().replace(/[^a-z0-9_]/g, '')}@fakeitfast.local`;
 
   const handleAuth = async () => {
+    if (authMethod === 'username') {
+      if (!authUsername || !authPassword) return;
+      if (authUsername.length < 3) {
+        toast({ title: appT('auth.usernameTooShort'), variant: 'destructive' });
+        return;
+      }
+    } else {
+      if (!authEmail || !authPassword) return;
+    }
+
     setAuthLoading(true);
     try {
       if (authMode === 'register') {
+        const signUpEmail = authMethod === 'username' ? usernameToEmail(authUsername) : authEmail;
+        const signUpDisplayName = authMethod === 'username' ? (authDisplayName || authUsername) : (authDisplayName || 'Player');
         const { error } = await supabase.auth.signUp({
-          email: authEmail,
+          email: signUpEmail,
           password: authPassword,
-          options: { data: { display_name: authDisplayName || 'Player' }, emailRedirectTo: window.location.origin },
+          options: {
+            data: { display_name: signUpDisplayName, username: authMethod === 'username' ? authUsername : undefined },
+            emailRedirectTo: window.location.origin,
+          },
         });
         if (error) throw error;
-        toast({ title: 'נרשמת בהצלחה! בדוק את המייל לאימות' });
-        setShowAuthModal(false);
+        if (authMethod === 'username') {
+          const { data: { user: newUser } } = await supabase.auth.getUser();
+          if (newUser) {
+            await supabase.from('profiles').update({ username: authUsername, display_name: signUpDisplayName }).eq('user_id', newUser.id);
+          }
+          toast({ title: appT('auth.loginBtn') + ' ✅' });
+          setShowAuthModal(false);
+        } else {
+          toast({ title: appT('auth.checkEmail') });
+          setShowAuthModal(false);
+        }
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email: authEmail, password: authPassword });
+        const loginEmail = authMethod === 'username' ? usernameToEmail(authUsername) : authEmail;
+        const { error } = await supabase.auth.signInWithPassword({ email: loginEmail, password: authPassword });
         if (error) throw error;
-        toast({ title: 'התחברת בהצלחה!' });
+        toast({ title: appT('auth.loginBtn') + ' ✅' });
         setShowAuthModal(false);
       }
     } catch (e: any) {
-      toast({ title: e.message || 'שגיאה', variant: 'destructive' });
+      toast({ title: e.message || appT('auth.error'), variant: 'destructive' });
     } finally {
       setAuthLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setAuthLoading(true);
+    try {
+      const result = await lovable.auth.signInWithOAuth('google', {
+        redirect_uri: window.location.origin + '/iron-dome',
+      });
+      if (result.error) toast({ title: String(result.error), variant: 'destructive' });
+    } catch (e: any) {
+      toast({ title: e.message || appT('auth.error'), variant: 'destructive' });
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleAppleSignIn = async () => {
+    setAuthLoading(true);
+    try {
+      const result = await lovable.auth.signInWithOAuth('apple', {
+        redirect_uri: window.location.origin + '/iron-dome',
+      });
+      if (result.error) toast({ title: String(result.error), variant: 'destructive' });
+    } catch (e: any) {
+      toast({ title: e.message || appT('auth.error'), variant: 'destructive' });
+    } finally {
+      setAuthLoading(false);
+    }
+  };
     }
   };
 
