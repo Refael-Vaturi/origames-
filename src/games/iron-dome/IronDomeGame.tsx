@@ -33,6 +33,8 @@ const IronDomeGame: React.FC = () => {
   const [loadingLB, setLoadingLB] = useState(false);
   const { user } = useAuth();
   const { language } = useLanguage();
+  const languageRef = useRef(language);
+  languageRef.current = language;
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [authEmail, setAuthEmail] = useState('');
