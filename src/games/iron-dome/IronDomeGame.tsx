@@ -200,7 +200,7 @@ const IronDomeGame: React.FC = () => {
 
         ctx.save();
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        renderGame(ctx, stateRef.current, logicalW, logicalH, time, language);
+        renderGame(ctx, stateRef.current, logicalW, logicalH, time, languageRef.current);
         ctx.restore();
       }
 
