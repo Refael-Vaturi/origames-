@@ -596,7 +596,7 @@ function renderFloatingText(ctx: CanvasRenderingContext2D, ft: FloatingText) {
   ctx.globalAlpha = 1;
 }
 
-function renderHUD(ctx: CanvasRenderingContext2D, state: GameState, w: number, h: number, time: number) {
+function renderHUD(ctx: CanvasRenderingContext2D, state: GameState, w: number, h: number, time: number, lang: string = 'en') {
   // Lives (hearts)
   const heartSize = 16;
   for (let i = 0; i < state.maxLives; i++) {
