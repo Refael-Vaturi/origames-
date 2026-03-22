@@ -612,7 +612,7 @@ function renderHUD(ctx: CanvasRenderingContext2D, state: GameState, w: number, h
   ctx.font = '14px monospace';
   ctx.textAlign = 'center';
   const totalWaves = state.mode === 'campaign' ? '10' : '∞';
-  ctx.fillText(`Wave ${state.wave}/${totalWaves}`, w / 2, 20);
+  ctx.fillText(`${ironT('wave', lang)} ${state.wave}/${totalWaves}`, w / 2, 20);
   
   // Big progress counter
   const destroyed = state.waveDestroyedThreats;
