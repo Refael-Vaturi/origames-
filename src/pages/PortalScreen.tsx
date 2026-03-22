@@ -233,8 +233,8 @@ const PortalScreen = () => {
             >
               🎲
             </motion.span>
-            <p className="font-display font-semibold text-sm">Coming Soon</p>
-            <p className="text-xs">More games!</p>
+            <p className="font-display font-semibold text-sm">{t("portal.comingSoon")}</p>
+            <p className="text-xs">{t("portal.moreGames")}</p>
           </motion.div>
         </motion.div>
       </div>

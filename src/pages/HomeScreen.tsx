@@ -97,7 +97,7 @@ const HomeScreen = () => {
             {user ? (
               <>
                 <p className="font-display font-semibold text-foreground text-sm">{displayName}</p>
-                <p className="text-xs text-muted-foreground">Level {profile?.level || 1}</p>
+                <p className="text-xs text-muted-foreground">{t("portal.level")} {profile?.level || 1}</p>
               </>
             ) : (
               <p className="font-display font-semibold text-primary text-sm">{t("welcome.login")}</p>
