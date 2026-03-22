@@ -205,9 +205,9 @@ const PortalScreen = () => {
               {/* Coming soon badge */}
               {game.comingSoon && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/40 z-20">
-                  <span className="font-display font-bold text-primary-foreground text-lg px-4 py-2 rounded-full bg-black/30 backdrop-blur">
-                    Coming Soon
-                  </span>
+                    <span className="font-display font-bold text-primary-foreground text-lg px-4 py-2 rounded-full bg-black/30 backdrop-blur">
+                      {t("portal.comingSoon")}
+                    </span>
                 </div>
               )}
 
