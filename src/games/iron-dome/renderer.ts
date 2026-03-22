@@ -1,4 +1,5 @@
 import { GameState, Threat, City, Interceptor, Explosion, Particle, FloatingText } from './types';
+import { t as ironT } from './i18n';
 
 const COLORS = {
   sky1: '#0a0e1a',
@@ -34,7 +35,7 @@ const COLORS = {
   credits: '#44DD88',
 };
 
-export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: number, h: number, time: number) {
+export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: number, h: number, time: number, lang: string = 'en') {
   // Screen shake
   if (state.screenShake > 0) {
     const intensity = state.screenShake;
@@ -148,7 +149,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   state.floatingTexts.forEach(ft => renderFloatingText(ctx, ft));
 
   // HUD
-  renderHUD(ctx, state, w, h, time);
+  renderHUD(ctx, state, w, h, time, lang);
 
   // End screen shake
   if (state.screenShake > 0) {
@@ -595,7 +596,7 @@ function renderFloatingText(ctx: CanvasRenderingContext2D, ft: FloatingText) {
   ctx.globalAlpha = 1;
 }
 
-function renderHUD(ctx: CanvasRenderingContext2D, state: GameState, w: number, h: number, time: number) {
+function renderHUD(ctx: CanvasRenderingContext2D, state: GameState, w: number, h: number, time: number, lang: string = 'en') {
   // Lives (hearts)
   const heartSize = 16;
   for (let i = 0; i < state.maxLives; i++) {
@@ -611,7 +612,7 @@ function renderHUD(ctx: CanvasRenderingContext2D, state: GameState, w: number, h
   ctx.font = '14px monospace';
   ctx.textAlign = 'center';
   const totalWaves = state.mode === 'campaign' ? '10' : '∞';
-  ctx.fillText(`Wave ${state.wave}/${totalWaves}`, w / 2, 20);
+  ctx.fillText(`${ironT('wave', lang)} ${state.wave}/${totalWaves}`, w / 2, 20);
   
   // Big progress counter
   const destroyed = state.waveDestroyedThreats;
@@ -635,7 +636,7 @@ function renderHUD(ctx: CanvasRenderingContext2D, state: GameState, w: number, h
   ctx.textAlign = 'right';
   ctx.fillStyle = COLORS.score;
   ctx.font = 'bold 16px monospace';
-  ctx.fillText(`Score: ${state.score}`, w - 15, 24);
+  ctx.fillText(`${ironT('score', lang)}: ${state.score}`, w - 15, 24);
 
   // Combo
   if (state.combo > 0) {
@@ -666,14 +667,14 @@ function renderHUD(ctx: CanvasRenderingContext2D, state: GameState, w: number, h
     ctx.fillStyle = '#AAAAAA';
     ctx.font = '10px monospace';
     ctx.textAlign = 'left';
-    ctx.fillText('RELOADING...', ammoX, ammoY - 4);
+    ctx.fillText(ironT('reloading', lang), ammoX, ammoY - 4);
   } else {
     ctx.fillStyle = COLORS.ammo;
     ctx.fillRect(ammoX, ammoY, ammoBarW * (state.ammo / state.maxAmmo), ammoBarH);
     ctx.fillStyle = COLORS.ammo;
     ctx.font = '10px monospace';
     ctx.textAlign = 'left';
-    ctx.fillText(`Ammo: ${state.ammo}/${state.maxAmmo}`, ammoX, ammoY - 4);
+    ctx.fillText(`${ironT('ammo', lang)}: ${state.ammo}/${state.maxAmmo}`, ammoX, ammoY - 4);
   }
 
   // Credits
@@ -690,12 +691,12 @@ function renderHUD(ctx: CanvasRenderingContext2D, state: GameState, w: number, h
 
   if (state.gpsJammerCharges > 0) {
     ctx.fillStyle = '#AAFFAA';
-    ctx.fillText(`GPS Jammer x${state.gpsJammerCharges}`, abilityX, abilityY);
+    ctx.fillText(`${ironT('gpsJammer', lang)} x${state.gpsJammerCharges}`, abilityX, abilityY);
     abilityX += 150;
   }
   if (state.ironBeamActive) {
     ctx.fillStyle = '#FFDDAA';
-    ctx.fillText(`Iron Beam ON`, abilityX, abilityY);
+    ctx.fillText(ironT('ironBeamOn', lang), abilityX, abilityY);
   }
 
   // Special power timers are now rendered in React overlay (IronDomeGame.tsx)
