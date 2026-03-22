@@ -696,7 +696,7 @@ function renderHUD(ctx: CanvasRenderingContext2D, state: GameState, w: number, h
   }
   if (state.ironBeamActive) {
     ctx.fillStyle = '#FFDDAA';
-    ctx.fillText(`Iron Beam ON`, abilityX, abilityY);
+    ctx.fillText(ironT('ironBeamOn', lang), abilityX, abilityY);
   }
 
   // Special power timers are now rendered in React overlay (IronDomeGame.tsx)
