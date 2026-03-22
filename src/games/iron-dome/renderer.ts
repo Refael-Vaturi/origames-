@@ -149,7 +149,7 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   state.floatingTexts.forEach(ft => renderFloatingText(ctx, ft));
 
   // HUD
-  renderHUD(ctx, state, w, h, time);
+  renderHUD(ctx, state, w, h, time, lang);
 
   // End screen shake
   if (state.screenShake > 0) {
