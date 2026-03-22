@@ -35,7 +35,7 @@ const COLORS = {
   credits: '#44DD88',
 };
 
-export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: number, h: number, time: number) {
+export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: number, h: number, time: number, lang: string = 'en') {
   // Screen shake
   if (state.screenShake > 0) {
     const intensity = state.screenShake;
