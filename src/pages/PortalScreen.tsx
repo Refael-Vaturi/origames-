@@ -19,31 +19,31 @@ interface GameCard {
   comingSoon?: boolean;
 }
 
-const games: GameCard[] = [
-  {
-    id: "fake-it-fast",
-    name: "Fake It Fast",
-    image: fakeItFastCard,
-    route: "/fake-it-fast",
-    description: "🕵️ Find the fake before it fools everyone!",
-    color: "from-[hsl(267,84%,58%)] to-[hsl(340,82%,62%)]",
-    players: "3+",
-  },
-  {
-    id: "iron-dome",
-    name: "Iron Dome",
-    image: ironDomeCard,
-    route: "/iron-dome",
-    description: "🛡️ Defend your cities from incoming missiles!",
-    color: "from-[hsl(190,80%,30%)] to-[hsl(210,80%,20%)]",
-    players: "1",
-  },
-];
-
 const PortalScreen = () => {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
   const { t } = useLanguage();
+
+  const games: GameCard[] = [
+    {
+      id: "fake-it-fast",
+      name: "Fake It Fast",
+      image: fakeItFastCard,
+      route: "/fake-it-fast",
+      description: t("portal.fakeItFastDesc"),
+      color: "from-[hsl(267,84%,58%)] to-[hsl(340,82%,62%)]",
+      players: "3+",
+    },
+    {
+      id: "iron-dome",
+      name: "Iron Dome",
+      image: ironDomeCard,
+      route: "/iron-dome",
+      description: t("portal.ironDomeDesc"),
+      color: "from-[hsl(190,80%,30%)] to-[hsl(210,80%,20%)]",
+      players: "1",
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
@@ -93,7 +93,7 @@ const PortalScreen = () => {
                 <p className="font-display font-semibold text-foreground text-sm">
                   {profile?.display_name || "Player"}
                 </p>
-                <p className="text-xs text-muted-foreground">Level {profile?.level || 1}</p>
+                <p className="text-xs text-muted-foreground">{t("portal.level")} {profile?.level || 1}</p>
               </>
             ) : (
               <p className="font-display font-semibold text-primary text-sm flex items-center gap-1">
@@ -205,9 +205,9 @@ const PortalScreen = () => {
               {/* Coming soon badge */}
               {game.comingSoon && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/40 z-20">
-                  <span className="font-display font-bold text-primary-foreground text-lg px-4 py-2 rounded-full bg-black/30 backdrop-blur">
-                    Coming Soon
-                  </span>
+                    <span className="font-display font-bold text-primary-foreground text-lg px-4 py-2 rounded-full bg-black/30 backdrop-blur">
+                      {t("portal.comingSoon")}
+                    </span>
                 </div>
               )}
 
@@ -233,8 +233,8 @@ const PortalScreen = () => {
             >
               🎲
             </motion.span>
-            <p className="font-display font-semibold text-sm">Coming Soon</p>
-            <p className="text-xs">More games!</p>
+            <p className="font-display font-semibold text-sm">{t("portal.comingSoon")}</p>
+            <p className="text-xs">{t("portal.moreGames")}</p>
           </motion.div>
         </motion.div>
       </div>

@@ -97,7 +97,7 @@ const HomeScreen = () => {
             {user ? (
               <>
                 <p className="font-display font-semibold text-foreground text-sm">{displayName}</p>
-                <p className="text-xs text-muted-foreground">Level {profile?.level || 1}</p>
+                <p className="text-xs text-muted-foreground">{t("portal.level")} {profile?.level || 1}</p>
               </>
             ) : (
               <p className="font-display font-semibold text-primary text-sm">{t("welcome.login")}</p>
@@ -136,7 +136,7 @@ const HomeScreen = () => {
               <RefreshCw className="w-5 h-5 text-primary animate-spin" />
               <div className="flex-1">
                 <p className="font-display text-sm font-semibold text-foreground">
-                  {activeRoom.status === "playing" ? "🎮 Game in progress!" : "🕐 Room still open!"}
+                  {activeRoom.status === "playing" ? `🎮 ${t("home.gameInProgress") || "Game in progress!"}` : `🕐 ${t("home.roomOpen") || "Room still open!"}`}
                 </p>
                 <p className="text-xs text-muted-foreground">Code: {activeRoom.code}</p>
               </div>
