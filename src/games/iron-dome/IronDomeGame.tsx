@@ -98,8 +98,15 @@ const IronDomeGame: React.FC = () => {
       .select('*')
       .eq('mode', mode)
       .order('score', { ascending: false })
-      .limit(15);
-    setLeaderboardData(data || []);
+      .limit(100);
+    // Keep only the best score per player
+    const bestByPlayer = new Map<string, any>();
+    (data || []).forEach(row => {
+      if (!bestByPlayer.has(row.user_id) || row.score > bestByPlayer.get(row.user_id).score) {
+        bestByPlayer.set(row.user_id, row);
+      }
+    });
+    setLeaderboardData(Array.from(bestByPlayer.values()).slice(0, 15));
     setLoadingLB(false);
   }, []);
 
