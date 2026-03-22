@@ -636,7 +636,7 @@ function renderHUD(ctx: CanvasRenderingContext2D, state: GameState, w: number, h
   ctx.textAlign = 'right';
   ctx.fillStyle = COLORS.score;
   ctx.font = 'bold 16px monospace';
-  ctx.fillText(`Score: ${state.score}`, w - 15, 24);
+  ctx.fillText(`${ironT('score', lang)}: ${state.score}`, w - 15, 24);
 
   // Combo
   if (state.combo > 0) {
