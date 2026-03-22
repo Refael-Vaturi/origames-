@@ -674,7 +674,7 @@ function renderHUD(ctx: CanvasRenderingContext2D, state: GameState, w: number, h
     ctx.fillStyle = COLORS.ammo;
     ctx.font = '10px monospace';
     ctx.textAlign = 'left';
-    ctx.fillText(`Ammo: ${state.ammo}/${state.maxAmmo}`, ammoX, ammoY - 4);
+    ctx.fillText(`${ironT('ammo', lang)}: ${state.ammo}/${state.maxAmmo}`, ammoX, ammoY - 4);
   }
 
   // Credits
