@@ -667,7 +667,7 @@ function renderHUD(ctx: CanvasRenderingContext2D, state: GameState, w: number, h
     ctx.fillStyle = '#AAAAAA';
     ctx.font = '10px monospace';
     ctx.textAlign = 'left';
-    ctx.fillText('RELOADING...', ammoX, ammoY - 4);
+    ctx.fillText(ironT('reloading', lang), ammoX, ammoY - 4);
   } else {
     ctx.fillStyle = COLORS.ammo;
     ctx.fillRect(ammoX, ammoY, ammoBarW * (state.ammo / state.maxAmmo), ammoBarH);
