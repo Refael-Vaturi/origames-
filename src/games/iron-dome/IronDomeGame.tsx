@@ -1088,8 +1088,63 @@ const IronDomeGame: React.FC = () => {
               onClick={(e) => e.stopPropagation()}
             >
               <h2 className="text-xl font-bold text-cyan-400 text-center mb-4" style={{ fontFamily: "'Courier New', monospace" }}>
-                {authMode === 'login' ? '🔑 התחברות' : '📝 הרשמה'}
+                {authMode === 'login' ? `🔑 ${appT('auth.login')}` : `📝 ${appT('auth.register')}`}
               </h2>
+
+              {/* OAuth buttons */}
+              <div className="flex flex-col gap-2 mb-4">
+                <button
+                  onClick={handleGoogleSignIn}
+                  disabled={authLoading}
+                  className="w-full py-2.5 rounded-xl border border-cyan-900/30 bg-black/30 text-white/80 text-sm flex items-center justify-center gap-3 hover:bg-black/50 transition-colors disabled:opacity-40"
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                  </svg>
+                  {appT('auth.google')}
+                </button>
+                <button
+                  onClick={handleAppleSignIn}
+                  disabled={authLoading}
+                  className="w-full py-2.5 rounded-xl border border-cyan-900/30 bg-black/30 text-white/80 text-sm flex items-center justify-center gap-3 hover:bg-black/50 transition-colors disabled:opacity-40"
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.32 2.32-2.12 4.52-3.74 4.25z"/>
+                  </svg>
+                  {appT('auth.apple')}
+                </button>
+              </div>
+
+              <div className="flex items-center gap-3 mb-4">
+                <div className="flex-1 h-px bg-cyan-900/30" />
+                <span className="text-xs text-cyan-300/40">{appT('auth.or')}</span>
+                <div className="flex-1 h-px bg-cyan-900/30" />
+              </div>
+
+              {/* Auth method toggle */}
+              <div className="flex bg-black/30 rounded-xl p-1 mb-3">
+                <button
+                  onClick={() => setAuthMethod('username')}
+                  className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                    authMethod === 'username' ? 'bg-cyan-900/40 text-cyan-300' : 'text-white/40'
+                  }`}
+                >
+                  <User className="w-3 h-3" />
+                  {appT('auth.username')}
+                </button>
+                <button
+                  onClick={() => setAuthMethod('email')}
+                  className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                    authMethod === 'email' ? 'bg-cyan-900/40 text-cyan-300' : 'text-white/40'
+                  }`}
+                >
+                  <Mail className="w-3 h-3" />
+                  Email
+                </button>
+              </div>
 
               <div className="flex flex-col gap-3">
                 {authMode === 'register' && (
@@ -1097,29 +1152,46 @@ const IronDomeGame: React.FC = () => {
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-400/50" />
                     <input
                       type="text"
-                      placeholder="שם תצוגה"
+                      placeholder={appT('auth.displayName')}
                       value={authDisplayName}
                       onChange={(e) => setAuthDisplayName(e.target.value)}
                       className="w-full pl-10 pr-3 py-3 bg-black/40 border border-cyan-900/30 rounded-xl text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-cyan-500/50"
                     />
                   </div>
                 )}
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-400/50" />
-                  <input
-                    type="email"
-                    placeholder="אימייל"
-                    value={authEmail}
-                    onChange={(e) => setAuthEmail(e.target.value)}
-                    className="w-full pl-10 pr-3 py-3 bg-black/40 border border-cyan-900/30 rounded-xl text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-cyan-500/50"
-                    dir="ltr"
-                  />
-                </div>
+
+                {authMethod === 'username' ? (
+                  <div className="relative">
+                    <AtSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-400/50" />
+                    <input
+                      type="text"
+                      placeholder={appT('auth.usernamePlaceholder')}
+                      value={authUsername}
+                      onChange={(e) => setAuthUsername(e.target.value.replace(/\s/g, ''))}
+                      className="w-full pl-10 pr-3 py-3 bg-black/40 border border-cyan-900/30 rounded-xl text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-cyan-500/50"
+                      dir="ltr"
+                      autoComplete="username"
+                    />
+                  </div>
+                ) : (
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-400/50" />
+                    <input
+                      type="email"
+                      placeholder={appT('auth.email')}
+                      value={authEmail}
+                      onChange={(e) => setAuthEmail(e.target.value)}
+                      className="w-full pl-10 pr-3 py-3 bg-black/40 border border-cyan-900/30 rounded-xl text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-cyan-500/50"
+                      dir="ltr"
+                    />
+                  </div>
+                )}
+
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-400/50" />
                   <input
                     type={showAuthPassword ? 'text' : 'password'}
-                    placeholder="סיסמה"
+                    placeholder={appT('auth.password')}
                     value={authPassword}
                     onChange={(e) => setAuthPassword(e.target.value)}
                     className="w-full pl-10 pr-10 py-3 bg-black/40 border border-cyan-900/30 rounded-xl text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-cyan-500/50"
@@ -1133,19 +1205,18 @@ const IronDomeGame: React.FC = () => {
 
                 <button
                   onClick={handleAuth}
-                  disabled={authLoading || !authEmail || !authPassword}
+                  disabled={authLoading || (authMethod === 'username' ? !authUsername : !authEmail) || !authPassword}
                   className="w-full py-3 bg-gradient-to-r from-cyan-600 to-blue-600 text-white rounded-xl font-bold hover:from-cyan-500 hover:to-blue-500 transition-all disabled:opacity-40"
                 >
-                  {authLoading ? '⏳...' : authMode === 'login' ? 'התחבר' : 'הירשם'}
+                  {authLoading ? '⏳...' : authMode === 'login' ? appT('auth.loginBtn') : appT('auth.registerBtn')}
                 </button>
 
                 <p className="text-center text-xs text-cyan-300/50">
-                  {authMode === 'login' ? 'אין לך חשבון? ' : 'יש לך חשבון? '}
                   <button
                     onClick={() => setAuthMode(authMode === 'login' ? 'register' : 'login')}
                     className="text-cyan-400 hover:text-cyan-300 font-bold"
                   >
-                    {authMode === 'login' ? 'הירשם' : 'התחבר'}
+                    {authMode === 'login' ? appT('auth.switchRegister') : appT('auth.switchLogin')}
                   </button>
                 </p>
 
@@ -1153,7 +1224,7 @@ const IronDomeGame: React.FC = () => {
                   onClick={() => setShowAuthModal(false)}
                   className="text-white/40 text-xs hover:text-white/60 transition-colors"
                 >
-                  ביטול
+                  {appT('auth.cancel')}
                 </button>
               </div>
             </motion.div>
