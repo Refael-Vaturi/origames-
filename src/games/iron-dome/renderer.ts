@@ -691,7 +691,7 @@ function renderHUD(ctx: CanvasRenderingContext2D, state: GameState, w: number, h
 
   if (state.gpsJammerCharges > 0) {
     ctx.fillStyle = '#AAFFAA';
-    ctx.fillText(`GPS Jammer x${state.gpsJammerCharges}`, abilityX, abilityY);
+    ctx.fillText(`${ironT('gpsJammer', lang)} x${state.gpsJammerCharges}`, abilityX, abilityY);
     abilityX += 150;
   }
   if (state.ironBeamActive) {
