@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Play, Infinity as InfinityIcon, BookOpen, Trophy, Volume2, VolumeX, Music, Pause, LogIn, Mail, Lock, Eye, EyeOff, User } from 'lucide-react';
+import { ArrowLeft, Play, Infinity as InfinityIcon, BookOpen, Trophy, Volume2, VolumeX, Music, Pause, LogIn, Mail, Lock, Eye, EyeOff, User, AtSign } from 'lucide-react';
 import {
   createInitialState, startWave, fireInterceptor, update, nextWave,
   buyStoreItem, activateAirSupport, activateGPSJammer, renderGame,
@@ -12,6 +12,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { t as ironT } from './i18n';
 import LanguageSelector from '@/components/LanguageSelector';
 import { supabase } from '@/integrations/supabase/client';
+import { lovable } from '@/integrations/lovable';
 import { GameMusic } from './music';
 import { toast } from '@/hooks/use-toast';
 
