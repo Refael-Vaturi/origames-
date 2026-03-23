@@ -143,11 +143,19 @@ export interface GameState {
   // Screen shake
   screenShake: number;
   // Wave-based passive perks
-  waveExtraShots: number; // 0=normal, 1=double, 2=triple from center
-  waveTripleDome: boolean; // 3 launchers for the whole wave
-  waveFastReload: boolean; // fast reload for the wave
-  waveAutoDefenseStart: number; // auto-defense seconds at wave start
-  wavePerksDisplay: string[]; // perk names to show on wave intro
-  waveTotalThreats: number; // total threats spawned this wave
-  waveDestroyedThreats: number; // threats destroyed this wave
+  waveExtraShots: number;
+  waveTripleDome: boolean;
+  waveFastReload: boolean;
+  waveAutoDefenseStart: number;
+  wavePerksDisplay: string[];
+  waveTotalThreats: number;
+  waveDestroyedThreats: number;
+  // Survival timer
+  survivalTimer: number; // ms elapsed in survival mode
+  survivalDifficultyTimer: number; // ms until next difficulty bump
+  // Helicopter airstrike summon
+  coloredMissileHits: number; // count of colored missiles hit (for helicopter summon)
+  heliAirstrikeReady: boolean;
+  heliAirstrikeTimer: number;
+  heliAirstrikeX: number;
 }

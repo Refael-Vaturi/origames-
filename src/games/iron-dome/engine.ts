@@ -2,7 +2,7 @@ import {
   GameState, GamePhase, GameMode, Threat, ThreatType, MissileColor, Interceptor,
   Explosion, Particle, City, FloatingText, StoreItem
 } from './types';
-import { CAMPAIGN_WAVES, getSurvivalWave, buildSpawnQueue, THREAT_CONFIGS } from './waves';
+import { CAMPAIGN_WAVES, getCampaignWave, getSurvivalWave, buildSpawnQueue, THREAT_CONFIGS } from './waves';
 import { renderGame } from './renderer';
 
 const GROUND_Y_RATIO = 0.85;
@@ -118,12 +118,18 @@ export function createInitialState(w: number, h: number): GameState {
     wavePerksDisplay: [],
     waveTotalThreats: 0,
     waveDestroyedThreats: 0,
+    survivalTimer: 0,
+    survivalDifficultyTimer: 0,
+    coloredMissileHits: 0,
+    heliAirstrikeReady: false,
+    heliAirstrikeTimer: 0,
+    heliAirstrikeX: 0,
   };
 }
 
 export function startWave(state: GameState, w: number, h: number): GameState {
   const config = state.mode === 'campaign'
-    ? CAMPAIGN_WAVES[state.wave - 1]
+    ? getCampaignWave(state.wave)
     : getSurvivalWave(state.wave);
 
   // Calculate wave-based passive perks
@@ -135,27 +141,27 @@ export function startWave(state: GameState, w: number, h: number): GameState {
   let autoDefenseStart = 0;
 
   if (wave >= 3) {
-    extraShots = 1; // Double shot from wave 3
+    extraShots = 1;
     perks.push('🔫 יריות כפולות');
   }
   if (wave >= 4) {
-    waveFastReload = true; // Fast reload from wave 4
+    waveFastReload = true;
     perks.push('⚡ טעינה מהירה');
   }
   if (wave >= 5) {
-    tripleDome = true; // 3 launchers from wave 5
+    tripleDome = true;
     perks.push('🛡️ 3 כיפות ברזל');
   }
   if (wave >= 7) {
-    extraShots = 2; // Triple shot from wave 7
-    perks[0] = '🔫 יריות משולשות'; // Replace double with triple
+    extraShots = 2;
+    perks[0] = '🔫 יריות משולשות';
   }
   if (wave >= 8) {
-    autoDefenseStart = 3000; // 3s auto-defense at wave start from wave 8
+    autoDefenseStart = 3000;
     perks.push('🟡 מגן אוטומטי 3 שניות');
   }
   if (wave >= 9) {
-    autoDefenseStart = 5000; // 5s auto-defense from wave 9
+    autoDefenseStart = 5000;
     perks[perks.length - 1] = '🟡 מגן אוטומטי 5 שניות';
   }
 
@@ -166,10 +172,9 @@ export function startWave(state: GameState, w: number, h: number): GameState {
   const autoFireCharges = state.storeItems.find(i => i.id === 'auto-fire-charge')?.bought || 0;
   const tripleDomeCharges = state.storeItems.find(i => i.id === 'triple-dome')?.bought || 0;
 
-  // Store-bought shield adds to auto defense
-  const storeShieldTime = shieldCharges * 5000; // 5s per charge
-  const storeAutoFireTime = autoFireCharges * 5000; // 5s per charge  
-  const storeTripleDomeTime = tripleDomeCharges * 15000; // 15s per charge
+  const storeShieldTime = shieldCharges * 5000;
+  const storeAutoFireTime = autoFireCharges * 5000;
+  const storeTripleDomeTime = tripleDomeCharges * 15000;
 
   return {
     ...state,
@@ -189,7 +194,6 @@ export function startWave(state: GameState, w: number, h: number): GameState {
     wavePerksDisplay: perks,
     waveTotalThreats: spawnQueue.length,
     waveDestroyedThreats: 0,
-    // Apply wave perks + store bonuses
     tripleInterceptorTimer: tripleDome ? 999999 : storeTripleDomeTime,
     autoDefenseTimer: Math.max(autoDefenseStart, storeShieldTime > 0 ? storeShieldTime : 0),
     shieldTimer: storeShieldTime,
@@ -198,9 +202,41 @@ export function startWave(state: GameState, w: number, h: number): GameState {
   };
 }
 
+// Start survival mode - no waves, just continuous spawning with timer
+export function startSurvival(state: GameState, w: number, h: number): GameState {
+  const config = getSurvivalWave(1);
+  const spawnQueue = buildSpawnQueue(config);
+  return {
+    ...state,
+    phase: 'playing',
+    mode: 'survival',
+    wave: 1,
+    spawnQueue,
+    spawnTimer: 0,
+    threats: [],
+    interceptors: [],
+    explosions: [],
+    particles: [],
+    floatingTexts: [],
+    survivalTimer: 0,
+    survivalDifficultyTimer: 0,
+    waveExtraShots: 0,
+    waveTripleDome: false,
+    waveFastReload: false,
+    waveAutoDefenseStart: 0,
+    wavePerksDisplay: [],
+    waveTotalThreats: spawnQueue.length,
+    waveDestroyedThreats: 0,
+    tripleInterceptorTimer: 0,
+    autoDefenseTimer: 0,
+    shieldTimer: 0,
+    autoFireTimer: 0,
+  };
+}
+
 function spawnThreat(state: GameState, type: ThreatType, w: number, h: number): Threat {
   const config = state.mode === 'campaign'
-    ? CAMPAIGN_WAVES[state.wave - 1]
+    ? getCampaignWave(state.wave)
     : getSurvivalWave(state.wave);
 
   const tc = THREAT_CONFIGS[type];
@@ -208,7 +244,6 @@ function spawnThreat(state: GameState, type: ThreatType, w: number, h: number): 
   const startX = 20 + Math.random() * (w - 40);
   const startY = -10;
 
-  // Target a city
   const aliveCities = state.cities.filter(c => c.alive);
   const targetCity = aliveCities.length > 0
     ? aliveCities[Math.floor(Math.random() * aliveCities.length)]
@@ -220,28 +255,34 @@ function spawnThreat(state: GameState, type: ThreatType, w: number, h: number): 
   const dx = targetX - startX;
   const dy = targetY - startY;
   const angle = Math.atan2(dy, dx);
-  const speed = tc.speed * config.speed * (0.5 + Math.random() * 0.3);
+  // Faster missiles as waves progress + faster base in survival
+  const speedBonus = state.mode === 'survival' ? 0.1 * state.wave : 0.05 * state.wave;
+  const speed = tc.speed * config.speed * (0.5 + Math.random() * 0.3) + speedBonus;
 
   const evasive = state.mode === 'survival' && state.wave > 3 && Math.random() < Math.min(0.4, state.wave * 0.03);
 
   // Determine missile color for missile type
+  // Don't spawn colored missiles for perks that are already permanently active
   let missileColor: MissileColor | undefined;
   if (type === 'missile') {
     const roll = Math.random() * 100;
+    // Filter out colors for already-active perks
+    const hasTripleDome = state.waveTripleDome; // permanent from wave 5+
+    
     if (roll < 2) {
-      missileColor = 'white';   // 2% - EMP
+      missileColor = 'white';   // EMP
     } else if (roll < 5) {
-      missileColor = 'yellow';  // 3% - Auto dome
+      missileColor = 'yellow';  // Auto dome
     } else if (roll < 9) {
-      missileColor = 'purple';  // 4% - Shield
-    } else if (roll < 13) {
-      missileColor = 'pink';    // 4% - Helicopter
+      missileColor = 'purple';  // Shield
+    } else if (roll < 13 && state.wave >= 10) {
+      missileColor = 'pink';    // Helicopter - only from wave 10+
     } else if (roll < 20) {
-      missileColor = 'blue';    // 7% - Auto-fire 5s
-    } else if (roll < 30) {
-      missileColor = 'green';   // 10% - Triple interceptors
+      missileColor = 'blue';    // Auto-fire 5s
+    } else if (roll < 30 && !hasTripleDome) {
+      missileColor = 'green';   // Triple interceptors - skip if already permanent
     } else {
-      missileColor = 'red';     // 70%
+      missileColor = 'red';
     }
   }
 
@@ -250,16 +291,14 @@ function spawnThreat(state: GameState, type: ThreatType, w: number, h: number): 
   const wave = state.wave;
   if (type === 'missile' && (!missileColor || missileColor === 'red')) {
     if (wave >= 7) {
-      // 40% chance of armored missile (2HP) from wave 7
       if (Math.random() < 0.4) hp = 2;
     }
     if (wave >= 9) {
-      // 20% chance of heavy armored (3HP) from wave 9
       if (Math.random() < 0.2) hp = 3;
     }
   }
   if (type === 'heavy') {
-    hp = Math.min(tc.hp + Math.floor((wave - 1) / 3), 5); // heavies get tougher
+    hp = Math.min(tc.hp + Math.floor((wave - 1) / 3), 5);
   }
 
   return {
@@ -292,7 +331,6 @@ export function fireInterceptor(state: GameState, targetX: number, targetY: numb
   const launchX = w / 2;
   const launchY = groundY - 5;
 
-  // Find nearest threat to click point and target it instead
   let finalTargetX = targetX;
   let finalTargetY = targetY;
   let targetThreatId: number | undefined;
@@ -304,13 +342,12 @@ export function fireInterceptor(state: GameState, targetX: number, targetY: numb
       const dx = t.x - targetX;
       const dy = t.y - targetY;
       const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < nearestDist && dist < 200) { // Lock on if within 200px of click
+      if (dist < nearestDist && dist < 200) {
         nearestDist = dist;
         nearestThreat = t;
       }
     });
     if (nearestThreat) {
-      // Predict where the threat will be when interceptor arrives
       const thr = nearestThreat as Threat;
       const travelDist = Math.sqrt((thr.x - launchX) ** 2 + (thr.y - launchY) ** 2);
       const travelTime = travelDist / INTERCEPTOR_SPEED;
@@ -320,9 +357,9 @@ export function fireInterceptor(state: GameState, targetX: number, targetY: numb
     }
   }
 
-  const dx = finalTargetX - launchX;
-  const dy = finalTargetY - launchY;
-  const angle = Math.atan2(dy, dx);
+  const dxA = finalTargetX - launchX;
+  const dyA = finalTargetY - launchY;
+  const angle = Math.atan2(dyA, dxA);
 
   const interceptor: Interceptor = {
     id: state.nextId,
@@ -341,7 +378,7 @@ export function fireInterceptor(state: GameState, targetX: number, targetY: numb
 
   const interceptors = [interceptor];
 
-  // Wave perk: extra shots from center (double/triple)
+  // Wave perk: extra shots
   if (state.waveExtraShots >= 1) {
     const spreadAngle = 0.15;
     const extraAngle1 = angle + spreadAngle;
@@ -373,7 +410,7 @@ export function fireInterceptor(state: GameState, targetX: number, targetY: numb
     });
   }
 
-  // Triple dome mode (green or wave perk): fire from 2 extra launchers on left and right sides
+  // Triple dome mode
   if (state.tripleInterceptorTimer > 0) {
     const leftX = w * 0.15;
     const rightX = w * 0.85;
@@ -395,12 +432,16 @@ export function fireInterceptor(state: GameState, targetX: number, targetY: numb
     });
   }
 
+  // Faster reload as waves progress
+  const waveReloadBonus = Math.min(state.wave * 30, 600); // up to 600ms faster
+  const baseReloadTime = state.fastReload ? FAST_RELOAD_TIME : Math.max(400, RELOAD_TIME - waveReloadBonus);
+
   return {
     ...state,
     interceptors: [...state.interceptors, ...interceptors],
     ammo: newAmmo,
     reloading: needReload,
-    reloadTimer: needReload ? (state.fastReload ? FAST_RELOAD_TIME : RELOAD_TIME) : 0,
+    reloadTimer: needReload ? baseReloadTime : 0,
     totalFired: state.totalFired + 1,
     nextId: state.nextId + interceptors.length,
   };
@@ -414,7 +455,7 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
 
   let s = { ...state, soundEvents: [] as string[] };
 
-  // Wave intro countdown
+  // Wave intro countdown (campaign only)
   if (s.phase === 'wave-intro') {
     s.waveIntroTimer -= dt;
     if (s.waveIntroTimer <= 0) {
@@ -423,27 +464,39 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
     return s;
   }
 
-  // Wave clear delay
+  // Wave clear delay (campaign only)
   if (s.phase === 'wave-clear') {
     s.waveClearTimer -= dt;
     if (s.waveClearTimer <= 0) {
-      if (s.mode === 'campaign' && s.wave >= 10) {
-        s.phase = 'victory';
-      } else {
-        s.phase = 'store';
-      }
+      // Campaign is now infinite - always go to store
+      s.phase = 'store';
     }
     return s;
   }
 
-  // Reload
+  // Survival mode: count timer and increase difficulty every 10 seconds
+  if (s.mode === 'survival' && s.phase === 'playing') {
+    s.survivalTimer += dt;
+    s.survivalDifficultyTimer += dt;
+    if (s.survivalDifficultyTimer >= 10000) {
+      s.survivalDifficultyTimer -= 10000;
+      s.wave += 1; // Increase difficulty level
+      // Refill spawn queue with harder config
+      const newConfig = getSurvivalWave(s.wave);
+      const newQueue = buildSpawnQueue(newConfig);
+      s.spawnQueue = [...s.spawnQueue, ...newQueue];
+      s.waveTotalThreats += newQueue.length;
+    }
+  }
+
+  // Reload - faster as waves progress
   if (s.reloading) {
     s.reloadTimer -= dt;
     if (s.fastReload) {
-      // Fast reload: one bullet at a time
+      const fastReloadSpeed = Math.max(100, FAST_RELOAD_TIME - s.wave * 10);
       if (s.reloadTimer <= 0 && s.ammo < s.maxAmmo) {
         s.ammo += 1;
-        s.reloadTimer = FAST_RELOAD_TIME;
+        s.reloadTimer = fastReloadSpeed;
         if (s.ammo >= s.maxAmmo) {
           s.reloading = false;
           s.reloadTimer = 0;
@@ -464,7 +517,7 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
   s.spawnTimer -= dt;
   if (s.spawnTimer <= 0 && s.spawnQueue.length > 0) {
     const config = s.mode === 'campaign'
-      ? CAMPAIGN_WAVES[s.wave - 1]
+      ? getCampaignWave(s.wave)
       : getSurvivalWave(s.wave);
 
     const type = s.spawnQueue[0];
@@ -473,6 +526,13 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
     s.spawnQueue = s.spawnQueue.slice(1);
     s.spawnTimer = config.spawnInterval;
     s.nextId += 1;
+  }
+
+  // In survival, keep spawning if queue is empty
+  if (s.mode === 'survival' && s.spawnQueue.length === 0) {
+    const newConfig = getSurvivalWave(s.wave);
+    s.spawnQueue = buildSpawnQueue(newConfig);
+    s.waveTotalThreats += s.spawnQueue.length;
   }
 
   // Update threats
@@ -510,40 +570,35 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
         for (let i = 0; i < 4; i++) {
           submunitionsToSpawn.push({ x: threat.x, y: threat.y });
         }
-        return; // Remove cluster
+        return;
       }
     }
 
     // Hit ground
     if (threat.y >= groundY) {
-      // Check which city was hit
       const hitCity = s.cities.find(c =>
         c.alive && threat.x >= c.x && threat.x <= c.x + c.width
       );
       if (hitCity) {
         hitCity.alive = false;
       }
-      // Shield absorbs damage
       if (s.shieldTimer > 0) {
         s.soundEvents.push('shield-block');
         s.floatingTexts = [...s.floatingTexts, {
           x: threat.x, y: groundY - 20, text: '🛡️ BLOCKED!',
           alpha: 1, vy: -1.5, color: '#CC88FF', size: 14,
         }];
-        // Don't lose life, still explode visually
       } else {
         livesLost++;
-        s.screenShake = 15; // Strong shake on hit
+        s.screenShake = 15;
       }
       missed++;
 
-      // Ground explosion
       s.explosions = [...s.explosions, {
         x: threat.x, y: groundY, radius: 2, maxRadius: 35,
         alpha: 1, color: '#FF4400', isGround: true
       }];
 
-      // Particles
       for (let i = 0; i < 15; i++) {
         s.particles = [...s.particles, {
           x: threat.x, y: groundY,
@@ -556,13 +611,11 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
         }];
       }
 
-      // Reset combo
       s.combo = 0;
       s.comboMultiplier = 1;
-      return; // Remove threat
+      return;
     }
 
-    // Off screen
     if (threat.x < -50 || threat.x > w + 50 || threat.y < -100) return;
 
     newThreats.push(threat);
@@ -596,7 +649,6 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
         points: 75,
         locked: false,
       };
-      // Fix angle to point toward target
       const dx = sub.targetX - sub.x;
       const dy = sub.targetY - sub.y;
       sub.angle = Math.atan2(dy, dx);
@@ -609,18 +661,16 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
   s.interceptors.forEach(int => {
     let i = { ...int };
 
-    // If locked onto a threat, re-target it continuously
     if (i.targetThreatId != null) {
       const target = s.threats.find(t => t.id === i.targetThreatId);
       if (target) {
         const dx = target.x - i.x;
         const dy = target.y - i.y;
         const targetAngle = Math.atan2(dy, dx);
-        // Smooth turning toward threat
         let angleDiff = targetAngle - i.angle;
         while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
         while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
-        i.angle += angleDiff * 0.15; // Turn rate
+        i.angle += angleDiff * 0.15;
         i.targetX = target.x;
         i.targetY = target.y;
       }
@@ -632,20 +682,17 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
     i.trail = [...i.trail, { x: i.x, y: i.y }];
     if (i.trail.length > 10) i.trail = i.trail.slice(-10);
 
-    // Check if reached target
     const dx = i.targetX - i.x;
     const dy = i.targetY - i.y;
     const dist = Math.sqrt(dx * dx + dy * dy);
     if (dist < 15) {
-      // Explode at target
       s.explosions = [...s.explosions, {
         x: i.x, y: i.y, radius: 2, maxRadius: EXPLOSION_MAX_RADIUS,
         alpha: 1, color: '#FFDD44', isGround: false
       }];
-      return; // Remove interceptor
+      return;
     }
 
-    // Off screen
     if (i.y < -20 || i.y > h + 20 || i.x < -20 || i.x > w + 20) return;
 
     newInterceptors.push(i);
@@ -659,9 +706,8 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
     e.radius += EXPLOSION_EXPAND_RATE * (dt / 16);
     e.alpha = Math.max(0, 1 - (e.radius / e.maxRadius));
 
-    if (e.alpha <= 0) return; // Remove
+    if (e.alpha <= 0) return;
 
-    // Check collision with threats
     if (!e.isGround) {
       const threatsToRemove: number[] = [];
       s.threats.forEach(t => {
@@ -673,7 +719,6 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
           if (t.hp <= 0) {
             threatsToRemove.push(t.id);
 
-            // Score
             const points = t.points * s.comboMultiplier;
             s.score += points;
             s.combo++;
@@ -681,7 +726,6 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
             s.comboMultiplier = Math.min(5, Math.floor(s.combo / 5) + 1);
             s.totalIntercepted++;
             s.waveDestroyedThreats++;
-            // Credits from combo milestones
             const comboCredits: Record<number, number> = { 5: 3, 10: 5, 15: 8, 20: 12, 30: 20 };
             if (comboCredits[s.combo]) {
               s.credits += comboCredits[s.combo];
@@ -691,13 +735,11 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
               }];
             }
 
-            // Floating text
             s.floatingTexts = [...s.floatingTexts, {
               x: t.x, y: t.y, text: `+${points}`,
               alpha: 1, vy: -1.5, color: '#FFDD44', size: 12,
             }];
 
-            // Particles
             for (let i = 0; i < 8; i++) {
               s.particles = [...s.particles, {
                 x: t.x, y: t.y,
@@ -708,6 +750,16 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
                 color: ['#FFDD44', '#FF6600', '#FFFFFF'][Math.floor(Math.random() * 3)],
                 size: 1 + Math.random() * 2,
               }];
+            }
+
+            // Track colored missile hits for helicopter summon
+            if (t.missileColor && t.missileColor !== 'red') {
+              s.coloredMissileHits++;
+              if (s.coloredMissileHits >= 3 && !s.heliAirstrikeReady) {
+                s.heliAirstrikeReady = true;
+                s.coloredMissileHits = 0;
+                s.soundEvents.push('powerup-pink');
+              }
             }
 
             // Special missile color effects
@@ -788,7 +840,6 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
 
   // Iron Beam auto-targeting
   if (s.ironBeamActive && s.credits >= s.ironBeamCreditsPerShot && s.threats.length > 0) {
-    // Target the lowest, non-locked, non-cluster, non-heavy threat
     const validTargets = s.threats.filter(t =>
       !t.locked && t.type !== 'cluster' && t.type !== 'heavy'
     );
@@ -796,12 +847,10 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
       const target = validTargets.sort((a, b) => b.y - a.y)[0];
       target.locked = true;
 
-      // Instant kill
       s.threats = s.threats.filter(t => t.id !== target.id);
       s.credits -= s.ironBeamCreditsPerShot;
-      s.score += target.points; // No combo for beam
+      s.score += target.points;
 
-      // Beam visual - use explosion
       s.explosions = [...s.explosions, {
         x: target.x, y: target.y, radius: 2, maxRadius: 15,
         alpha: 1, color: '#FFFF88', isGround: false
@@ -815,7 +864,7 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
   }
 
   // Update special timers
-  if (s.tripleInterceptorTimer > 0) {
+  if (s.tripleInterceptorTimer > 0 && !s.waveTripleDome) {
     s.tripleInterceptorTimer = Math.max(0, s.tripleInterceptorTimer - dt);
   }
   if (s.shieldTimer > 0) {
@@ -829,13 +878,11 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
   }
   if (s.autoDefenseTimer > 0) {
     s.autoDefenseTimer = Math.max(0, s.autoDefenseTimer - dt);
-    // Auto-defense dome: destroy any threat inside the dome semicircle above ground
     const groundY2 = h * GROUND_Y_RATIO;
     const domeCenterX = w / 2;
     const domeRadius = w * 0.45;
     const threatsInDome: number[] = [];
     s.threats.forEach(t => {
-      // Check if threat is above ground and within the semicircle
       if (t.y < groundY2) {
         const dx = t.x - domeCenterX;
         const dy = t.y - groundY2;
@@ -867,12 +914,13 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
     s.helicopterX += (w / 10000) * dt;
     if (s.helicopterX > w) s.helicopterX = 0;
 
-    // Destroy any threat within the searchlight cone (below helicopter, within ±50px horizontal)
+    // Only kill threats INSIDE the searchlight cone (below helicopter, within ±50px, and above ground)
     const heliY = 40;
     const searchWidth = 50;
     const threatsToKill: number[] = [];
     s.threats.forEach(t => {
-      if (t.y > heliY && Math.abs(t.x - s.helicopterX) < searchWidth) {
+      // Only kill threats within the light beam area (between heli and ground)
+      if (t.y > heliY && t.y < groundY && Math.abs(t.x - s.helicopterX) < searchWidth) {
         threatsToKill.push(t.id);
         s.score += t.points;
         s.totalIntercepted++;
@@ -889,6 +937,45 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
     });
     if (threatsToKill.length > 0) {
       s.threats = s.threats.filter(t => !threatsToKill.includes(t.id));
+    }
+  }
+
+  // Helicopter airstrike (summoned by player) - shoots at threats
+  if (s.heliAirstrikeTimer > 0) {
+    s.heliAirstrikeTimer = Math.max(0, s.heliAirstrikeTimer - dt);
+    s.heliAirstrikeX += (w / 8000) * dt;
+    if (s.heliAirstrikeX > w) s.heliAirstrikeX = 0;
+
+    // Shoot at threats periodically
+    const fireRate = 400;
+    const shouldFire = Math.floor((s.heliAirstrikeTimer + dt) / fireRate) !== Math.floor(s.heliAirstrikeTimer / fireRate);
+    if (shouldFire && s.threats.length > 0) {
+      // Find closest threat to helicopter
+      let closest: Threat | null = null;
+      let closestDist = Infinity;
+      s.threats.forEach(t => {
+        const dist = Math.abs(t.x - s.heliAirstrikeX) + Math.abs(t.y - 60);
+        if (dist < closestDist) {
+          closestDist = dist;
+          closest = t;
+        }
+      });
+      if (closest) {
+        const ct = closest as Threat;
+        // Fire interceptor from helicopter position
+        const angle = Math.atan2(ct.y - 60, ct.x - s.heliAirstrikeX);
+        s.interceptors = [...s.interceptors, {
+          id: s.nextId++,
+          x: s.heliAirstrikeX,
+          y: 60,
+          targetX: ct.x,
+          targetY: ct.y,
+          speed: INTERCEPTOR_SPEED * 1.2,
+          angle,
+          trail: [],
+          targetThreatId: ct.id,
+        }];
+      }
     }
   }
 
@@ -930,8 +1017,8 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
     return s;
   }
 
-  // Check wave complete
-  if (s.phase === 'playing' && s.spawnQueue.length === 0 && s.threats.length === 0) {
+  // Check wave complete (campaign only - survival never ends waves)
+  if (s.mode === 'campaign' && s.phase === 'playing' && s.spawnQueue.length === 0 && s.threats.length === 0) {
     s.phase = 'wave-clear';
     s.waveClearTimer = 2000;
   }
@@ -945,7 +1032,6 @@ export function nextWave(state: GameState, w: number, h: number): GameState {
     wave: state.wave + 1,
     cities: state.cities.map(c => ({ ...c, alive: true })),
   };
-  // Regenerate cities
   newState.cities = createCities(w, h);
   return startWave(newState, w, h);
 }
@@ -972,13 +1058,10 @@ export function buyStoreItem(state: GameState, itemId: string): GameState {
       s.fastReload = true;
       break;
     case 'shield-charge':
-      // Will be applied at wave start
       break;
     case 'auto-fire-charge':
-      // Will be applied at wave start
       break;
     case 'triple-dome':
-      // Will be applied at wave start
       break;
   }
 
@@ -991,7 +1074,6 @@ export function activateAirSupport(state: GameState): GameState {
   let s = { ...state };
   s.airSupportCharges--;
 
-  // Destroy 3 random threats
   const destroyCount = Math.min(3, s.threats.length);
   const shuffled = [...s.threats].sort(() => Math.random() - 0.5);
   const toDestroy = shuffled.slice(0, destroyCount);
@@ -1018,7 +1100,6 @@ export function activateGPSJammer(state: GameState, w: number): GameState {
   let s = { ...state };
   s.gpsJammerCharges--;
 
-  // Divert ~25% of threats off screen
   s.threats = s.threats.map(t => {
     if (Math.random() < 0.25) {
       return {
@@ -1031,6 +1112,18 @@ export function activateGPSJammer(state: GameState, w: number): GameState {
   });
 
   return s;
+}
+
+// Activate helicopter airstrike (summoned by collecting 3 colored missiles)
+export function activateHeliAirstrike(state: GameState, w: number): GameState {
+  if (!state.heliAirstrikeReady) return state;
+  return {
+    ...state,
+    heliAirstrikeReady: false,
+    heliAirstrikeTimer: 10000,
+    heliAirstrikeX: 0,
+    coloredMissileHits: 0,
+  };
 }
 
 export { renderGame };

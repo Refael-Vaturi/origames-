@@ -19,19 +19,36 @@ export const CAMPAIGN_WAVES: WaveConfig[] = [
   { missiles: 35, uavs: 8, clusters: 4, heavies: 3, speed: 2.0, spawnInterval: 800 },
   // Wave 9: Near impossible
   { missiles: 40, uavs: 10, clusters: 5, heavies: 4, speed: 2.3, spawnInterval: 650 },
-  // Wave 10: Final boss wave - massive
+  // Wave 10: Boss wave
   { missiles: 50, uavs: 12, clusters: 6, heavies: 5, speed: 2.6, spawnInterval: 500 },
 ];
 
+// Generate infinite campaign waves beyond wave 10
+export function getCampaignWave(wave: number): WaveConfig {
+  if (wave <= 10) return CAMPAIGN_WAVES[wave - 1];
+  // Scale infinitely beyond wave 10
+  const base = 10;
+  const extra = wave - base;
+  return {
+    missiles: 50 + extra * 5,
+    uavs: 12 + extra * 2,
+    clusters: 6 + Math.floor(extra * 1.2),
+    heavies: 5 + extra,
+    speed: 2.6 + extra * 0.2,
+    spawnInterval: Math.max(200, 500 - extra * 20),
+  };
+}
+
 export function getSurvivalWave(wave: number): WaveConfig {
+  // In survival, wave = difficulty level (increases every 10s)
   const base = Math.min(wave, 50);
   return {
-    missiles: 6 + Math.floor(base * 2.5),
-    uavs: Math.floor(base * 1.2),
-    clusters: Math.max(0, Math.floor((base - 2) * 0.8)),
-    heavies: Math.max(0, Math.floor((base - 3) * 0.6)),
-    speed: 0.9 + wave * 0.18,
-    spawnInterval: Math.max(300, 2500 - wave * 120),
+    missiles: 4 + Math.floor(base * 1.5),
+    uavs: Math.floor(base * 0.8),
+    clusters: Math.max(0, Math.floor((base - 2) * 0.5)),
+    heavies: Math.max(0, Math.floor((base - 3) * 0.4)),
+    speed: 0.8 + wave * 0.12,
+    spawnInterval: Math.max(400, 2000 - wave * 80),
   };
 }
 
