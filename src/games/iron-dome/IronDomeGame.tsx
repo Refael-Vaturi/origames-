@@ -3,8 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Play, Infinity as InfinityIcon, BookOpen, Trophy, Volume2, VolumeX, Music, Pause, LogIn, Mail, Lock, Eye, EyeOff, User, AtSign } from 'lucide-react';
 import {
-  createInitialState, startWave, fireInterceptor, update, nextWave,
-  buyStoreItem, activateAirSupport, activateGPSJammer, renderGame,
+  createInitialState, startWave, startSurvival, fireInterceptor, update, nextWave,
+  buyStoreItem, activateAirSupport, activateGPSJammer, activateHeliAirstrike, renderGame,
 } from './engine';
 import { GameState, GamePhase } from './types';
 import { useAuth } from '@/contexts/AuthContext';
