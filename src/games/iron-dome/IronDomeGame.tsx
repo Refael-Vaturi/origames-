@@ -139,6 +139,30 @@ const IronDomeGame: React.FC = () => {
 
 
 
+  // Detect user country from timezone
+  const getCountryFromTimezone = (): string => {
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const tzToCountry: Record<string, string> = {
+        'Asia/Jerusalem': '🇮🇱', 'Asia/Tel_Aviv': '🇮🇱',
+        'America/New_York': '🇺🇸', 'America/Chicago': '🇺🇸', 'America/Denver': '🇺🇸', 'America/Los_Angeles': '🇺🇸',
+        'America/Toronto': '🇨🇦', 'America/Vancouver': '🇨🇦',
+        'Europe/London': '🇬🇧', 'Europe/Paris': '🇫🇷', 'Europe/Berlin': '🇩🇪',
+        'Europe/Madrid': '🇪🇸', 'Europe/Rome': '🇮🇹', 'Europe/Amsterdam': '🇳🇱',
+        'Europe/Stockholm': '🇸🇪', 'Europe/Warsaw': '🇵🇱', 'Europe/Kiev': '🇺🇦', 'Europe/Kyiv': '🇺🇦',
+        'Europe/Moscow': '🇷🇺', 'Europe/Istanbul': '🇹🇷',
+        'Asia/Tokyo': '🇯🇵', 'Asia/Seoul': '🇰🇷', 'Asia/Shanghai': '🇨🇳', 'Asia/Hong_Kong': '🇭🇰',
+        'Asia/Kolkata': '🇮🇳', 'Asia/Calcutta': '🇮🇳',
+        'Asia/Dubai': '🇦🇪', 'Asia/Riyadh': '🇸🇦',
+        'Asia/Bangkok': '🇹🇭', 'Asia/Ho_Chi_Minh': '🇻🇳',
+        'America/Sao_Paulo': '🇧🇷', 'America/Argentina/Buenos_Aires': '🇦🇷',
+        'Australia/Sydney': '🇦🇺', 'Pacific/Auckland': '🇳🇿',
+        'Africa/Cairo': '🇪🇬', 'Africa/Johannesburg': '🇿🇦',
+      };
+      return tzToCountry[tz] || '🌍';
+    } catch { return '🌍'; }
+  };
+
   const saveScore = useCallback(async (state: GameState) => {
     if (!user || scoreSaved) return;
     try {
@@ -148,6 +172,8 @@ const IronDomeGame: React.FC = () => {
         .eq('user_id', user.id)
         .single();
 
+      const country = getCountryFromTimezone();
+
       await supabase.from('iron_dome_scores').insert({
         user_id: user.id,
         display_name: profile?.display_name || 'Player',
@@ -155,7 +181,8 @@ const IronDomeGame: React.FC = () => {
         wave: state.wave,
         max_combo: state.maxCombo,
         mode: state.mode,
-      });
+        country,
+      } as any);
       setScoreSaved(true);
     } catch (e) {
       console.error('Failed to save score:', e);
