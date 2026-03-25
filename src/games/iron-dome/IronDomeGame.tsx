@@ -1075,7 +1075,7 @@ const IronDomeGame: React.FC = () => {
                           {i < 3 ? medals[i] : i + 1}
                         </span>
                         <span className={`flex-1 font-semibold truncate ${isMe ? 'text-cyan-300' : 'text-white/80'}`}>
-                          {entry.display_name}
+                          {entry.display_name} {entry.country || ''}
                         </span>
                         <span className="w-16 text-right font-bold text-yellow-400">{entry.score}</span>
                         <span className="w-12 text-right text-cyan-300/60">{entry.wave}</span>
