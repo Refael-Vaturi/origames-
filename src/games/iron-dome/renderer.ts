@@ -214,6 +214,37 @@ function renderHelicopter(ctx: CanvasRenderingContext2D, x: number, y: number, t
   ctx.restore();
 }
 
+// Airstrike helicopter - no searchlight, just shoots
+function renderAirstrikeHelicopter(ctx: CanvasRenderingContext2D, x: number, y: number, time: number) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.fillStyle = '#5a7a5a';
+  ctx.beginPath();
+  ctx.ellipse(0, 0, 16, 7, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#99DDFF';
+  ctx.beginPath();
+  ctx.ellipse(10, -2, 5, 4, 0.2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#4a6a4a';
+  ctx.fillRect(-24, -2, 12, 4);
+  ctx.fillRect(-28, -7, 5, 10);
+  const rotorAngle = time * 0.04;
+  ctx.strokeStyle = 'rgba(200,200,200,0.7)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(-20 * Math.cos(rotorAngle), -9);
+  ctx.lineTo(20 * Math.cos(rotorAngle), -9);
+  ctx.stroke();
+  if (Math.sin(time * 0.015) > 0.7) {
+    ctx.fillStyle = 'rgba(255,200,50,0.8)';
+    ctx.beginPath();
+    ctx.arc(0, 8, 3, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
 function renderCities(ctx: CanvasRenderingContext2D, cities: City[], groundY: number, time: number) {
   cities.forEach(city => {
     if (!city.alive) {
