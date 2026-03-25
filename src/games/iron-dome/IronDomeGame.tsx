@@ -548,20 +548,41 @@ const IronDomeGame: React.FC = () => {
         </button>
       </div>
 
-      {/* In-game settings dropdown */}
+      {/* Settings dropdown - works in all phases */}
       <AnimatePresence>
-        {showInGameSettings && phase === 'playing' && (
+        {showInGameSettings && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="absolute top-14 left-14 z-40 bg-black/80 backdrop-blur-md border border-white/20 rounded-xl p-3 flex flex-col gap-2 min-w-[160px]"
+            className="absolute top-14 right-3 z-40 bg-black/80 backdrop-blur-md border border-white/20 rounded-xl p-3 flex flex-col gap-2 min-w-[180px]"
           >
-            <button onClick={() => { setMusicEnabled(!musicEnabled); }} className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/80 text-sm">
+            {/* Pause/Resume - only during gameplay */}
+            {(phase === 'playing' || phase === 'paused') && (
+              <>
+                <button
+                  onClick={() => {
+                    if (phase === 'playing' && stateRef.current) {
+                      stateRef.current.phase = 'paused';
+                      setPhase('paused');
+                    } else if (phase === 'paused') {
+                      handleResume();
+                    }
+                    setShowInGameSettings(false);
+                  }}
+                  className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/80 text-sm"
+                >
+                  <Pause className="w-4 h-4" />
+                  <span>{phase === 'paused' ? `▶ ${T('resume')}` : `⏸ ${T('paused')}`}</span>
+                </button>
+                <div className="h-px bg-white/10" />
+              </>
+            )}
+            <button onClick={() => setMusicEnabled(!musicEnabled)} className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/80 text-sm">
               <Music className="w-4 h-4" style={{ opacity: musicEnabled ? 1 : 0.3 }} />
               <span>{musicEnabled ? '🎵 Music ON' : '🔇 Music OFF'}</span>
             </button>
-            <button onClick={() => { setSoundEnabled(!soundEnabled); }} className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/80 text-sm">
+            <button onClick={() => setSoundEnabled(!soundEnabled)} className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/80 text-sm">
               {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
               <span>{soundEnabled ? '🔊 Sound ON' : '🔇 Sound OFF'}</span>
             </button>

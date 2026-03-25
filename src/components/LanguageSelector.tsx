@@ -50,7 +50,7 @@ const LanguageSelector = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.95 }}
             transition={{ duration: 0.15 }}
-            className="fixed z-[200] w-64 max-h-60 overflow-y-auto bg-card rounded-2xl shadow-card border border-border"
+            className="fixed z-[9999] w-64 max-h-60 overflow-y-auto bg-card rounded-2xl shadow-card border border-border"
             style={{ top: dropdownPos.top, right: dropdownPos.right }}
           >
             <div className="p-2">

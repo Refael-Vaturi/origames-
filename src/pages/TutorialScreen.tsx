@@ -64,7 +64,7 @@ const TutorialScreen = () => {
 
   const handleDone = () => {
     localStorage.setItem("fif-tutorial-seen", "1");
-    navigate("/", { replace: true });
+    navigate("/fake-it-fast", { replace: true });
   };
 
   const handleBack = () => {
