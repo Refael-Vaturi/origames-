@@ -50,6 +50,13 @@ const IronDomeGame: React.FC = () => {
   const T = useCallback((key: string) => ironT(key, language), [language]);
   const { t: appT } = useLanguage();
 
+  const formatSurvivalTime = (ms: number) => {
+    const totalSec = Math.floor(ms / 1000);
+    const min = Math.floor(totalSec / 60);
+    const sec = totalSec % 60;
+    return `${min}:${sec.toString().padStart(2, '0')}`;
+  };
+
   const usernameToEmail = (u: string) => `${u.toLowerCase().replace(/[^a-z0-9_]/g, '')}@fakeitfast.local`;
 
   const handleAuth = async () => {
