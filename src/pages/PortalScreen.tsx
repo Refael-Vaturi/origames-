@@ -46,7 +46,7 @@ const PortalScreen = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
+    <div className="min-h-screen bg-background flex flex-col relative overflow-x-hidden overflow-y-auto">
       {/* Background particles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {[...Array(6)].map((_, i) => (

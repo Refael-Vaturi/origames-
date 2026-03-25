@@ -1068,18 +1068,44 @@ const IronDomeGame: React.FC = () => {
         )}
       </AnimatePresence>
 
+      {/* In-game top bar: Pause + Settings */}
       {phase === 'playing' && (
-        <button
-          onClick={() => {
-            if (stateRef.current) {
-              stateRef.current.phase = 'paused';
-              setPhase('paused');
-            }
-          }}
-          className="absolute top-3 left-3 z-30 p-2 bg-black/40 rounded-lg backdrop-blur-sm border border-white/10 text-white/70 hover:text-white"
-        >
-          <Pause className="w-4 h-4" />
-        </button>
+        <div className="absolute top-3 left-3 z-30 flex items-center gap-2">
+          <button
+            onClick={() => {
+              if (stateRef.current) {
+                stateRef.current.phase = 'paused';
+                setPhase('paused');
+                setShowInGameSettings(false);
+              }
+            }}
+            className="p-2 bg-black/40 rounded-lg backdrop-blur-sm border border-white/10 text-white/70 hover:text-white"
+          >
+            <Pause className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setShowInGameSettings(!showInGameSettings)}
+            className="p-2 bg-black/40 rounded-lg backdrop-blur-sm border border-white/10 text-white/70 hover:text-white"
+          >
+            <Settings className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Survival Timer - big display */}
+      {phase === 'playing' && gameState && gameState.mode === 'survival' && (
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
+          <motion.div
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-black/50 backdrop-blur-sm border border-cyan-500/30"
+            animate={{ borderColor: ['rgba(0,200,255,0.3)', 'rgba(0,200,255,0.6)', 'rgba(0,200,255,0.3)'] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          >
+            <span className="text-cyan-400 text-sm font-bold">⏱</span>
+            <span className="text-cyan-300 text-2xl font-black tabular-nums" style={{ fontFamily: "'Courier New', monospace", textShadow: '0 0 10px rgba(0,200,255,0.5)' }}>
+              {formatSurvivalTime(gameState.survivalTimer)}
+            </span>
+          </motion.div>
+        </div>
       )}
 
       {/* Big Power-up Timers on right side */}
@@ -1091,6 +1117,48 @@ const IronDomeGame: React.FC = () => {
           <PowerUpTimer emoji="🟣" label="SHIELD" timer={gameState.shieldTimer} maxTimer={10000} color="#CC88FF" glowColor="rgba(180,100,255,0.4)" />
           <PowerUpTimer emoji="⚪" label="EMP" timer={gameState.empTimer} maxTimer={10000} color="#FFFFFF" glowColor="rgba(255,255,255,0.3)" />
           <PowerUpTimer emoji="🚁" label="HELI" timer={gameState.helicopterTimer} maxTimer={10000} color="#FF88AA" glowColor="rgba(255,136,170,0.4)" />
+          {gameState.heliAirstrikeTimer > 0 && (
+            <PowerUpTimer emoji="🚁" label="STRIKE" timer={gameState.heliAirstrikeTimer} maxTimer={10000} color="#66CCFF" glowColor="rgba(100,200,255,0.4)" />
+          )}
+        </div>
+      )}
+
+      {/* Helicopter Summon Button at bottom center */}
+      {phase === 'playing' && gameState && gameState.wave >= 10 && (
+        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-20">
+          <motion.button
+            onClick={() => {
+              if (stateRef.current && stateRef.current.heliAirstrikeReady) {
+                stateRef.current = activateHeliAirstrike(stateRef.current, window.innerWidth);
+                setGameState({ ...stateRef.current });
+                playSound('airstrike');
+              }
+            }}
+            disabled={!gameState.heliAirstrikeReady}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border backdrop-blur-sm transition-all ${
+              gameState.heliAirstrikeReady
+                ? 'bg-cyan-600/40 border-cyan-400/60 text-cyan-200 cursor-pointer hover:bg-cyan-500/50 shadow-[0_0_20px_rgba(0,200,255,0.3)]'
+                : 'bg-black/40 border-white/10 text-white/40 cursor-default'
+            }`}
+            whileTap={gameState.heliAirstrikeReady ? { scale: 0.9 } : {}}
+            animate={gameState.heliAirstrikeReady ? { scale: [1, 1.05, 1] } : {}}
+            transition={gameState.heliAirstrikeReady ? { duration: 0.8, repeat: Infinity } : {}}
+          >
+            <span className="text-lg">🚁</span>
+            <span className="text-sm font-bold">
+              {gameState.heliAirstrikeReady ? T('summonHeli') : `${gameState.coloredMissileHits}/3`}
+            </span>
+            {!gameState.heliAirstrikeReady && (
+              <div className="flex gap-1">
+                {[0, 1, 2].map(i => (
+                  <div
+                    key={i}
+                    className={`w-2.5 h-2.5 rounded-full ${i < gameState.coloredMissileHits ? 'bg-cyan-400' : 'bg-white/20'}`}
+                  />
+                ))}
+              </div>
+            )}
+          </motion.button>
         </div>
       )}
 
