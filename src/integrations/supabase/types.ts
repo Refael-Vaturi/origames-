@@ -228,6 +228,7 @@ export type Database = {
       }
       iron_dome_scores: {
         Row: {
+          country: string | null
           created_at: string
           display_name: string
           id: string
@@ -238,6 +239,7 @@ export type Database = {
           wave: number
         }
         Insert: {
+          country?: string | null
           created_at?: string
           display_name?: string
           id?: string
@@ -248,6 +250,7 @@ export type Database = {
           wave?: number
         }
         Update: {
+          country?: string | null
           created_at?: string
           display_name?: string
           id?: string

@@ -25,6 +25,7 @@ const IronDomeGame: React.FC = () => {
   const lastTimeRef = useRef<number>(0);
   const lastStateUpdateRef = useRef<number>(0);
   const [phase, setPhase] = useState<GamePhase>('menu');
+  const [showInGameSettings, setShowInGameSettings] = useState(false);
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [musicEnabled, setMusicEnabled] = useState(true);
@@ -48,6 +49,13 @@ const IronDomeGame: React.FC = () => {
 
   const T = useCallback((key: string) => ironT(key, language), [language]);
   const { t: appT } = useLanguage();
+
+  const formatSurvivalTime = (ms: number) => {
+    const totalSec = Math.floor(ms / 1000);
+    const min = Math.floor(totalSec / 60);
+    const sec = totalSec % 60;
+    return `${min}:${sec.toString().padStart(2, '0')}`;
+  };
 
   const usernameToEmail = (u: string) => `${u.toLowerCase().replace(/[^a-z0-9_]/g, '')}@fakeitfast.local`;
 
@@ -131,6 +139,30 @@ const IronDomeGame: React.FC = () => {
 
 
 
+  // Detect user country from timezone
+  const getCountryFromTimezone = (): string => {
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const tzToCountry: Record<string, string> = {
+        'Asia/Jerusalem': '🇮🇱', 'Asia/Tel_Aviv': '🇮🇱',
+        'America/New_York': '🇺🇸', 'America/Chicago': '🇺🇸', 'America/Denver': '🇺🇸', 'America/Los_Angeles': '🇺🇸',
+        'America/Toronto': '🇨🇦', 'America/Vancouver': '🇨🇦',
+        'Europe/London': '🇬🇧', 'Europe/Paris': '🇫🇷', 'Europe/Berlin': '🇩🇪',
+        'Europe/Madrid': '🇪🇸', 'Europe/Rome': '🇮🇹', 'Europe/Amsterdam': '🇳🇱',
+        'Europe/Stockholm': '🇸🇪', 'Europe/Warsaw': '🇵🇱', 'Europe/Kiev': '🇺🇦', 'Europe/Kyiv': '🇺🇦',
+        'Europe/Moscow': '🇷🇺', 'Europe/Istanbul': '🇹🇷',
+        'Asia/Tokyo': '🇯🇵', 'Asia/Seoul': '🇰🇷', 'Asia/Shanghai': '🇨🇳', 'Asia/Hong_Kong': '🇭🇰',
+        'Asia/Kolkata': '🇮🇳', 'Asia/Calcutta': '🇮🇳',
+        'Asia/Dubai': '🇦🇪', 'Asia/Riyadh': '🇸🇦',
+        'Asia/Bangkok': '🇹🇭', 'Asia/Ho_Chi_Minh': '🇻🇳',
+        'America/Sao_Paulo': '🇧🇷', 'America/Argentina/Buenos_Aires': '🇦🇷',
+        'Australia/Sydney': '🇦🇺', 'Pacific/Auckland': '🇳🇿',
+        'Africa/Cairo': '🇪🇬', 'Africa/Johannesburg': '🇿🇦',
+      };
+      return tzToCountry[tz] || '🌍';
+    } catch { return '🌍'; }
+  };
+
   const saveScore = useCallback(async (state: GameState) => {
     if (!user || scoreSaved) return;
     try {
@@ -140,6 +172,8 @@ const IronDomeGame: React.FC = () => {
         .eq('user_id', user.id)
         .single();
 
+      const country = getCountryFromTimezone();
+
       await supabase.from('iron_dome_scores').insert({
         user_id: user.id,
         display_name: profile?.display_name || 'Player',
@@ -147,7 +181,8 @@ const IronDomeGame: React.FC = () => {
         wave: state.wave,
         max_combo: state.maxCombo,
         mode: state.mode,
-      });
+        country,
+      } as any);
       setScoreSaved(true);
     } catch (e) {
       console.error('Failed to save score:', e);
@@ -492,14 +527,16 @@ const IronDomeGame: React.FC = () => {
         onTouchMove={(e) => e.preventDefault()}
       />
 
-      {/* Top-left back button - always visible */}
-      <button
-        onClick={() => navigate('/')}
-        className="absolute top-3 left-3 flex items-center gap-1.5 px-3 py-2 bg-black/40 rounded-lg backdrop-blur-sm border border-white/10 text-white/70 hover:text-white z-30 transition-colors"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        <span className="text-xs font-semibold">{T('backToMenu')}</span>
-      </button>
+      {/* Top-left back button - hidden during active gameplay */}
+      {phase !== 'playing' && (
+        <button
+          onClick={() => navigate('/')}
+          className="absolute top-3 left-3 flex items-center gap-1.5 px-3 py-2 bg-black/40 rounded-lg backdrop-blur-sm border border-white/10 text-white/70 hover:text-white z-30 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span className="text-xs font-semibold">{T('backToMenu')}</span>
+        </button>
+      )}
 
       {/* Top-right controls */}
       <div className="absolute top-3 right-3 flex items-center gap-2 z-30">
@@ -508,13 +545,42 @@ const IronDomeGame: React.FC = () => {
             <LanguageSelector />
           </div>
         )}
-        <button onClick={() => setMusicEnabled(!musicEnabled)} className="p-2 bg-black/40 rounded-lg backdrop-blur-sm border border-white/10 text-white/70 hover:text-white transition-colors">
-          <Music className="w-4 h-4" style={{ opacity: musicEnabled ? 1 : 0.3 }} />
-        </button>
-        <button onClick={() => setSoundEnabled(!soundEnabled)} className="p-2 bg-black/40 rounded-lg backdrop-blur-sm border border-white/10 text-white/70 hover:text-white transition-colors">
-          {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-        </button>
+        {phase !== 'playing' && (
+          <>
+            <button onClick={() => setMusicEnabled(!musicEnabled)} className="p-2 bg-black/40 rounded-lg backdrop-blur-sm border border-white/10 text-white/70 hover:text-white transition-colors">
+              <Music className="w-4 h-4" style={{ opacity: musicEnabled ? 1 : 0.3 }} />
+            </button>
+            <button onClick={() => setSoundEnabled(!soundEnabled)} className="p-2 bg-black/40 rounded-lg backdrop-blur-sm border border-white/10 text-white/70 hover:text-white transition-colors">
+              {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+            </button>
+          </>
+        )}
       </div>
+
+      {/* In-game settings dropdown */}
+      <AnimatePresence>
+        {showInGameSettings && phase === 'playing' && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="absolute top-14 left-14 z-40 bg-black/80 backdrop-blur-md border border-white/20 rounded-xl p-3 flex flex-col gap-2 min-w-[160px]"
+          >
+            <button onClick={() => { setMusicEnabled(!musicEnabled); }} className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/80 text-sm">
+              <Music className="w-4 h-4" style={{ opacity: musicEnabled ? 1 : 0.3 }} />
+              <span>{musicEnabled ? '🎵 Music ON' : '🔇 Music OFF'}</span>
+            </button>
+            <button onClick={() => { setSoundEnabled(!soundEnabled); }} className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/80 text-sm">
+              {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+              <span>{soundEnabled ? '🔊 Sound ON' : '🔇 Sound OFF'}</span>
+            </button>
+            <div className="h-px bg-white/10" />
+            <div className="[&_button]:bg-transparent [&_button]:shadow-none [&_button]:border-0 [&_button]:text-white/80 [&_button]:text-sm [&_button]:p-0 [&_button]:rounded-lg">
+              <LanguageSelector />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Menu Overlay */}
       <AnimatePresence>
@@ -1009,7 +1075,7 @@ const IronDomeGame: React.FC = () => {
                           {i < 3 ? medals[i] : i + 1}
                         </span>
                         <span className={`flex-1 font-semibold truncate ${isMe ? 'text-cyan-300' : 'text-white/80'}`}>
-                          {entry.display_name}
+                          {entry.display_name} {entry.country || ''}
                         </span>
                         <span className="w-16 text-right font-bold text-yellow-400">{entry.score}</span>
                         <span className="w-12 text-right text-cyan-300/60">{entry.wave}</span>
@@ -1036,18 +1102,44 @@ const IronDomeGame: React.FC = () => {
         )}
       </AnimatePresence>
 
+      {/* In-game top bar: Pause + Settings */}
       {phase === 'playing' && (
-        <button
-          onClick={() => {
-            if (stateRef.current) {
-              stateRef.current.phase = 'paused';
-              setPhase('paused');
-            }
-          }}
-          className="absolute top-3 left-3 z-30 p-2 bg-black/40 rounded-lg backdrop-blur-sm border border-white/10 text-white/70 hover:text-white"
-        >
-          <Pause className="w-4 h-4" />
-        </button>
+        <div className="absolute top-3 left-3 z-30 flex items-center gap-2">
+          <button
+            onClick={() => {
+              if (stateRef.current) {
+                stateRef.current.phase = 'paused';
+                setPhase('paused');
+                setShowInGameSettings(false);
+              }
+            }}
+            className="p-2 bg-black/40 rounded-lg backdrop-blur-sm border border-white/10 text-white/70 hover:text-white"
+          >
+            <Pause className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setShowInGameSettings(!showInGameSettings)}
+            className="p-2 bg-black/40 rounded-lg backdrop-blur-sm border border-white/10 text-white/70 hover:text-white"
+          >
+            <Settings className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Survival Timer - big display */}
+      {phase === 'playing' && gameState && gameState.mode === 'survival' && (
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
+          <motion.div
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-black/50 backdrop-blur-sm border border-cyan-500/30"
+            animate={{ borderColor: ['rgba(0,200,255,0.3)', 'rgba(0,200,255,0.6)', 'rgba(0,200,255,0.3)'] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          >
+            <span className="text-cyan-400 text-sm font-bold">⏱</span>
+            <span className="text-cyan-300 text-2xl font-black tabular-nums" style={{ fontFamily: "'Courier New', monospace", textShadow: '0 0 10px rgba(0,200,255,0.5)' }}>
+              {formatSurvivalTime(gameState.survivalTimer)}
+            </span>
+          </motion.div>
+        </div>
       )}
 
       {/* Big Power-up Timers on right side */}
@@ -1059,6 +1151,48 @@ const IronDomeGame: React.FC = () => {
           <PowerUpTimer emoji="🟣" label="SHIELD" timer={gameState.shieldTimer} maxTimer={10000} color="#CC88FF" glowColor="rgba(180,100,255,0.4)" />
           <PowerUpTimer emoji="⚪" label="EMP" timer={gameState.empTimer} maxTimer={10000} color="#FFFFFF" glowColor="rgba(255,255,255,0.3)" />
           <PowerUpTimer emoji="🚁" label="HELI" timer={gameState.helicopterTimer} maxTimer={10000} color="#FF88AA" glowColor="rgba(255,136,170,0.4)" />
+          {gameState.heliAirstrikeTimer > 0 && (
+            <PowerUpTimer emoji="🚁" label="STRIKE" timer={gameState.heliAirstrikeTimer} maxTimer={10000} color="#66CCFF" glowColor="rgba(100,200,255,0.4)" />
+          )}
+        </div>
+      )}
+
+      {/* Helicopter Summon Button at bottom center */}
+      {phase === 'playing' && gameState && gameState.wave >= 10 && (
+        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-20">
+          <motion.button
+            onClick={() => {
+              if (stateRef.current && stateRef.current.heliAirstrikeReady) {
+                stateRef.current = activateHeliAirstrike(stateRef.current, window.innerWidth);
+                setGameState({ ...stateRef.current });
+                playSound('airstrike');
+              }
+            }}
+            disabled={!gameState.heliAirstrikeReady}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border backdrop-blur-sm transition-all ${
+              gameState.heliAirstrikeReady
+                ? 'bg-cyan-600/40 border-cyan-400/60 text-cyan-200 cursor-pointer hover:bg-cyan-500/50 shadow-[0_0_20px_rgba(0,200,255,0.3)]'
+                : 'bg-black/40 border-white/10 text-white/40 cursor-default'
+            }`}
+            whileTap={gameState.heliAirstrikeReady ? { scale: 0.9 } : {}}
+            animate={gameState.heliAirstrikeReady ? { scale: [1, 1.05, 1] } : {}}
+            transition={gameState.heliAirstrikeReady ? { duration: 0.8, repeat: Infinity } : {}}
+          >
+            <span className="text-lg">🚁</span>
+            <span className="text-sm font-bold">
+              {gameState.heliAirstrikeReady ? T('summonHeli') : `${gameState.coloredMissileHits}/3`}
+            </span>
+            {!gameState.heliAirstrikeReady && (
+              <div className="flex gap-1">
+                {[0, 1, 2].map(i => (
+                  <div
+                    key={i}
+                    className={`w-2.5 h-2.5 rounded-full ${i < gameState.coloredMissileHits ? 'bg-cyan-400' : 'bg-white/20'}`}
+                  />
+                ))}
+              </div>
+            )}
+          </motion.button>
         </div>
       )}
 

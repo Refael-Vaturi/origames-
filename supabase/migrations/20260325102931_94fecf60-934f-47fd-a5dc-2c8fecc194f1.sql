@@ -1,0 +1,1 @@
+ALTER TABLE public.iron_dome_scores ADD COLUMN IF NOT EXISTS country text DEFAULT '';
