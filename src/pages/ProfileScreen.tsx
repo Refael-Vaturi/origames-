@@ -1,198 +1,312 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import LevelUpCelebration from "@/components/LevelUpCelebration";
+import { useState, useEffect, useRef } from "react";
+import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { LanguageProvider } from "@/contexts/LanguageContext";
-import { AuthProvider } from "@/contexts/AuthContext";
-import PortalScreen from "./pages/PortalScreen";
-import IronDomeGame from "./games/iron-dome/IronDomeGame";
-import WelcomeScreen from "./pages/WelcomeScreen";
-import HomeScreen from "./pages/HomeScreen";
-import JoinByCodeScreen from "./pages/JoinByCodeScreen";
-import CreateRoomScreen from "./pages/CreateRoomScreen";
-import LobbyScreen from "./pages/LobbyScreen";
-import MatchmakingScreen from "./pages/MatchmakingScreen";
-import TutorialScreen from "./pages/TutorialScreen";
-import GameScreen from "./pages/GameScreen";
-import ResultsScreen from "./pages/ResultsScreen";
-import AuthScreen from "./pages/AuthScreen";
-import ProfileScreen from "./pages/ProfileScreen";
-import SettingsScreen from "./pages/SettingsScreen";
-import FriendsScreen from "./pages/FriendsScreen";
-import PracticeScreen from "./pages/PracticeScreen";
-import NotFound from "./pages/NotFound";
-import React, { useState } from 'react';
-import { Clock, EyeOff, HelpCircle, Zap, CreditCard, X, ShoppingCart } from 'lucide-react';
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft, Camera, Edit2, Share2, Loader2, Copy, Check } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
-// --- קומפוננטת החנות (Store) ---
-interface UpgradeItem {
-  id: number;
-  name: string;
-  desc: string;
-  price: number;
-  icon: React.ReactNode;
-  color: string;
-}
+const ProfileScreen = () => {
+  const navigate = useNavigate();
+  const { t } = useLanguage();
+  const { user, profile, refreshProfile } = useAuth();
+  const [displayName, setDisplayName] = useState(profile?.display_name || "Player");
+  const [username, setUsername] = useState(profile?.username || "");
+  const [isEditing, setIsEditing] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-const Store = () => {
-  const [balance, setBalance] = useState<number>(150);
-  const [showPaymentModal, setShowPaymentModal] = useState<boolean>(false);
-  const [selectedItem, setSelectedItem] = useState<UpgradeItem | null>(null);
+  useEffect(() => {
+    if (profile) {
+      setDisplayName(profile.display_name);
+      setUsername(profile.username || "");
+    }
+  }, [profile]);
 
-  const upgrades: UpgradeItem[] = [
-    { id: 1, name: 'זמן כפול', desc: 'מוסיף 10 שניות לשעון הניחושים', price: 50, icon: <Clock size={24} />, color: 'text-blue-400' },
-    { id: 2, name: 'רמז נוסף', desc: 'חושף אות אחת מהתשובה', price: 30, icon: <HelpCircle size={24} />, color: 'text-green-400' },
-    { id: 3, name: 'הסתרת זהות', desc: 'הפוך לאנונימי בסיבוב הקרוב', price: 75, icon: <EyeOff size={24} />, color: 'text-purple-400' },
-    { id: 4, name: 'פסילת תשובות', desc: 'מוחק 2 תשובות שגויות (50/50)', price: 100, icon: <Zap size={24} />, color: 'text-yellow-400' },
+  const stats = [
+    { label: t("profile.gamesPlayed"), value: profile?.games_played || 0 },
+    { label: t("profile.wins"), value: profile?.wins || 0 },
+    { label: t("profile.caught"), value: profile?.fakes_caught || 0 },
+    { label: t("profile.survived"), value: profile?.survived || 0 },
   ];
 
-  const handleBuyClick = (item: UpgradeItem) => {
-    setSelectedItem(item);
-    setShowPaymentModal(true);
-  };
+  const handleSave = async () => {
+    if (!user) {
+      toast({ title: "Login required", variant: "destructive" });
+      return;
+    }
 
-  const processPayment = () => {
-    if (selectedItem && balance >= selectedItem.price) {
-      setBalance(balance - selectedItem.price);
-      alert(`רכשת בהצלחה את: ${selectedItem.name}!`);
-      setShowPaymentModal(false);
+    // Validate username
+    if (username && username.length < 3) {
+      toast({ title: t("profile.usernameTooShort") || "Username must be at least 3 characters", variant: "destructive" });
+      return;
+    }
+
+    // Check uniqueness
+    if (username) {
+      const { data: existing } = await supabase
+        .from("profiles")
+        .select("user_id")
+        .eq("username", username)
+        .neq("user_id", user.id)
+        .limit(1);
+
+      if (existing && existing.length > 0) {
+        toast({ title: t("profile.usernameTaken") || "Username already taken", variant: "destructive" });
+        return;
+      }
+    }
+
+    const { error } = await supabase
+      .from("profiles")
+      .update({ display_name: displayName, username: username || null })
+      .eq("user_id", user.id);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
-      alert('אין לך מספיק קרדיטים.');
+      toast({ title: t("profile.save") + " ✅" });
+      await refreshProfile();
+      setIsEditing(false);
     }
   };
 
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Please select an image file", variant: "destructive" });
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast({ title: "Image must be under 2MB", variant: "destructive" });
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `${user.id}/avatar.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(path, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
+      const avatarUrl = `${urlData.publicUrl}?t=${Date.now()}`;
+
+      await supabase
+        .from("profiles")
+        .update({ avatar_url: avatarUrl })
+        .eq("user_id", user.id);
+
+      await refreshProfile();
+      toast({ title: t("profile.avatarUpdated") || "Avatar updated! 📸" });
+    } catch (err: any) {
+      toast({ title: "Upload failed", description: err.message, variant: "destructive" });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleShare = async () => {
+    const shareText = `🎮 ${displayName} | Lv.${profile?.level || 1} | ${profile?.wins || 0} Wins | Fake It Fast`;
+    const shareUrl = `${window.location.origin}/profile`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "Fake It Fast - Player Profile",
+          text: shareText,
+          url: shareUrl,
+        });
+      } catch (e: any) {
+        if (e?.name !== "AbortError") {
+          toast({ title: "Share failed", variant: "destructive" });
+        }
+      }
+    } else {
+      await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
+      toast({ title: t("friends.idCopied") || "Copied to clipboard! 📋" });
+    }
+  };
+
+  const handleCopyUsername = async () => {
+    const name = profile?.username || profile?.display_name || "";
+    await navigator.clipboard.writeText(name);
+    setCopied(true);
+    toast({ title: t("friends.idCopied") || "Copied!" });
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
-    <div className="min-h-screen bg-slate-900 text-white p-6 font-sans" dir="rtl">
-      <div className="flex justify-between items-center mb-10 border-b border-slate-700 pb-4 max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
-          חנות השדרוגים
-        </h1>
-        <div className="flex items-center gap-2 bg-slate-800 px-4 py-2 rounded-full border border-slate-600 shadow-md">
-          <Zap className="text-yellow-400" size={20} />
-          <span className="font-bold">{balance} קרדיטים</span>
-        </div>
-      </div>
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 py-8">
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleAvatarUpload}
+      />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-        {upgrades.map((item) => (
-          <div key={item.id} className="bg-slate-800 rounded-2xl p-6 flex flex-col justify-between border border-slate-700 hover:border-purple-500 transition-all duration-300 hover:shadow-[0_0_20px_rgba(168,85,247,0.2)]">
-            <div className="flex items-start gap-4 mb-4">
-              <div className={`p-4 bg-slate-900 rounded-xl shadow-inner border border-slate-700 ${item.color}`}>
-                {item.icon}
-              </div>
-              <div className="text-right">
-                <h3 className="text-xl font-bold">{item.name}</h3>
-                <p className="text-slate-400 text-sm mt-1">{item.desc}</p>
-              </div>
-            </div>
-            <button 
-              onClick={() => handleBuyClick(item)}
-              className="mt-4 w-full flex items-center justify-center gap-2 bg-slate-700 hover:bg-purple-600 text-white py-3 rounded-xl font-bold transition-all"
-            >
-              <CreditCard size={18} />
-              קנה ב-{item.price}
+      <motion.div
+        className="w-full max-w-sm"
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: "spring", duration: 0.6 }}
+      >
+        <div className="bg-card rounded-3xl p-6 shadow-card">
+          <div className="flex items-center gap-3 mb-6">
+            <button onClick={() => navigate(-1)} className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground">
+              <ArrowLeft className="w-5 h-5" />
             </button>
-          </div>
-        ))}
-      </div>
-
-      {showPaymentModal && selectedItem && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-          <div className="bg-slate-800 rounded-3xl max-w-md w-full p-8 border border-slate-600 shadow-2xl relative overflow-hidden text-right">
-            <div className="absolute top-0 right-0 w-full h-2 bg-gradient-to-r from-purple-500 to-indigo-500"></div>
-            <div className="flex justify-between items-center mb-8">
-              <h2 className="text-2xl font-bold text-white">אישור רכישה</h2>
-              <button onClick={() => setShowPaymentModal(false)} className="text-slate-400 hover:text-white bg-slate-900 p-2 rounded-full">
-                <X size={20} />
+            <h1 className="font-display text-2xl font-bold text-foreground">{t("profile.title")}</h1>
+            <div className="ms-auto flex gap-1">
+              <button
+                onClick={handleShare}
+                className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground"
+                title="Share profile"
+              >
+                <Share2 className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => setIsEditing(!isEditing)}
+                className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground"
+              >
+                <Edit2 className="w-5 h-5" />
               </button>
             </div>
-            <div className="bg-slate-900 rounded-2xl p-6 mb-8 flex justify-between items-center">
-               <div className="text-right">
-                <p className="text-slate-500 text-sm">סה"כ לתשלום:</p>
-                <p className="font-bold text-2xl text-yellow-400">{selectedItem.price} <Zap size={20} className="inline" /></p>
-              </div>
-              <div className="text-right">
-                <p className="text-slate-500 text-sm">הפריט:</p>
-                <p className="font-bold text-xl text-white">{selectedItem.name}</p>
-              </div>
-            </div>
-            <button 
-              onClick={processPayment}
-              className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:scale-[1.02] transition-transform"
-            >
-              השלם רכישה
-            </button>
           </div>
+
+          {/* Avatar */}
+          <div className="flex flex-col items-center mb-6">
+            <div className="relative">
+              {profile?.avatar_url ? (
+                <img
+                  src={profile.avatar_url}
+                  alt={displayName}
+                  className="w-24 h-24 rounded-full object-cover border-4 border-primary/20"
+                />
+              ) : (
+                <div className="w-24 h-24 rounded-full gradient-hero flex items-center justify-center font-display text-3xl font-bold text-primary-foreground">
+                  {displayName[0]}
+                </div>
+              )}
+              {uploading && (
+                <div className="absolute inset-0 rounded-full bg-background/60 flex items-center justify-center">
+                  <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                </div>
+              )}
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="absolute bottom-0 end-0 w-8 h-8 rounded-full bg-card shadow-card flex items-center justify-center text-muted-foreground hover:text-primary transition-colors"
+              >
+                <Camera className="w-4 h-4" />
+              </button>
+            </div>
+
+            {isEditing ? (
+              <div className="mt-4 w-full space-y-3">
+                <input
+                  type="text"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  placeholder={t("profile.displayName")}
+                  className="w-full h-11 px-4 rounded-2xl border-2 border-input bg-background font-body text-sm text-foreground text-center placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
+                />
+                <div className="relative">
+                  <span className="absolute start-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">@</span>
+                  <input
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))}
+                    placeholder="username"
+                    className="w-full h-11 ps-8 pe-4 rounded-2xl border-2 border-input bg-background font-body text-sm text-foreground text-center placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground font-body text-center">
+                  {t("profile.usernameHint") || "Lowercase letters, numbers and underscores only"}
+                </p>
+                <Button variant="game" size="lg" className="w-full" onClick={handleSave}>
+                  {t("profile.save")}
+                </Button>
+              </div>
+            ) : (
+              <>
+                <h2 className="mt-3 font-display text-xl font-bold text-foreground">{displayName}</h2>
+                {username ? (
+                  <button
+                    onClick={handleCopyUsername}
+                    className="flex items-center gap-1 text-sm text-muted-foreground font-body hover:text-primary transition-colors"
+                  >
+                    @{username}
+                    {copied ? <Check className="w-3 h-3 text-primary" /> : <Copy className="w-3 h-3" />}
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    className="text-xs text-primary font-body underline"
+                  >
+                    {t("profile.setUsername") || "Set a username"}
+                  </button>
+                )}
+                {(() => {
+                  const xp = profile?.xp || 0;
+                  const level = profile?.level || 1;
+                  const xpInLevel = xp % 100;
+                  return (
+                    <div className="w-full mt-3 px-2">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-display text-sm font-bold text-primary">Lv.{level}</span>
+                        <span className="text-xs text-muted-foreground font-body">{xp} XP</span>
+                      </div>
+                      <div className="w-full h-3 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-gradient-to-r from-primary to-accent transition-all duration-500"
+                          style={{ width: `${xpInLevel}%` }}
+                        />
+                      </div>
+                      <p className="text-xs text-muted-foreground font-body mt-1 text-center">
+                        {100 - xpInLevel} XP {t("profile.toNextLevel") || "to next level"}
+                      </p>
+                    </div>
+                  );
+                })()}
+              </>
+            )}
+          </div>
+
+          {/* Stats */}
+          <div className="grid grid-cols-2 gap-3">
+            {stats.map((stat) => (
+              <motion.div
+                key={stat.label}
+                className="bg-background rounded-2xl p-3 text-center"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+              >
+                <p className="font-display text-2xl font-bold text-primary">{stat.value}</p>
+                <p className="text-xs text-muted-foreground font-body">{stat.label}</p>
+              </motion.div>
+            ))}
+          </div>
+
+          {!user && (
+            <Button variant="hero" size="lg" className="w-full mt-4" onClick={() => navigate("/auth")}>
+              {t("auth.loginBtn")}
+            </Button>
+          )}
         </div>
-      )}
+      </motion.div>
     </div>
   );
 };
 
-// --- שאר הגדרות האפליקציה ---
-const queryClient = new QueryClient();
-
-const LevelUpWrapper = () => {
-  const { profile } = useAuth();
-  return <LevelUpCelebration level={profile?.level || 0} />;
-};
-
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <LanguageProvider>
-        <AuthProvider>
-          <LevelUpWrapper />
-          <BrowserRouter>
-            <Routes>
-              {/* Portal - Main hub */}
-              <Route path="/" element={<PortalScreen />} />
-
-              {/* Iron Dome game */}
-              <Route path="/iron-dome" element={<IronDomeGame />} />
-
-              {/* Fake It Fast game routes */}
-              <Route path="/fake-it-fast" element={<HomeScreen />} />
-              <Route path="/fake-it-fast/welcome" element={<WelcomeScreen />} />
-              <Route path="/fake-it-fast/join" element={<JoinByCodeScreen />} />
-              <Route path="/fake-it-fast/create-room" element={<CreateRoomScreen />} />
-              <Route path="/fake-it-fast/lobby" element={<LobbyScreen />} />
-              <Route path="/fake-it-fast/matchmaking" element={<MatchmakingScreen />} />
-              <Route path="/fake-it-fast/tutorial" element={<TutorialScreen />} />
-              <Route path="/fake-it-fast/practice" element={<PracticeScreen />} />
-              <Route path="/fake-it-fast/game" element={<GameScreen />} />
-              <Route path="/fake-it-fast/results" element={<ResultsScreen />} />
-
-              {/* Shared routes */}
-              <Route path="/auth" element={<AuthScreen />} />
-              <Route path="/profile" element={<ProfileScreen />} />
-              <Route path="/settings" element={<SettingsScreen />} />
-              <Route path="/friends" element={<FriendsScreen />} />
-              <Route path="/store" element={<Store />} /> {/* הוספנו את החנות כאן! */}
-
-              {/* Legacy redirects */}
-              <Route path="/welcome" element={<WelcomeScreen />} />
-              <Route path="/join" element={<JoinByCodeScreen />} />
-              <Route path="/create-room" element={<CreateRoomScreen />} />
-              <Route path="/lobby" element={<LobbyScreen />} />
-              <Route path="/matchmaking" element={<MatchmakingScreen />} />
-              <Route path="/tutorial" element={<TutorialScreen />} />
-              <Route path="/practice" element={<PracticeScreen />} />
-              <Route path="/game" element={<GameScreen />} />
-              <Route path="/results" element={<ResultsScreen />} />
-
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </AuthProvider>
-      </LanguageProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
-
-export default App;
+export default ProfileScreen;
