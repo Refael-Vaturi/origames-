@@ -538,23 +538,14 @@ const IronDomeGame: React.FC = () => {
         </button>
       )}
 
-      {/* Top-right controls */}
-      <div className="absolute top-3 right-3 flex items-center gap-2 z-30">
-        {phase === 'menu' && (
-          <div className="[&_button]:bg-black/40 [&_button]:border [&_button]:border-white/10 [&_button]:backdrop-blur-sm">
-            <LanguageSelector />
-          </div>
-        )}
-        {phase !== 'playing' && (
-          <>
-            <button onClick={() => setMusicEnabled(!musicEnabled)} className="p-2 bg-black/40 rounded-lg backdrop-blur-sm border border-white/10 text-white/70 hover:text-white transition-colors">
-              <Music className="w-4 h-4" style={{ opacity: musicEnabled ? 1 : 0.3 }} />
-            </button>
-            <button onClick={() => setSoundEnabled(!soundEnabled)} className="p-2 bg-black/40 rounded-lg backdrop-blur-sm border border-white/10 text-white/70 hover:text-white transition-colors">
-              {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-            </button>
-          </>
-        )}
+      {/* Settings button - always visible */}
+      <div className="absolute top-3 right-3 z-30">
+        <button
+          onClick={() => setShowInGameSettings(!showInGameSettings)}
+          className="p-2 bg-black/40 rounded-lg backdrop-blur-sm border border-white/10 text-white/70 hover:text-white transition-colors"
+        >
+          <Settings className="w-5 h-5" />
+        </button>
       </div>
 
       {/* In-game settings dropdown */}
