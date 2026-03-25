@@ -492,14 +492,16 @@ const IronDomeGame: React.FC = () => {
         onTouchMove={(e) => e.preventDefault()}
       />
 
-      {/* Top-left back button - always visible */}
-      <button
-        onClick={() => navigate('/')}
-        className="absolute top-3 left-3 flex items-center gap-1.5 px-3 py-2 bg-black/40 rounded-lg backdrop-blur-sm border border-white/10 text-white/70 hover:text-white z-30 transition-colors"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        <span className="text-xs font-semibold">{T('backToMenu')}</span>
-      </button>
+      {/* Top-left back button - hidden during active gameplay */}
+      {phase !== 'playing' && (
+        <button
+          onClick={() => navigate('/')}
+          className="absolute top-3 left-3 flex items-center gap-1.5 px-3 py-2 bg-black/40 rounded-lg backdrop-blur-sm border border-white/10 text-white/70 hover:text-white z-30 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span className="text-xs font-semibold">{T('backToMenu')}</span>
+        </button>
+      )}
 
       {/* Top-right controls */}
       <div className="absolute top-3 right-3 flex items-center gap-2 z-30">
@@ -508,13 +510,42 @@ const IronDomeGame: React.FC = () => {
             <LanguageSelector />
           </div>
         )}
-        <button onClick={() => setMusicEnabled(!musicEnabled)} className="p-2 bg-black/40 rounded-lg backdrop-blur-sm border border-white/10 text-white/70 hover:text-white transition-colors">
-          <Music className="w-4 h-4" style={{ opacity: musicEnabled ? 1 : 0.3 }} />
-        </button>
-        <button onClick={() => setSoundEnabled(!soundEnabled)} className="p-2 bg-black/40 rounded-lg backdrop-blur-sm border border-white/10 text-white/70 hover:text-white transition-colors">
-          {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-        </button>
+        {phase !== 'playing' && (
+          <>
+            <button onClick={() => setMusicEnabled(!musicEnabled)} className="p-2 bg-black/40 rounded-lg backdrop-blur-sm border border-white/10 text-white/70 hover:text-white transition-colors">
+              <Music className="w-4 h-4" style={{ opacity: musicEnabled ? 1 : 0.3 }} />
+            </button>
+            <button onClick={() => setSoundEnabled(!soundEnabled)} className="p-2 bg-black/40 rounded-lg backdrop-blur-sm border border-white/10 text-white/70 hover:text-white transition-colors">
+              {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+            </button>
+          </>
+        )}
       </div>
+
+      {/* In-game settings dropdown */}
+      <AnimatePresence>
+        {showInGameSettings && phase === 'playing' && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="absolute top-14 left-14 z-40 bg-black/80 backdrop-blur-md border border-white/20 rounded-xl p-3 flex flex-col gap-2 min-w-[160px]"
+          >
+            <button onClick={() => { setMusicEnabled(!musicEnabled); }} className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/80 text-sm">
+              <Music className="w-4 h-4" style={{ opacity: musicEnabled ? 1 : 0.3 }} />
+              <span>{musicEnabled ? '🎵 Music ON' : '🔇 Music OFF'}</span>
+            </button>
+            <button onClick={() => { setSoundEnabled(!soundEnabled); }} className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white/80 text-sm">
+              {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+              <span>{soundEnabled ? '🔊 Sound ON' : '🔇 Sound OFF'}</span>
+            </button>
+            <div className="h-px bg-white/10" />
+            <div className="[&_button]:bg-transparent [&_button]:shadow-none [&_button]:border-0 [&_button]:text-white/80 [&_button]:text-sm [&_button]:p-0 [&_button]:rounded-lg">
+              <LanguageSelector />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Menu Overlay */}
       <AnimatePresence>
