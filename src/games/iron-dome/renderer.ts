@@ -140,9 +140,14 @@ export function renderGame(ctx: CanvasRenderingContext2D, state: GameState, w: n
   // Particles
   state.particles.forEach(p => renderParticle(ctx, p));
 
-  // Helicopter visual
+  // Helicopter visual (pink missile helicopter)
   if (state.helicopterTimer > 0) {
     renderHelicopter(ctx, state.helicopterX, 40, time);
+  }
+
+  // Airstrike helicopter (summoned by player) - no searchlight, just fires
+  if (state.heliAirstrikeTimer > 0) {
+    renderAirstrikeHelicopter(ctx, state.heliAirstrikeX, 60, time);
   }
 
   // Floating texts
