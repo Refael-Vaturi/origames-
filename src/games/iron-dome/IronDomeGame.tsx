@@ -687,7 +687,7 @@ const IronDomeGame: React.FC = () => {
                 transition={{ delay: 0.3 }}
               >
                 {gameState.mode === 'campaign'
-                  ? `${gameState.wave} / 10`
+                  ? `∞ ${T('wave')}`
                   : T('surviveAsLong')}
               </motion.p>
               {/* Wave Perks Display */}
