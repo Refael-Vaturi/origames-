@@ -648,7 +648,7 @@ function renderHUD(ctx: CanvasRenderingContext2D, state: GameState, w: number, h
     ctx.fillStyle = COLORS.score;
     ctx.font = '14px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText(`${ironT('wave', lang)} ${state.wave} — ∞ ${ironT('wave', lang)}`, w / 2, 20);
+    ctx.fillText(`${ironT('wave', lang)} ${state.wave}`, w / 2, 20);
     
     // Big progress counter
     const destroyed = state.waveDestroyedThreats;
