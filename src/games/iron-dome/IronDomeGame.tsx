@@ -1116,29 +1116,6 @@ const IronDomeGame: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* In-game top bar: Pause + Settings */}
-      {phase === 'playing' && (
-        <div className="absolute top-3 left-3 z-30 flex items-center gap-2">
-          <button
-            onClick={() => {
-              if (stateRef.current) {
-                stateRef.current.phase = 'paused';
-                setPhase('paused');
-                setShowInGameSettings(false);
-              }
-            }}
-            className="p-2 bg-black/40 rounded-lg backdrop-blur-sm border border-white/10 text-white/70 hover:text-white"
-          >
-            <Pause className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => setShowInGameSettings(!showInGameSettings)}
-            className="p-2 bg-black/40 rounded-lg backdrop-blur-sm border border-white/10 text-white/70 hover:text-white"
-          >
-            <Settings className="w-4 h-4" />
-          </button>
-        </div>
-      )}
 
       {/* Survival Timer - big display */}
       {phase === 'playing' && gameState && gameState.mode === 'survival' && (
