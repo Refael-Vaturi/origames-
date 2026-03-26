@@ -528,7 +528,7 @@ const IronDomeGame: React.FC = () => {
       />
 
       {/* Top-left back button - hidden during active gameplay */}
-      {phase !== 'playing' && (
+      {phase !== 'playing' && phase !== 'paused' && (
         <button
           onClick={() => navigate('/')}
           className="absolute top-3 left-3 flex items-center gap-1.5 px-3 py-2 bg-black/40 rounded-lg backdrop-blur-sm border border-white/10 text-white/70 hover:text-white z-30 transition-colors"
@@ -538,8 +538,8 @@ const IronDomeGame: React.FC = () => {
         </button>
       )}
 
-      {/* Settings button - always visible */}
-      <div className="absolute top-3 right-3 z-30">
+      {/* Single settings button - bottom right during playing, top right otherwise */}
+      <div className={`absolute z-30 ${phase === 'playing' ? 'bottom-14 right-3' : 'top-3 right-3'}`}>
         <button
           onClick={() => setShowInGameSettings(!showInGameSettings)}
           className="p-2 bg-black/40 rounded-lg backdrop-blur-sm border border-white/10 text-white/70 hover:text-white transition-colors"
@@ -548,14 +548,16 @@ const IronDomeGame: React.FC = () => {
         </button>
       </div>
 
-      {/* Settings dropdown - works in all phases */}
+      {/* Settings dropdown */}
       <AnimatePresence>
         {showInGameSettings && (
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="absolute top-14 right-3 z-40 bg-black/80 backdrop-blur-md border border-white/20 rounded-xl p-3 flex flex-col gap-2 min-w-[180px]"
+            exit={{ opacity: 0, y: 10 }}
+            className={`absolute z-40 bg-black/80 backdrop-blur-md border border-white/20 rounded-xl p-3 flex flex-col gap-2 min-w-[180px] ${
+              phase === 'playing' ? 'bottom-24 right-3' : 'top-14 right-3'
+            }`}
           >
             {/* Pause/Resume - only during gameplay */}
             {(phase === 'playing' || phase === 'paused') && (
