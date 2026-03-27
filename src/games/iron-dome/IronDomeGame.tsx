@@ -552,7 +552,7 @@ const IronDomeGame: React.FC = () => {
     if (!canvas || !stateRef.current) return;
     const w = window.innerWidth;
     const h = window.innerHeight;
-    stateRef.current = nextWave(stateRef.current, w, h);
+    stateRef.current = nextWave(stateRef.current, w, h, playerSkill);
     setPhase(stateRef.current.phase);
     setGameState({ ...stateRef.current });
     if (musicEnabled) musicRef.current.setIntensity(stateRef.current.wave);

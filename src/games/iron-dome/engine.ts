@@ -1039,14 +1039,14 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
   return s;
 }
 
-export function nextWave(state: GameState, w: number, h: number): GameState {
+export function nextWave(state: GameState, w: number, h: number, skillFactor: number = 1.0): GameState {
   const newState = {
     ...state,
     wave: state.wave + 1,
     cities: state.cities.map(c => ({ ...c, alive: true })),
   };
   newState.cities = createCities(w, h);
-  return startWave(newState, w, h);
+  return startWave(newState, w, h, skillFactor);
 }
 
 export function buyStoreItem(state: GameState, itemId: string): GameState {
