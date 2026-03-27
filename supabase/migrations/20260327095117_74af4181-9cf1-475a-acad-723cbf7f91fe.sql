@@ -1,0 +1,1 @@
+ALTER TABLE public.iron_dome_scores ADD COLUMN survival_time integer NOT NULL DEFAULT 0;

@@ -235,6 +235,7 @@ export type Database = {
           max_combo: number
           mode: string
           score: number
+          survival_time: number
           user_id: string
           wave: number
         }
@@ -246,6 +247,7 @@ export type Database = {
           max_combo?: number
           mode?: string
           score?: number
+          survival_time?: number
           user_id: string
           wave?: number
         }
@@ -257,6 +259,7 @@ export type Database = {
           max_combo?: number
           mode?: string
           score?: number
+          survival_time?: number
           user_id?: string
           wave?: number
         }

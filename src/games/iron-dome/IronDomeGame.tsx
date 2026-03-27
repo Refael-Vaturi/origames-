@@ -186,6 +186,7 @@ const IronDomeGame: React.FC = () => {
         max_combo: state.maxCombo,
         mode: state.mode,
         country,
+        survival_time: state.mode === 'survival' ? Math.floor(state.survivalTimer / 1000) : 0,
       } as any);
       setScoreSaved(true);
     } catch (e) {
@@ -1136,12 +1137,20 @@ const IronDomeGame: React.FC = () => {
                     <span className="w-8">{T('rank')}</span>
                     <span className="flex-1">{T('player')}</span>
                     <span className="w-16 text-right">{T('score')}</span>
-                    <span className="w-12 text-right">{T('wave')}</span>
+                    {leaderboardMode === 'survival' ? (
+                      <span className="w-14 text-right">⏱ {T('time') || 'Time'}</span>
+                    ) : (
+                      <span className="w-12 text-right">{T('wave')}</span>
+                    )}
                     <span className="w-12 text-right">{T('maxCombo')}</span>
                   </div>
                   {leaderboardData.map((entry, i) => {
                     const isMe = user && entry.user_id === user.id;
                     const medals = ['🥇', '🥈', '🥉'];
+                    const survSecs = entry.survival_time || 0;
+                    const survMin = Math.floor(survSecs / 60);
+                    const survSecRem = survSecs % 60;
+                    const survDisplay = `${survMin}:${survSecRem.toString().padStart(2, '0')}`;
                     return (
                       <motion.div
                         key={entry.id}
@@ -1163,7 +1172,11 @@ const IronDomeGame: React.FC = () => {
                           {entry.display_name} {entry.country || ''}
                         </span>
                         <span className="w-16 text-right font-bold text-yellow-400">{entry.score}</span>
-                        <span className="w-12 text-right text-cyan-300/60">{entry.wave}</span>
+                        {leaderboardMode === 'survival' ? (
+                          <span className="w-14 text-right text-green-400/80">{survDisplay}</span>
+                        ) : (
+                          <span className="w-12 text-right text-cyan-300/60">{entry.wave}</span>
+                        )}
                         <span className="w-12 text-right text-orange-400/60">x{entry.max_combo}</span>
                       </motion.div>
                     );
