@@ -231,12 +231,71 @@ const IronDomeGame: React.FC = () => {
     return () => { musicRef.current.stop(); };
   }, []);
 
-  // Auto-save score on game over or victory
+  // Auto-save score on game over or victory + save skill
   useEffect(() => {
     if ((phase === 'game-over' || phase === 'victory') && gameState && user && !scoreSaved) {
       saveScore(gameState);
+      // Save skill data for adaptive difficulty
+      const accuracy = gameState.totalFired > 0 ? gameState.totalIntercepted / gameState.totalFired : 0.5;
+      const updateSkill = async () => {
+        try {
+          const { data: existing } = await supabase.from('player_skill').select('*').eq('user_id', user.id).single();
+          if (existing) {
+            const gp = existing.games_played + 1;
+            const newAccuracy = (existing.accuracy * existing.games_played + accuracy) / gp;
+            const newWave = (existing.avg_wave_reached * existing.games_played + gameState.wave) / gp;
+            const newSurv = gameState.mode === 'survival'
+              ? (existing.avg_survival_time * existing.games_played + gameState.survivalTimer / 1000) / gp
+              : existing.avg_survival_time;
+            const rating = Math.max(0.3, Math.min(3.0, (newAccuracy * 2 + newWave / 5 + newSurv / 60) / 3));
+            await supabase.from('player_skill').update({
+              accuracy: newAccuracy, avg_wave_reached: newWave, avg_survival_time: newSurv,
+              games_played: gp, skill_rating: rating, updated_at: new Date().toISOString(),
+            }).eq('user_id', user.id);
+            setPlayerSkill(rating);
+          } else {
+            const rating = Math.max(0.3, Math.min(3.0, accuracy * 2));
+            await supabase.from('player_skill').insert({
+              user_id: user.id, accuracy, avg_wave_reached: gameState.wave,
+              avg_survival_time: gameState.mode === 'survival' ? gameState.survivalTimer / 1000 : 0,
+              games_played: 1, skill_rating: rating,
+            });
+            setPlayerSkill(rating);
+          }
+        } catch (e) { console.error('Failed to save skill:', e); }
+      };
+      updateSkill();
     }
   }, [phase, gameState, user, scoreSaved, saveScore]);
+
+  // Fetch persistent credits and player skill
+  useEffect(() => {
+    if (!user) return;
+    const fetchData = async () => {
+      const [{ data: credits }, { data: skill }] = await Promise.all([
+        supabase.from('player_credits').select('credits').eq('user_id', user.id).single(),
+        supabase.from('player_skill').select('skill_rating').eq('user_id', user.id).single(),
+      ]);
+      if (credits) setPersistentCredits(credits.credits);
+      if (skill) setPlayerSkill(skill.skill_rating);
+    };
+    fetchData();
+  }, [user]);
+
+  // Handle purchase return
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('purchase') === 'success' && user) {
+      const credits = parseInt(params.get('credits') || '0');
+      if (credits > 0) {
+        supabase.functions.invoke('confirm-credits', { body: { credits } }).then(() => {
+          setPersistentCredits(prev => prev + credits);
+          toast({ title: `✅ נוספו ${credits} קרדיטים!` });
+        });
+        window.history.replaceState({}, '', '/iron-dome');
+      }
+    }
+  }, [user]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
