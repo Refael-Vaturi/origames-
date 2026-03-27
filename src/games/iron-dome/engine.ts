@@ -127,10 +127,23 @@ export function createInitialState(w: number, h: number): GameState {
   };
 }
 
-export function startWave(state: GameState, w: number, h: number): GameState {
-  const config = state.mode === 'campaign'
+export function startWave(state: GameState, w: number, h: number, skillFactor: number = 1.0): GameState {
+  let config = state.mode === 'campaign'
     ? getCampaignWave(state.wave)
     : getSurvivalWave(state.wave);
+
+  // Adaptive difficulty: scale based on player skill
+  if (skillFactor !== 1.0) {
+    config = {
+      ...config,
+      missiles: Math.round(config.missiles * skillFactor),
+      uavs: Math.round(config.uavs * skillFactor),
+      clusters: Math.round(config.clusters * skillFactor),
+      heavies: Math.round(config.heavies * skillFactor),
+      speed: config.speed * (0.7 + skillFactor * 0.3),
+      spawnInterval: Math.round(config.spawnInterval / (0.7 + skillFactor * 0.3)),
+    };
+  }
 
   // Calculate wave-based passive perks
   const wave = state.wave;
