@@ -686,7 +686,7 @@ const IronDomeGame: React.FC = () => {
               <p className="text-cyan-200/60 text-sm tracking-widest">{T('subtitle')}</p>
 
               <div className="flex flex-col gap-3 w-full mt-6">
-                <MenuButton icon={<Play className="w-5 h-5" />} label={T('campaign')} sub={T('play10waves')} onClick={() => startGame('campaign')} color="cyan" />
+                <MenuButton icon={<Play className="w-5 h-5" />} label={T('campaign')} sub={T('play ∞ waves')} onClick={() => startGame('campaign')} color="cyan" />
                 <MenuButton icon={<InfinityIcon className="w-5 h-5" />} label={T('survival')} sub={T('howLong')} onClick={() => startGame('survival')} color="blue" />
 
                 <div className="flex gap-3 mt-2">
