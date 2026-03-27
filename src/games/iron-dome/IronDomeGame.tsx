@@ -186,6 +186,7 @@ const IronDomeGame: React.FC = () => {
         max_combo: state.maxCombo,
         mode: state.mode,
         country,
+        survival_time: state.mode === 'survival' ? Math.floor(state.survivalTimer / 1000) : 0,
       } as any);
       setScoreSaved(true);
     } catch (e) {
