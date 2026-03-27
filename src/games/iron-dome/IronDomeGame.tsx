@@ -703,6 +703,12 @@ const IronDomeGame: React.FC = () => {
                       setPhase('leaderboard');
                     }
                   }} />
+                  <MenuButtonSmall icon="🛒" label={T('store')} onClick={() => {
+                    if (stateRef.current) {
+                      stateRef.current.phase = 'main-shop' as any;
+                      setPhase('main-shop');
+                    }
+                  }} />
                 </div>
               </div>
 
