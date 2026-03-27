@@ -601,28 +601,30 @@ const IronDomeGame: React.FC = () => {
         </button>
       )}
 
-      {/* Single settings button - bottom right during playing, top right otherwise */}
+      {/* Single settings button with rotation animation */}
       <div className={`absolute z-30 ${phase === 'playing' ? 'bottom-14 right-3' : 'top-3 right-3'}`}>
-        <button
+        <motion.button
           onClick={() => setShowInGameSettings(!showInGameSettings)}
           className="p-2 bg-black/40 rounded-lg backdrop-blur-sm border border-white/10 text-white/70 hover:text-white transition-colors"
+          animate={{ rotate: showInGameSettings ? 90 : 0 }}
+          transition={{ duration: 0.3 }}
         >
           <Settings className="w-5 h-5" />
-        </button>
+        </motion.button>
       </div>
 
       {/* Settings dropdown */}
       <AnimatePresence>
         {showInGameSettings && (
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, scale: 0.9, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 10 }}
+            transition={{ type: 'spring', duration: 0.3 }}
             className={`absolute z-40 bg-black/80 backdrop-blur-md border border-white/20 rounded-xl p-3 flex flex-col gap-2 min-w-[180px] ${
               phase === 'playing' ? 'bottom-24 right-3' : 'top-14 right-3'
             }`}
           >
-            {/* Pause/Resume - only during gameplay */}
             {(phase === 'playing' || phase === 'paused') && (
               <>
                 <button
