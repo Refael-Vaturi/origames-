@@ -541,7 +541,7 @@ const IronDomeGame: React.FC = () => {
     const h = window.innerHeight;
     const s = createInitialState(w, h);
     s.mode = mode;
-    stateRef.current = startWave(s, w, h);
+    stateRef.current = startWave(s, w, h, playerSkill);
     setPhase(stateRef.current.phase);
     setGameState({ ...stateRef.current });
     if (musicEnabled) musicRef.current.start(1);
