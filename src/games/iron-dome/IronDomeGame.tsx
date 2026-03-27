@@ -1188,7 +1188,127 @@ const IronDomeGame: React.FC = () => {
       </AnimatePresence>
 
 
-      {/* Survival Timer - big display */}
+      {/* Main Shop (from menu) */}
+      <AnimatePresence>
+        {phase === 'main-shop' && (
+          <motion.div
+            key="main-shop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 flex items-center justify-center z-20 bg-black/80 overflow-y-auto py-8"
+          >
+            <div className="bg-[#0a1525] border border-cyan-900/40 rounded-2xl p-6 max-w-md w-full mx-4 max-h-[85vh] overflow-y-auto">
+              <h2 className="text-2xl font-bold text-cyan-400 text-center mb-1" style={{ fontFamily: "'Courier New', monospace" }}>
+                🛒 {T('store')}
+              </h2>
+              <p className="text-cyan-300/40 text-xs text-center mb-2">קנה שדרוגים עם קרדיטים של המשחק</p>
+              <p className="text-green-400 text-center text-sm mb-4">💰 הקרדיטים שלך: {persistentCredits}</p>
+
+              {/* In-game items */}
+              <div className="flex flex-col gap-2 mb-6">
+                {[
+                  { id: 'buy-first-aid', name: '🩹 חיים נוספים', desc: '+1 חיים בתחילת המשחק', cost: 20 },
+                  { id: 'buy-extra-ammo', name: '🎯 תחמושת נוספת', desc: '+5 תחמושת מקסימלית', cost: 30 },
+                  { id: 'buy-fast-reload', name: '⚡ טעינה מהירה', desc: 'טעינה מהירה קבועה', cost: 80 },
+                  { id: 'buy-shield', name: '🟣 מגן התחלתי', desc: 'מגן 10 שניות בתחילת כל משחק', cost: 50 },
+                  { id: 'buy-triple-dome', name: '🟢 3 כיפות ברזל', desc: '3 כיפות 15 שניות בתחילת כל משחק', cost: 100 },
+                ].map(item => {
+                  const cantAfford = persistentCredits < item.cost;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={async () => {
+                        if (cantAfford || !user) return;
+                        // Deduct credits locally and in DB
+                        setPersistentCredits(prev => prev - item.cost);
+                        try {
+                          const { data: existing } = await supabase.from('player_credits').select('credits').eq('user_id', user.id).single();
+                          if (existing) {
+                            await supabase.from('player_credits').update({ credits: existing.credits - item.cost, updated_at: new Date().toISOString() }).eq('user_id', user.id);
+                          }
+                          toast({ title: `✅ ${item.name} נקנה!` });
+                        } catch { toast({ title: 'שגיאה ברכישה', variant: 'destructive' }); }
+                      }}
+                      disabled={cantAfford || !user}
+                      className={`flex items-center gap-3 p-3 rounded-xl border transition-all text-left ${
+                        cantAfford || !user
+                          ? 'bg-black/40 border-cyan-900/20 opacity-40 cursor-not-allowed'
+                          : 'bg-black/40 border-cyan-900/20 hover:border-cyan-600/40 hover:bg-cyan-900/20'
+                      }`}
+                    >
+                      <div className="flex-1">
+                        <p className="text-white text-sm font-bold">{item.name}</p>
+                        <p className="text-cyan-300/50 text-xs">{item.desc}</p>
+                      </div>
+                      <p className="text-green-400 text-sm font-bold">{item.cost} 💰</p>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Buy credits with real money */}
+              <div className="border-t border-cyan-900/30 pt-4 mb-4">
+                <h3 className="text-lg font-bold text-yellow-400 text-center mb-3" style={{ fontFamily: "'Courier New', monospace" }}>
+                  💳 קנה קרדיטים
+                </h3>
+                <div className="flex flex-col gap-2">
+                  {[
+                    { packId: 'pack-100', label: '100 💰', price: '$2.99' },
+                    { packId: 'pack-300', label: '300 💰', price: '$4.99', popular: true },
+                    { packId: 'pack-1000', label: '1000 💰', price: '$9.99' },
+                  ].map(pack => (
+                    <motion.button
+                      key={pack.packId}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={async () => {
+                        if (!user) { setShowAuthModal(true); return; }
+                        setBuyingCredits(true);
+                        try {
+                          const { data, error } = await supabase.functions.invoke('buy-credits', {
+                            body: { packId: pack.packId },
+                          });
+                          if (error) throw error;
+                          if (data?.url) window.location.href = data.url;
+                        } catch (e: any) {
+                          toast({ title: e.message || 'שגיאה', variant: 'destructive' });
+                        } finally { setBuyingCredits(false); }
+                      }}
+                      disabled={buyingCredits}
+                      className={`flex items-center justify-between p-3 rounded-xl border transition-all ${
+                        pack.popular
+                          ? 'bg-yellow-900/20 border-yellow-600/40 hover:border-yellow-400/60'
+                          : 'bg-black/40 border-cyan-900/20 hover:border-cyan-600/40'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <CreditCard className="w-4 h-4 text-yellow-400" />
+                        <span className="text-white font-bold">{pack.label}</span>
+                        {pack.popular && <span className="text-[10px] bg-yellow-500/20 text-yellow-300 px-2 py-0.5 rounded-full">פופולרי</span>}
+                      </div>
+                      <span className="text-green-400 font-bold">{pack.price}</span>
+                    </motion.button>
+                  ))}
+                </div>
+                {!user && <p className="text-center text-xs text-cyan-300/50 mt-2">🔒 התחבר כדי לקנות קרדיטים</p>}
+              </div>
+
+              <button
+                onClick={() => {
+                  if (stateRef.current) {
+                    stateRef.current.phase = 'menu';
+                    setPhase('menu');
+                  }
+                }}
+                className="w-full py-3 bg-cyan-600/60 text-white rounded-xl font-bold hover:bg-cyan-500/60 transition-colors"
+              >
+                {T('close')}
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {phase === 'playing' && gameState && gameState.mode === 'survival' && (
         <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
           <motion.div
