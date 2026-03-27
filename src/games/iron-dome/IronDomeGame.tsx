@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Play, Infinity as InfinityIcon, BookOpen, Trophy, Volume2, VolumeX, Music, Pause, LogIn, Mail, Lock, Eye, EyeOff, User, AtSign, Settings, X } from 'lucide-react';
+import { ArrowLeft, Play, Infinity as InfinityIcon, BookOpen, Trophy, Volume2, VolumeX, Music, Pause, LogIn, Mail, Lock, Eye, EyeOff, User, AtSign, Settings, X, ShoppingCart, CreditCard } from 'lucide-react';
 import {
   createInitialState, startWave, startSurvival, fireInterceptor, update, nextWave,
   buyStoreItem, activateAirSupport, activateGPSJammer, activateHeliAirstrike, renderGame,
@@ -46,6 +46,10 @@ const IronDomeGame: React.FC = () => {
   const [authDisplayName, setAuthDisplayName] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
   const [showAuthPassword, setShowAuthPassword] = useState(false);
+  const [persistentCredits, setPersistentCredits] = useState(0);
+  const [buyingCredits, setBuyingCredits] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [playerSkill, setPlayerSkill] = useState(1.0);
 
   const T = useCallback((key: string) => ironT(key, language), [language]);
   const { t: appT } = useLanguage();
@@ -227,12 +231,71 @@ const IronDomeGame: React.FC = () => {
     return () => { musicRef.current.stop(); };
   }, []);
 
-  // Auto-save score on game over or victory
+  // Auto-save score on game over or victory + save skill
   useEffect(() => {
     if ((phase === 'game-over' || phase === 'victory') && gameState && user && !scoreSaved) {
       saveScore(gameState);
+      // Save skill data for adaptive difficulty
+      const accuracy = gameState.totalFired > 0 ? gameState.totalIntercepted / gameState.totalFired : 0.5;
+      const updateSkill = async () => {
+        try {
+          const { data: existing } = await supabase.from('player_skill').select('*').eq('user_id', user.id).single();
+          if (existing) {
+            const gp = existing.games_played + 1;
+            const newAccuracy = (existing.accuracy * existing.games_played + accuracy) / gp;
+            const newWave = (existing.avg_wave_reached * existing.games_played + gameState.wave) / gp;
+            const newSurv = gameState.mode === 'survival'
+              ? (existing.avg_survival_time * existing.games_played + gameState.survivalTimer / 1000) / gp
+              : existing.avg_survival_time;
+            const rating = Math.max(0.3, Math.min(3.0, (newAccuracy * 2 + newWave / 5 + newSurv / 60) / 3));
+            await supabase.from('player_skill').update({
+              accuracy: newAccuracy, avg_wave_reached: newWave, avg_survival_time: newSurv,
+              games_played: gp, skill_rating: rating, updated_at: new Date().toISOString(),
+            }).eq('user_id', user.id);
+            setPlayerSkill(rating);
+          } else {
+            const rating = Math.max(0.3, Math.min(3.0, accuracy * 2));
+            await supabase.from('player_skill').insert({
+              user_id: user.id, accuracy, avg_wave_reached: gameState.wave,
+              avg_survival_time: gameState.mode === 'survival' ? gameState.survivalTimer / 1000 : 0,
+              games_played: 1, skill_rating: rating,
+            });
+            setPlayerSkill(rating);
+          }
+        } catch (e) { console.error('Failed to save skill:', e); }
+      };
+      updateSkill();
     }
   }, [phase, gameState, user, scoreSaved, saveScore]);
+
+  // Fetch persistent credits and player skill
+  useEffect(() => {
+    if (!user) return;
+    const fetchData = async () => {
+      const [{ data: credits }, { data: skill }] = await Promise.all([
+        supabase.from('player_credits').select('credits').eq('user_id', user.id).single(),
+        supabase.from('player_skill').select('skill_rating').eq('user_id', user.id).single(),
+      ]);
+      if (credits) setPersistentCredits(credits.credits);
+      if (skill) setPlayerSkill(skill.skill_rating);
+    };
+    fetchData();
+  }, [user]);
+
+  // Handle purchase return
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('purchase') === 'success' && user) {
+      const credits = parseInt(params.get('credits') || '0');
+      if (credits > 0) {
+        supabase.functions.invoke('confirm-credits', { body: { credits } }).then(() => {
+          setPersistentCredits(prev => prev + credits);
+          toast({ title: `✅ נוספו ${credits} קרדיטים!` });
+        });
+        window.history.replaceState({}, '', '/iron-dome');
+      }
+    }
+  }, [user]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -478,7 +541,7 @@ const IronDomeGame: React.FC = () => {
     const h = window.innerHeight;
     const s = createInitialState(w, h);
     s.mode = mode;
-    stateRef.current = startWave(s, w, h);
+    stateRef.current = startWave(s, w, h, playerSkill);
     setPhase(stateRef.current.phase);
     setGameState({ ...stateRef.current });
     if (musicEnabled) musicRef.current.start(1);
@@ -489,7 +552,7 @@ const IronDomeGame: React.FC = () => {
     if (!canvas || !stateRef.current) return;
     const w = window.innerWidth;
     const h = window.innerHeight;
-    stateRef.current = nextWave(stateRef.current, w, h);
+    stateRef.current = nextWave(stateRef.current, w, h, playerSkill);
     setPhase(stateRef.current.phase);
     setGameState({ ...stateRef.current });
     if (musicEnabled) musicRef.current.setIntensity(stateRef.current.wave);
@@ -538,28 +601,30 @@ const IronDomeGame: React.FC = () => {
         </button>
       )}
 
-      {/* Single settings button - bottom right during playing, top right otherwise */}
+      {/* Single settings button with rotation animation */}
       <div className={`absolute z-30 ${phase === 'playing' ? 'bottom-14 right-3' : 'top-3 right-3'}`}>
-        <button
+        <motion.button
           onClick={() => setShowInGameSettings(!showInGameSettings)}
           className="p-2 bg-black/40 rounded-lg backdrop-blur-sm border border-white/10 text-white/70 hover:text-white transition-colors"
+          animate={{ rotate: showInGameSettings ? 90 : 0 }}
+          transition={{ duration: 0.3 }}
         >
           <Settings className="w-5 h-5" />
-        </button>
+        </motion.button>
       </div>
 
       {/* Settings dropdown */}
       <AnimatePresence>
         {showInGameSettings && (
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, scale: 0.9, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 10 }}
+            transition={{ type: 'spring', duration: 0.3 }}
             className={`absolute z-40 bg-black/80 backdrop-blur-md border border-white/20 rounded-xl p-3 flex flex-col gap-2 min-w-[180px] ${
               phase === 'playing' ? 'bottom-24 right-3' : 'top-14 right-3'
             }`}
           >
-            {/* Pause/Resume - only during gameplay */}
             {(phase === 'playing' || phase === 'paused') && (
               <>
                 <button
@@ -636,6 +701,12 @@ const IronDomeGame: React.FC = () => {
                     if (stateRef.current) {
                       stateRef.current.phase = 'leaderboard';
                       setPhase('leaderboard');
+                    }
+                  }} />
+                  <MenuButtonSmall icon="🛒" label={T('store')} onClick={() => {
+                    if (stateRef.current) {
+                      stateRef.current.phase = 'main-shop' as any;
+                      setPhase('main-shop');
                     }
                   }} />
                 </div>
@@ -1117,7 +1188,127 @@ const IronDomeGame: React.FC = () => {
       </AnimatePresence>
 
 
-      {/* Survival Timer - big display */}
+      {/* Main Shop (from menu) */}
+      <AnimatePresence>
+        {phase === 'main-shop' && (
+          <motion.div
+            key="main-shop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 flex items-center justify-center z-20 bg-black/80 overflow-y-auto py-8"
+          >
+            <div className="bg-[#0a1525] border border-cyan-900/40 rounded-2xl p-6 max-w-md w-full mx-4 max-h-[85vh] overflow-y-auto">
+              <h2 className="text-2xl font-bold text-cyan-400 text-center mb-1" style={{ fontFamily: "'Courier New', monospace" }}>
+                🛒 {T('store')}
+              </h2>
+              <p className="text-cyan-300/40 text-xs text-center mb-2">קנה שדרוגים עם קרדיטים של המשחק</p>
+              <p className="text-green-400 text-center text-sm mb-4">💰 הקרדיטים שלך: {persistentCredits}</p>
+
+              {/* In-game items */}
+              <div className="flex flex-col gap-2 mb-6">
+                {[
+                  { id: 'buy-first-aid', name: '🩹 חיים נוספים', desc: '+1 חיים בתחילת המשחק', cost: 20 },
+                  { id: 'buy-extra-ammo', name: '🎯 תחמושת נוספת', desc: '+5 תחמושת מקסימלית', cost: 30 },
+                  { id: 'buy-fast-reload', name: '⚡ טעינה מהירה', desc: 'טעינה מהירה קבועה', cost: 80 },
+                  { id: 'buy-shield', name: '🟣 מגן התחלתי', desc: 'מגן 10 שניות בתחילת כל משחק', cost: 50 },
+                  { id: 'buy-triple-dome', name: '🟢 3 כיפות ברזל', desc: '3 כיפות 15 שניות בתחילת כל משחק', cost: 100 },
+                ].map(item => {
+                  const cantAfford = persistentCredits < item.cost;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={async () => {
+                        if (cantAfford || !user) return;
+                        // Deduct credits locally and in DB
+                        setPersistentCredits(prev => prev - item.cost);
+                        try {
+                          const { data: existing } = await supabase.from('player_credits').select('credits').eq('user_id', user.id).single();
+                          if (existing) {
+                            await supabase.from('player_credits').update({ credits: existing.credits - item.cost, updated_at: new Date().toISOString() }).eq('user_id', user.id);
+                          }
+                          toast({ title: `✅ ${item.name} נקנה!` });
+                        } catch { toast({ title: 'שגיאה ברכישה', variant: 'destructive' }); }
+                      }}
+                      disabled={cantAfford || !user}
+                      className={`flex items-center gap-3 p-3 rounded-xl border transition-all text-left ${
+                        cantAfford || !user
+                          ? 'bg-black/40 border-cyan-900/20 opacity-40 cursor-not-allowed'
+                          : 'bg-black/40 border-cyan-900/20 hover:border-cyan-600/40 hover:bg-cyan-900/20'
+                      }`}
+                    >
+                      <div className="flex-1">
+                        <p className="text-white text-sm font-bold">{item.name}</p>
+                        <p className="text-cyan-300/50 text-xs">{item.desc}</p>
+                      </div>
+                      <p className="text-green-400 text-sm font-bold">{item.cost} 💰</p>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Buy credits with real money */}
+              <div className="border-t border-cyan-900/30 pt-4 mb-4">
+                <h3 className="text-lg font-bold text-yellow-400 text-center mb-3" style={{ fontFamily: "'Courier New', monospace" }}>
+                  💳 קנה קרדיטים
+                </h3>
+                <div className="flex flex-col gap-2">
+                  {[
+                    { packId: 'pack-100', label: '100 💰', price: '$2.99' },
+                    { packId: 'pack-300', label: '300 💰', price: '$4.99', popular: true },
+                    { packId: 'pack-1000', label: '1000 💰', price: '$9.99' },
+                  ].map(pack => (
+                    <motion.button
+                      key={pack.packId}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={async () => {
+                        if (!user) { setShowAuthModal(true); return; }
+                        setBuyingCredits(true);
+                        try {
+                          const { data, error } = await supabase.functions.invoke('buy-credits', {
+                            body: { packId: pack.packId },
+                          });
+                          if (error) throw error;
+                          if (data?.url) window.location.href = data.url;
+                        } catch (e: any) {
+                          toast({ title: e.message || 'שגיאה', variant: 'destructive' });
+                        } finally { setBuyingCredits(false); }
+                      }}
+                      disabled={buyingCredits}
+                      className={`flex items-center justify-between p-3 rounded-xl border transition-all ${
+                        pack.popular
+                          ? 'bg-yellow-900/20 border-yellow-600/40 hover:border-yellow-400/60'
+                          : 'bg-black/40 border-cyan-900/20 hover:border-cyan-600/40'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <CreditCard className="w-4 h-4 text-yellow-400" />
+                        <span className="text-white font-bold">{pack.label}</span>
+                        {pack.popular && <span className="text-[10px] bg-yellow-500/20 text-yellow-300 px-2 py-0.5 rounded-full">פופולרי</span>}
+                      </div>
+                      <span className="text-green-400 font-bold">{pack.price}</span>
+                    </motion.button>
+                  ))}
+                </div>
+                {!user && <p className="text-center text-xs text-cyan-300/50 mt-2">🔒 התחבר כדי לקנות קרדיטים</p>}
+              </div>
+
+              <button
+                onClick={() => {
+                  if (stateRef.current) {
+                    stateRef.current.phase = 'menu';
+                    setPhase('menu');
+                  }
+                }}
+                className="w-full py-3 bg-cyan-600/60 text-white rounded-xl font-bold hover:bg-cyan-500/60 transition-colors"
+              >
+                {T('close')}
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {phase === 'playing' && gameState && gameState.mode === 'survival' && (
         <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
           <motion.div
