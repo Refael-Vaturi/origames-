@@ -295,6 +295,69 @@ export type Database = {
         }
         Relationships: []
       }
+      player_credits: {
+        Row: {
+          created_at: string
+          credits: number
+          id: string
+          total_purchased: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          credits?: number
+          id?: string
+          total_purchased?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          credits?: number
+          id?: string
+          total_purchased?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      player_skill: {
+        Row: {
+          accuracy: number
+          avg_survival_time: number
+          avg_wave_reached: number
+          created_at: string
+          games_played: number
+          id: string
+          skill_rating: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          accuracy?: number
+          avg_survival_time?: number
+          avg_wave_reached?: number
+          created_at?: string
+          games_played?: number
+          id?: string
+          skill_rating?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          accuracy?: number
+          avg_survival_time?: number
+          avg_wave_reached?: number
+          created_at?: string
+          games_played?: number
+          id?: string
+          skill_rating?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
