@@ -50,6 +50,8 @@ const IronDomeGame: React.FC = () => {
   const [buyingCredits, setBuyingCredits] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [playerSkill, setPlayerSkill] = useState(1.0);
+  const [reviveUsed, setReviveUsed] = useState(false);
+  const [showingAd, setShowingAd] = useState(false);
 
   const T = useCallback((key: string) => ironT(key, language), [language]);
   const { t: appT } = useLanguage();
