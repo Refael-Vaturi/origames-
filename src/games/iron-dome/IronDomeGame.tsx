@@ -536,10 +536,60 @@ const IronDomeGame: React.FC = () => {
   };
   const playSound = (type: string) => playSoundRef.current(type);
 
+  const showRewardedAd = (): Promise<boolean> => {
+    return new Promise((resolve) => {
+      const adBreakFn = (window as any).adBreak;
+      if (typeof adBreakFn === 'function') {
+        setShowingAd(true);
+        adBreakFn({
+          type: 'reward',
+          name: 'revive',
+          beforeReward: () => {},
+          adDismissed: () => { setShowingAd(false); resolve(false); },
+          adViewed: () => { setShowingAd(false); resolve(true); },
+          adBreakDone: (info: any) => {
+            if (info?.breakStatus === 'noAdPreloaded' || info?.breakStatus === 'frequencyCapped' || info?.breakStatus === 'other') {
+              setShowingAd(false);
+              resolve(true); // Free revive fallback
+            }
+          },
+        });
+      } else {
+        // No ad SDK available — grant free revive
+        resolve(true);
+      }
+    });
+  };
+
+  const handleRevive = async () => {
+    if (!stateRef.current || reviveUsed) return;
+    const success = await showRewardedAd();
+    if (success && stateRef.current) {
+      // Reset lives
+      stateRef.current.lives = stateRef.current.maxLives;
+      // Refill ammo
+      stateRef.current.ammo = stateRef.current.maxAmmo;
+      stateRef.current.reloading = false;
+      stateRef.current.reloadTimer = 0;
+      // Clear all threats
+      stateRef.current.threats = [];
+      stateRef.current.spawnQueue = [];
+      // Resume
+      stateRef.current.phase = 'playing';
+      setPhase('playing');
+      setGameState({ ...stateRef.current });
+      setReviveUsed(true);
+      toast({ title: '🔄 חזרת לחיים!' });
+    } else {
+      toast({ title: '😔 אין פרסומת זמינה, נסה שוב בפעם הבאה', variant: 'destructive' });
+    }
+  };
+
   const startGame = (mode: 'campaign' | 'survival') => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     setScoreSaved(false);
+    setReviveUsed(false);
     const w = window.innerWidth;
     const h = window.innerHeight;
     const s = createInitialState(w, h);
