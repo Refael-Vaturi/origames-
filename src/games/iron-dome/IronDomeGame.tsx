@@ -50,6 +50,8 @@ const IronDomeGame: React.FC = () => {
   const [buyingCredits, setBuyingCredits] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [playerSkill, setPlayerSkill] = useState(1.0);
+  const [reviveUsed, setReviveUsed] = useState(false);
+  const [showingAd, setShowingAd] = useState(false);
 
   const T = useCallback((key: string) => ironT(key, language), [language]);
   const { t: appT } = useLanguage();
@@ -534,10 +536,60 @@ const IronDomeGame: React.FC = () => {
   };
   const playSound = (type: string) => playSoundRef.current(type);
 
+  const showRewardedAd = (): Promise<boolean> => {
+    return new Promise((resolve) => {
+      const adBreakFn = (window as any).adBreak;
+      if (typeof adBreakFn === 'function') {
+        setShowingAd(true);
+        adBreakFn({
+          type: 'reward',
+          name: 'revive',
+          beforeReward: () => {},
+          adDismissed: () => { setShowingAd(false); resolve(false); },
+          adViewed: () => { setShowingAd(false); resolve(true); },
+          adBreakDone: (info: any) => {
+            if (info?.breakStatus === 'noAdPreloaded' || info?.breakStatus === 'frequencyCapped' || info?.breakStatus === 'other') {
+              setShowingAd(false);
+              resolve(true); // Free revive fallback
+            }
+          },
+        });
+      } else {
+        // No ad SDK available — grant free revive
+        resolve(true);
+      }
+    });
+  };
+
+  const handleRevive = async () => {
+    if (!stateRef.current || reviveUsed) return;
+    const success = await showRewardedAd();
+    if (success && stateRef.current) {
+      // Reset lives
+      stateRef.current.lives = stateRef.current.maxLives;
+      // Refill ammo
+      stateRef.current.ammo = stateRef.current.maxAmmo;
+      stateRef.current.reloading = false;
+      stateRef.current.reloadTimer = 0;
+      // Clear all threats
+      stateRef.current.threats = [];
+      stateRef.current.spawnQueue = [];
+      // Resume
+      stateRef.current.phase = 'playing';
+      setPhase('playing');
+      setGameState({ ...stateRef.current });
+      setReviveUsed(true);
+      toast({ title: '🔄 חזרת לחיים!' });
+    } else {
+      toast({ title: '😔 אין פרסומת זמינה, נסה שוב בפעם הבאה', variant: 'destructive' });
+    }
+  };
+
   const startGame = (mode: 'campaign' | 'survival') => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     setScoreSaved(false);
+    setReviveUsed(false);
     const w = window.innerWidth;
     const h = window.innerHeight;
     const s = createInitialState(w, h);
@@ -935,6 +987,19 @@ const IronDomeGame: React.FC = () => {
                   <p className="text-cyan-300/40 text-xs">{T('maxCombo')}</p>
                 </div>
               </div>
+
+              {/* Revive with Ad button */}
+              {!reviveUsed && (
+                <motion.button
+                  onClick={handleRevive}
+                  disabled={showingAd}
+                  className="w-full py-3 mb-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-bold text-lg hover:from-green-500 hover:to-emerald-500 transition-all shadow-[0_0_20px_rgba(34,197,94,0.3)] disabled:opacity-50"
+                  animate={{ scale: [1, 1.03, 1] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                >
+                  {showingAd ? '⏳ טוען פרסומת...' : '🔄 חזור לחיים (צפה בפרסומת)'}
+                </motion.button>
+              )}
 
               {/* Score save status */}
               <div className="text-center text-xs mb-3">
