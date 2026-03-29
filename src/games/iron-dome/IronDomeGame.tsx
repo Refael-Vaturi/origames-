@@ -547,53 +547,71 @@ const IronDomeGame: React.FC = () => {
   };
   const playSound = (type: string) => playSoundRef.current(type);
 
-  const showRewardedAd = (): Promise<boolean> => {
-    return new Promise((resolve) => {
-      const adBreakFn = (window as any).adBreak;
-      if (typeof adBreakFn === 'function') {
-        setShowingAd(true);
-        adBreakFn({
-          type: 'reward',
-          name: 'revive',
-          beforeReward: () => {},
-          adDismissed: () => { setShowingAd(false); resolve(false); },
-          adViewed: () => { setShowingAd(false); resolve(true); },
-          adBreakDone: (info: any) => {
-            if (info?.breakStatus === 'noAdPreloaded' || info?.breakStatus === 'frequencyCapped' || info?.breakStatus === 'other') {
-              setShowingAd(false);
-              resolve(true); // Free revive fallback
-            }
-          },
-        });
-      } else {
-        // No ad SDK available — grant free revive
-        resolve(true);
-      }
-    });
+  const isAdReady = useCallback(() => {
+    return typeof (window as any).adBreak === 'function';
+  }, []);
+
+  const handleRevive = () => {
+    if (!stateRef.current || reviveUsed) return;
+    
+    // Start 9-second countdown overlay
+    setShowingAd(true);
+    setAdCountdown(9);
+    
+    const countdownInterval = setInterval(() => {
+      setAdCountdown(prev => {
+        if (prev <= 1) {
+          clearInterval(countdownInterval);
+          // Try to show real ad
+          const adBreakFn = (window as any).adBreak;
+          if (typeof adBreakFn === 'function') {
+            adBreakFn({
+              type: 'reward',
+              name: 'revive',
+              beforeReward: () => {},
+              adDismissed: () => {
+                setShowingAd(false);
+                toast({ title: '😔 הפרסומת בוטלה', variant: 'destructive' });
+              },
+              adViewed: () => {
+                performRevive();
+              },
+              adBreakDone: (info: any) => {
+                if (info?.breakStatus === 'noAdPreloaded' || info?.breakStatus === 'frequencyCapped' || info?.breakStatus === 'other') {
+                  performRevive();
+                }
+              },
+            });
+          } else {
+            // No ad SDK — free revive (testing mode)
+            performRevive();
+          }
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
   };
 
-  const handleRevive = async () => {
-    if (!stateRef.current || reviveUsed) return;
-    const success = await showRewardedAd();
-    if (success && stateRef.current) {
-      // Reset lives
-      stateRef.current.lives = stateRef.current.maxLives;
-      // Refill ammo
-      stateRef.current.ammo = stateRef.current.maxAmmo;
-      stateRef.current.reloading = false;
-      stateRef.current.reloadTimer = 0;
-      // Clear all threats
-      stateRef.current.threats = [];
-      stateRef.current.spawnQueue = [];
-      // Resume
-      stateRef.current.phase = 'playing';
-      setPhase('playing');
-      setGameState({ ...stateRef.current });
-      setReviveUsed(true);
-      toast({ title: '🔄 חזרת לחיים!' });
-    } else {
-      toast({ title: '😔 אין פרסומת זמינה, נסה שוב בפעם הבאה', variant: 'destructive' });
-    }
+  const performRevive = () => {
+    if (!stateRef.current) return;
+    setShowingAd(false);
+    // Reset lives
+    stateRef.current.lives = stateRef.current.maxLives;
+    // Refill ammo
+    stateRef.current.ammo = stateRef.current.maxAmmo;
+    stateRef.current.reloading = false;
+    stateRef.current.reloadTimer = 0;
+    // Clear all threats
+    stateRef.current.threats = [];
+    // Restore all cities
+    stateRef.current.cities = stateRef.current.cities.map(c => ({ ...c, alive: true }));
+    // Resume
+    stateRef.current.phase = 'playing';
+    setPhase('playing');
+    setGameState({ ...stateRef.current });
+    setReviveUsed(true);
+    toast({ title: '🔄 חזרת לחיים!' });
   };
 
   const startGame = (mode: 'campaign' | 'survival') => {

@@ -7,8 +7,8 @@ import { renderGame } from './renderer';
 
 const GROUND_Y_RATIO = 0.85;
 const INTERCEPTOR_SPEED = 6;
-const EXPLOSION_EXPAND_RATE = 1.5;
-const EXPLOSION_MAX_RADIUS = 25;
+const EXPLOSION_EXPAND_RATE = 1.8;
+const EXPLOSION_MAX_RADIUS = 30;
 const MAGAZINE_SIZE = 20;
 const RELOAD_TIME = 1500;
 const FAST_RELOAD_TIME = 300;
