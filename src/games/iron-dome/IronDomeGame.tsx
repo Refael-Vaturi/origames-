@@ -52,6 +52,10 @@ const IronDomeGame: React.FC = () => {
   const [playerSkill, setPlayerSkill] = useState(1.0);
   const [reviveUsed, setReviveUsed] = useState(false);
   const [showingAd, setShowingAd] = useState(false);
+  const [adCountdown, setAdCountdown] = useState(0);
+  const [bestWave, setBestWave] = useState<number>(() => {
+    try { return parseInt(localStorage.getItem('ironDomeBestWave') || '0'); } catch { return 0; }
+  });
 
   const T = useCallback((key: string) => ironT(key, language), [language]);
   const { t: appT } = useLanguage();
@@ -241,42 +245,50 @@ const IronDomeGame: React.FC = () => {
     return () => { musicRef.current.stop(); };
   }, []);
 
-  // Auto-save score on game over or victory + save skill
+  // Auto-save score on game over or victory + save skill + save best wave
   useEffect(() => {
-    if ((phase === 'game-over' || phase === 'victory') && gameState && user && !scoreSaved) {
-      saveScore(gameState);
-      // Save skill data for adaptive difficulty
-      const accuracy = gameState.totalFired > 0 ? gameState.totalIntercepted / gameState.totalFired : 0.5;
-      const updateSkill = async () => {
-        try {
-          const { data: existing } = await supabase.from('player_skill').select('*').eq('user_id', user.id).single();
-          if (existing) {
-            const gp = existing.games_played + 1;
-            const newAccuracy = (existing.accuracy * existing.games_played + accuracy) / gp;
-            const newWave = (existing.avg_wave_reached * existing.games_played + gameState.wave) / gp;
-            const newSurv = gameState.mode === 'survival'
-              ? (existing.avg_survival_time * existing.games_played + gameState.survivalTimer / 1000) / gp
-              : existing.avg_survival_time;
-            const rating = Math.max(0.3, Math.min(3.0, (newAccuracy * 2 + newWave / 5 + newSurv / 60) / 3));
-            await supabase.from('player_skill').update({
-              accuracy: newAccuracy, avg_wave_reached: newWave, avg_survival_time: newSurv,
-              games_played: gp, skill_rating: rating, updated_at: new Date().toISOString(),
-            }).eq('user_id', user.id);
-            setPlayerSkill(rating);
-          } else {
-            const rating = Math.max(0.3, Math.min(3.0, accuracy * 2));
-            await supabase.from('player_skill').insert({
-              user_id: user.id, accuracy, avg_wave_reached: gameState.wave,
-              avg_survival_time: gameState.mode === 'survival' ? gameState.survivalTimer / 1000 : 0,
-              games_played: 1, skill_rating: rating,
-            });
-            setPlayerSkill(rating);
-          }
-        } catch (e) { console.error('Failed to save skill:', e); }
-      };
-      updateSkill();
+    if ((phase === 'game-over' || phase === 'victory') && gameState) {
+      // Save best wave to localStorage
+      if (gameState.wave > bestWave) {
+        setBestWave(gameState.wave);
+        try { localStorage.setItem('ironDomeBestWave', String(gameState.wave)); } catch {}
+      }
+
+      if (user && !scoreSaved) {
+        saveScore(gameState);
+        // Save skill data for adaptive difficulty
+        const accuracy = gameState.totalFired > 0 ? gameState.totalIntercepted / gameState.totalFired : 0.5;
+        const updateSkill = async () => {
+          try {
+            const { data: existing } = await supabase.from('player_skill').select('*').eq('user_id', user.id).single();
+            if (existing) {
+              const gp = existing.games_played + 1;
+              const newAccuracy = (existing.accuracy * existing.games_played + accuracy) / gp;
+              const newWave = (existing.avg_wave_reached * existing.games_played + gameState.wave) / gp;
+              const newSurv = gameState.mode === 'survival'
+                ? (existing.avg_survival_time * existing.games_played + gameState.survivalTimer / 1000) / gp
+                : existing.avg_survival_time;
+              const rating = Math.max(0.3, Math.min(3.0, (newAccuracy * 2 + newWave / 5 + newSurv / 60) / 3));
+              await supabase.from('player_skill').update({
+                accuracy: newAccuracy, avg_wave_reached: newWave, avg_survival_time: newSurv,
+                games_played: gp, skill_rating: rating, updated_at: new Date().toISOString(),
+              }).eq('user_id', user.id);
+              setPlayerSkill(rating);
+            } else {
+              const rating = Math.max(0.3, Math.min(3.0, accuracy * 2));
+              await supabase.from('player_skill').insert({
+                user_id: user.id, accuracy, avg_wave_reached: gameState.wave,
+                avg_survival_time: gameState.mode === 'survival' ? gameState.survivalTimer / 1000 : 0,
+                games_played: 1, skill_rating: rating,
+              });
+              setPlayerSkill(rating);
+            }
+          } catch (e) { console.error('Failed to save skill:', e); }
+        };
+        updateSkill();
+      }
     }
-  }, [phase, gameState, user, scoreSaved, saveScore]);
+  }, [phase, gameState, user, scoreSaved, saveScore, bestWave]);
 
   // Fetch persistent credits and player skill
   useEffect(() => {
@@ -543,53 +555,71 @@ const IronDomeGame: React.FC = () => {
   };
   const playSound = (type: string) => playSoundRef.current(type);
 
-  const showRewardedAd = (): Promise<boolean> => {
-    return new Promise((resolve) => {
-      const adBreakFn = (window as any).adBreak;
-      if (typeof adBreakFn === 'function') {
-        setShowingAd(true);
-        adBreakFn({
-          type: 'reward',
-          name: 'revive',
-          beforeReward: () => {},
-          adDismissed: () => { setShowingAd(false); resolve(false); },
-          adViewed: () => { setShowingAd(false); resolve(true); },
-          adBreakDone: (info: any) => {
-            if (info?.breakStatus === 'noAdPreloaded' || info?.breakStatus === 'frequencyCapped' || info?.breakStatus === 'other') {
-              setShowingAd(false);
-              resolve(true); // Free revive fallback
-            }
-          },
-        });
-      } else {
-        // No ad SDK available — grant free revive
-        resolve(true);
-      }
-    });
+  const isAdReady = useCallback(() => {
+    return typeof (window as any).adBreak === 'function';
+  }, []);
+
+  const handleRevive = () => {
+    if (!stateRef.current || reviveUsed) return;
+    
+    // Start 9-second countdown overlay
+    setShowingAd(true);
+    setAdCountdown(9);
+    
+    const countdownInterval = setInterval(() => {
+      setAdCountdown(prev => {
+        if (prev <= 1) {
+          clearInterval(countdownInterval);
+          // Try to show real ad
+          const adBreakFn = (window as any).adBreak;
+          if (typeof adBreakFn === 'function') {
+            adBreakFn({
+              type: 'reward',
+              name: 'revive',
+              beforeReward: () => {},
+              adDismissed: () => {
+                setShowingAd(false);
+                toast({ title: '😔 הפרסומת בוטלה', variant: 'destructive' });
+              },
+              adViewed: () => {
+                performRevive();
+              },
+              adBreakDone: (info: any) => {
+                if (info?.breakStatus === 'noAdPreloaded' || info?.breakStatus === 'frequencyCapped' || info?.breakStatus === 'other') {
+                  performRevive();
+                }
+              },
+            });
+          } else {
+            // No ad SDK — free revive (testing mode)
+            performRevive();
+          }
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
   };
 
-  const handleRevive = async () => {
-    if (!stateRef.current || reviveUsed) return;
-    const success = await showRewardedAd();
-    if (success && stateRef.current) {
-      // Reset lives
-      stateRef.current.lives = stateRef.current.maxLives;
-      // Refill ammo
-      stateRef.current.ammo = stateRef.current.maxAmmo;
-      stateRef.current.reloading = false;
-      stateRef.current.reloadTimer = 0;
-      // Clear all threats
-      stateRef.current.threats = [];
-      stateRef.current.spawnQueue = [];
-      // Resume
-      stateRef.current.phase = 'playing';
-      setPhase('playing');
-      setGameState({ ...stateRef.current });
-      setReviveUsed(true);
-      toast({ title: '🔄 חזרת לחיים!' });
-    } else {
-      toast({ title: '😔 אין פרסומת זמינה, נסה שוב בפעם הבאה', variant: 'destructive' });
-    }
+  const performRevive = () => {
+    if (!stateRef.current) return;
+    setShowingAd(false);
+    // Reset lives
+    stateRef.current.lives = stateRef.current.maxLives;
+    // Refill ammo
+    stateRef.current.ammo = stateRef.current.maxAmmo;
+    stateRef.current.reloading = false;
+    stateRef.current.reloadTimer = 0;
+    // Clear all threats
+    stateRef.current.threats = [];
+    // Restore all cities
+    stateRef.current.cities = stateRef.current.cities.map(c => ({ ...c, alive: true }));
+    // Resume
+    stateRef.current.phase = 'playing';
+    setPhase('playing');
+    setGameState({ ...stateRef.current });
+    setReviveUsed(true);
+    toast({ title: '🔄 חזרת לחיים!' });
   };
 
   const startGame = (mode: 'campaign' | 'survival') => {
@@ -980,7 +1010,7 @@ const IronDomeGame: React.FC = () => {
               </motion.h2>
               <div className="text-5xl font-bold text-yellow-400 my-4">{gameState.score}</div>
 
-              <div className="grid grid-cols-3 gap-3 mb-4 text-center">
+              <div className="grid grid-cols-2 gap-3 mb-4 text-center">
                 <div className="bg-black/40 rounded-xl p-2">
                   <p className="text-yellow-400 text-lg font-bold">{gameState.wave}</p>
                   <p className="text-cyan-300/40 text-xs">{T('wave')}</p>
@@ -993,10 +1023,14 @@ const IronDomeGame: React.FC = () => {
                   <p className="text-orange-400 text-lg font-bold">x{gameState.maxCombo}</p>
                   <p className="text-cyan-300/40 text-xs">{T('maxCombo')}</p>
                 </div>
+                <div className="bg-black/40 rounded-xl p-2">
+                  <p className="text-purple-400 text-lg font-bold">{bestWave}</p>
+                  <p className="text-cyan-300/40 text-xs">🏆 שיא גל</p>
+                </div>
               </div>
 
-              {/* Revive with Ad button - temporarily hidden */}
-              {/* {!reviveUsed && (
+              {/* Revive with Ad button */}
+              {!reviveUsed && (
                 <motion.button
                   onClick={handleRevive}
                   disabled={showingAd}
@@ -1004,9 +1038,9 @@ const IronDomeGame: React.FC = () => {
                   animate={{ scale: [1, 1.03, 1] }}
                   transition={{ duration: 1.5, repeat: Infinity }}
                 >
-                  {showingAd ? '⏳ טוען פרסומת...' : '🔄 חזור לחיים (צפה בפרסומת)'}
+                  {isAdReady() ? '🔄 חזור לחיים (צפה בפרסומת)' : '🔄 חזור לחיים (מצב ניסיון)'}
                 </motion.button>
-              )} */}
+              )}
 
               {/* Score save status */}
               <div className="text-center text-xs mb-3">
@@ -1629,6 +1663,42 @@ const IronDomeGame: React.FC = () => {
                 </button>
               </div>
             </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Ad Loading Overlay */}
+      <AnimatePresence>
+        {showingAd && (
+          <motion.div
+            key="ad-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 flex items-center justify-center z-50 bg-black/90"
+          >
+            <div className="text-center">
+              <motion.div
+                className="text-6xl mb-4"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+              >
+                📺
+              </motion.div>
+              <h3 className="text-2xl font-bold text-white mb-2" style={{ fontFamily: "'Courier New', monospace" }}>
+                טוען פרסומת...
+              </h3>
+              <motion.p
+                className="text-5xl font-black text-cyan-400 tabular-nums"
+                key={adCountdown}
+                initial={{ scale: 1.5, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                style={{ fontFamily: "'Courier New', monospace", textShadow: '0 0 30px rgba(0,200,255,0.5)' }}
+              >
+                {adCountdown}
+              </motion.p>
+              <p className="text-white/40 text-sm mt-3">מכין את ההחייאה...</p>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

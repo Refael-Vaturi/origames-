@@ -7,8 +7,8 @@ import { renderGame } from './renderer';
 
 const GROUND_Y_RATIO = 0.85;
 const INTERCEPTOR_SPEED = 6;
-const EXPLOSION_EXPAND_RATE = 1.5;
-const EXPLOSION_MAX_RADIUS = 25;
+const EXPLOSION_EXPAND_RATE = 1.8;
+const EXPLOSION_MAX_RADIUS = 30;
 const MAGAZINE_SIZE = 20;
 const RELOAD_TIME = 1500;
 const FAST_RELOAD_TIME = 300;
@@ -739,6 +739,7 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
             s.comboMultiplier = Math.min(5, Math.floor(s.combo / 5) + 1);
             s.totalIntercepted++;
             s.waveDestroyedThreats++;
+            s.screenShake = Math.max(s.screenShake, 5); // screen shake on interception
             const comboCredits: Record<number, number> = { 5: 3, 10: 5, 15: 8, 20: 12, 30: 20 };
             if (comboCredits[s.combo]) {
               s.credits += comboCredits[s.combo];

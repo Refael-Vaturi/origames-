@@ -590,6 +590,16 @@ function renderInterceptor(ctx: CanvasRenderingContext2D, int: Interceptor) {
 }
 
 function renderExplosion(ctx: CanvasRenderingContext2D, exp: Explosion) {
+  // Flash effect at start of explosion
+  if (exp.radius < exp.maxRadius * 0.15) {
+    const flashAlpha = 1 - (exp.radius / (exp.maxRadius * 0.15));
+    ctx.globalAlpha = flashAlpha * 0.6;
+    ctx.fillStyle = '#FFFFFF';
+    ctx.beginPath();
+    ctx.arc(exp.x, exp.y, exp.maxRadius * 0.8, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
   ctx.globalAlpha = exp.alpha;
 
   if (exp.isGround) {
