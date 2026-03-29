@@ -1017,8 +1017,8 @@ const IronDomeGame: React.FC = () => {
                 </div>
               </div>
 
-              {/* Revive with Ad button - temporarily hidden */}
-              {/* {!reviveUsed && (
+              {/* Revive with Ad button */}
+              {!reviveUsed && (
                 <motion.button
                   onClick={handleRevive}
                   disabled={showingAd}
@@ -1026,9 +1026,9 @@ const IronDomeGame: React.FC = () => {
                   animate={{ scale: [1, 1.03, 1] }}
                   transition={{ duration: 1.5, repeat: Infinity }}
                 >
-                  {showingAd ? '⏳ טוען פרסומת...' : '🔄 חזור לחיים (צפה בפרסומת)'}
+                  {isAdReady() ? '🔄 חזור לחיים (צפה בפרסומת)' : '🔄 חזור לחיים (מצב ניסיון)'}
                 </motion.button>
-              )} */}
+              )}
 
               {/* Score save status */}
               <div className="text-center text-xs mb-3">
