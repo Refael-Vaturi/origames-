@@ -739,6 +739,7 @@ export function update(state: GameState, dt: number, w: number, h: number, time:
             s.comboMultiplier = Math.min(5, Math.floor(s.combo / 5) + 1);
             s.totalIntercepted++;
             s.waveDestroyedThreats++;
+            s.screenShake = Math.max(s.screenShake, 5); // screen shake on interception
             const comboCredits: Record<number, number> = { 5: 3, 10: 5, 15: 8, 20: 12, 30: 20 };
             if (comboCredits[s.combo]) {
               s.credits += comboCredits[s.combo];
