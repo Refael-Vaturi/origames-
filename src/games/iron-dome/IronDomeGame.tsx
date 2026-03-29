@@ -1662,6 +1662,42 @@ const IronDomeGame: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Ad Loading Overlay */}
+      <AnimatePresence>
+        {showingAd && (
+          <motion.div
+            key="ad-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 flex items-center justify-center z-50 bg-black/90"
+          >
+            <div className="text-center">
+              <motion.div
+                className="text-6xl mb-4"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+              >
+                📺
+              </motion.div>
+              <h3 className="text-2xl font-bold text-white mb-2" style={{ fontFamily: "'Courier New', monospace" }}>
+                טוען פרסומת...
+              </h3>
+              <motion.p
+                className="text-5xl font-black text-cyan-400 tabular-nums"
+                key={adCountdown}
+                initial={{ scale: 1.5, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                style={{ fontFamily: "'Courier New', monospace", textShadow: '0 0 30px rgba(0,200,255,0.5)' }}
+              >
+                {adCountdown}
+              </motion.p>
+              <p className="text-white/40 text-sm mt-3">מכין את ההחייאה...</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
