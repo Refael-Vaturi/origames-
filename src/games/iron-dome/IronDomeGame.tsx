@@ -52,6 +52,10 @@ const IronDomeGame: React.FC = () => {
   const [playerSkill, setPlayerSkill] = useState(1.0);
   const [reviveUsed, setReviveUsed] = useState(false);
   const [showingAd, setShowingAd] = useState(false);
+  const [adCountdown, setAdCountdown] = useState(0);
+  const [bestWave, setBestWave] = useState<number>(() => {
+    try { return parseInt(localStorage.getItem('ironDomeBestWave') || '0'); } catch { return 0; }
+  });
 
   const T = useCallback((key: string) => ironT(key, language), [language]);
   const { t: appT } = useLanguage();
