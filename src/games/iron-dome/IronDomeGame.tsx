@@ -1010,7 +1010,7 @@ const IronDomeGame: React.FC = () => {
               </motion.h2>
               <div className="text-5xl font-bold text-yellow-400 my-4">{gameState.score}</div>
 
-              <div className="grid grid-cols-3 gap-3 mb-4 text-center">
+              <div className="grid grid-cols-2 gap-3 mb-4 text-center">
                 <div className="bg-black/40 rounded-xl p-2">
                   <p className="text-yellow-400 text-lg font-bold">{gameState.wave}</p>
                   <p className="text-cyan-300/40 text-xs">{T('wave')}</p>
@@ -1022,6 +1022,10 @@ const IronDomeGame: React.FC = () => {
                 <div className="bg-black/40 rounded-xl p-2">
                   <p className="text-orange-400 text-lg font-bold">x{gameState.maxCombo}</p>
                   <p className="text-cyan-300/40 text-xs">{T('maxCombo')}</p>
+                </div>
+                <div className="bg-black/40 rounded-xl p-2">
+                  <p className="text-purple-400 text-lg font-bold">{bestWave}</p>
+                  <p className="text-cyan-300/40 text-xs">🏆 שיא גל</p>
                 </div>
               </div>
 
