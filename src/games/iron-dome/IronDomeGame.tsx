@@ -56,6 +56,21 @@ const IronDomeGame: React.FC = () => {
   const [bestWave, setBestWave] = useState<number>(() => {
     try { return parseInt(localStorage.getItem('ironDomeBestWave') || '0'); } catch { return 0; }
   });
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [showInstallBanner, setShowInstallBanner] = useState(false);
+
+  // Load persistent shop purchases from localStorage
+  const getPersistentUpgrades = useCallback(() => {
+    try {
+      return JSON.parse(localStorage.getItem('ironDomeUpgrades') || '{}') as Record<string, number>;
+    } catch { return {} as Record<string, number>; }
+  }, []);
+
+  const savePersistentUpgrade = useCallback((id: string, count: number) => {
+    const upgrades = getPersistentUpgrades();
+    upgrades[id] = (upgrades[id] || 0) + count;
+    localStorage.setItem('ironDomeUpgrades', JSON.stringify(upgrades));
+  }, [getPersistentUpgrades]);
 
   const T = useCallback((key: string) => ironT(key, language), [language]);
   const { t: appT } = useLanguage();
@@ -243,6 +258,19 @@ const IronDomeGame: React.FC = () => {
 
   useEffect(() => {
     return () => { musicRef.current.stop(); };
+  }, []);
+
+  // PWA install prompt
+  useEffect(() => {
+    const handler = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      // Show banner if not dismissed before
+      const dismissed = localStorage.getItem('ironDomePWADismissed');
+      if (!dismissed) setShowInstallBanner(true);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
   }, []);
 
   // Auto-save score on game over or victory + save skill + save best wave
@@ -631,6 +659,29 @@ const IronDomeGame: React.FC = () => {
     const h = window.innerHeight;
     const s = createInitialState(w, h);
     s.mode = mode;
+
+    // Apply persistent shop upgrades
+    const upgrades = getPersistentUpgrades();
+    if (upgrades['buy-first-aid']) {
+      const extra = upgrades['buy-first-aid'];
+      s.lives += extra;
+      s.maxLives += extra;
+    }
+    if (upgrades['buy-extra-ammo']) {
+      const extra = upgrades['buy-extra-ammo'] * 5;
+      s.maxAmmo += extra;
+      s.ammo = s.maxAmmo;
+    }
+    if (upgrades['buy-fast-reload']) {
+      s.fastReload = true;
+    }
+    if (upgrades['buy-shield']) {
+      s.shieldTimer = upgrades['buy-shield'] * 10000;
+    }
+    if (upgrades['buy-triple-dome']) {
+      s.tripleInterceptorTimer = upgrades['buy-triple-dome'] * 15000;
+    }
+
     stateRef.current = startWave(s, w, h, playerSkill);
     setPhase(stateRef.current.phase);
     setGameState({ ...stateRef.current });
@@ -1334,6 +1385,8 @@ const IronDomeGame: React.FC = () => {
                   { id: 'buy-triple-dome', name: '🟢 3 כיפות ברזל', desc: '3 כיפות 15 שניות בתחילת כל משחק', cost: 100 },
                 ].map(item => {
                   const cantAfford = persistentCredits < item.cost;
+                  const upgrades = getPersistentUpgrades();
+                  const owned = upgrades[item.id] || 0;
                   return (
                     <button
                       key={item.id}
@@ -1341,12 +1394,14 @@ const IronDomeGame: React.FC = () => {
                         if (cantAfford || !user) return;
                         // Deduct credits locally and in DB
                         setPersistentCredits(prev => prev - item.cost);
+                        // Save upgrade to localStorage
+                        savePersistentUpgrade(item.id, 1);
                         try {
                           const { data: existing } = await supabase.from('player_credits').select('credits').eq('user_id', user.id).single();
                           if (existing) {
                             await supabase.from('player_credits').update({ credits: existing.credits - item.cost, updated_at: new Date().toISOString() }).eq('user_id', user.id);
                           }
-                          toast({ title: `✅ ${item.name} נקנה!` });
+                          toast({ title: `✅ ${item.name} נקנה! יופעל במשחק הבא` });
                         } catch { toast({ title: 'שגיאה ברכישה', variant: 'destructive' }); }
                       }}
                       disabled={cantAfford || !user}
@@ -1360,7 +1415,10 @@ const IronDomeGame: React.FC = () => {
                         <p className="text-white text-sm font-bold">{item.name}</p>
                         <p className="text-cyan-300/50 text-xs">{item.desc}</p>
                       </div>
-                      <p className="text-green-400 text-sm font-bold">{item.cost} 💰</p>
+                      <div className="text-right">
+                        <p className="text-green-400 text-sm font-bold">{item.cost} 💰</p>
+                        {owned > 0 && <p className="text-cyan-300/50 text-[10px]">x{owned} נקנו</p>}
+                      </div>
                     </button>
                   );
                 })}
@@ -1699,6 +1757,48 @@ const IronDomeGame: React.FC = () => {
               </motion.p>
               <p className="text-white/40 text-sm mt-3">מכין את ההחייאה...</p>
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* PWA Install Banner */}
+      <AnimatePresence>
+        {showInstallBanner && phase === 'menu' && (
+          <motion.div
+            key="pwa-install"
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            className="absolute bottom-4 left-4 right-4 z-50 bg-gradient-to-r from-cyan-900/90 to-blue-900/90 backdrop-blur-md border border-cyan-500/40 rounded-2xl p-4 flex items-center gap-3 shadow-[0_0_30px_rgba(0,200,255,0.2)]"
+          >
+            <img src="/iron-dome-icon-512.png" alt="Iron Dome" className="w-12 h-12 rounded-xl" />
+            <div className="flex-1">
+              <p className="text-white font-bold text-sm">התקן את Iron Dome</p>
+              <p className="text-cyan-300/60 text-xs">שחק במסך מלא כמו אפליקציה!</p>
+            </div>
+            <button
+              onClick={async () => {
+                if (deferredPrompt) {
+                  deferredPrompt.prompt();
+                  await deferredPrompt.userChoice;
+                  setDeferredPrompt(null);
+                }
+                setShowInstallBanner(false);
+                localStorage.setItem('ironDomePWADismissed', '1');
+              }}
+              className="px-4 py-2 bg-cyan-500 text-white rounded-xl font-bold text-sm hover:bg-cyan-400 transition-colors whitespace-nowrap"
+            >
+              התקן
+            </button>
+            <button
+              onClick={() => {
+                setShowInstallBanner(false);
+                localStorage.setItem('ironDomePWADismissed', '1');
+              }}
+              className="text-white/40 hover:text-white/70 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </motion.div>
         )}
       </AnimatePresence>
