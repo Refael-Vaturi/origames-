@@ -1760,6 +1760,48 @@ const IronDomeGame: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* PWA Install Banner */}
+      <AnimatePresence>
+        {showInstallBanner && phase === 'menu' && (
+          <motion.div
+            key="pwa-install"
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            className="absolute bottom-4 left-4 right-4 z-50 bg-gradient-to-r from-cyan-900/90 to-blue-900/90 backdrop-blur-md border border-cyan-500/40 rounded-2xl p-4 flex items-center gap-3 shadow-[0_0_30px_rgba(0,200,255,0.2)]"
+          >
+            <img src="/iron-dome-icon-512.png" alt="Iron Dome" className="w-12 h-12 rounded-xl" />
+            <div className="flex-1">
+              <p className="text-white font-bold text-sm">התקן את Iron Dome</p>
+              <p className="text-cyan-300/60 text-xs">שחק במסך מלא כמו אפליקציה!</p>
+            </div>
+            <button
+              onClick={async () => {
+                if (deferredPrompt) {
+                  deferredPrompt.prompt();
+                  await deferredPrompt.userChoice;
+                  setDeferredPrompt(null);
+                }
+                setShowInstallBanner(false);
+                localStorage.setItem('ironDomePWADismissed', '1');
+              }}
+              className="px-4 py-2 bg-cyan-500 text-white rounded-xl font-bold text-sm hover:bg-cyan-400 transition-colors whitespace-nowrap"
+            >
+              התקן
+            </button>
+            <button
+              onClick={() => {
+                setShowInstallBanner(false);
+                localStorage.setItem('ironDomePWADismissed', '1');
+              }}
+              className="text-white/40 hover:text-white/70 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
