@@ -260,6 +260,19 @@ const IronDomeGame: React.FC = () => {
     return () => { musicRef.current.stop(); };
   }, []);
 
+  // PWA install prompt
+  useEffect(() => {
+    const handler = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      // Show banner if not dismissed before
+      const dismissed = localStorage.getItem('ironDomePWADismissed');
+      if (!dismissed) setShowInstallBanner(true);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
   // Auto-save score on game over or victory + save skill + save best wave
   useEffect(() => {
     if ((phase === 'game-over' || phase === 'victory') && gameState) {
