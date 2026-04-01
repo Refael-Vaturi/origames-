@@ -1385,6 +1385,8 @@ const IronDomeGame: React.FC = () => {
                   { id: 'buy-triple-dome', name: '🟢 3 כיפות ברזל', desc: '3 כיפות 15 שניות בתחילת כל משחק', cost: 100 },
                 ].map(item => {
                   const cantAfford = persistentCredits < item.cost;
+                  const upgrades = getPersistentUpgrades();
+                  const owned = upgrades[item.id] || 0;
                   return (
                     <button
                       key={item.id}
@@ -1392,12 +1394,14 @@ const IronDomeGame: React.FC = () => {
                         if (cantAfford || !user) return;
                         // Deduct credits locally and in DB
                         setPersistentCredits(prev => prev - item.cost);
+                        // Save upgrade to localStorage
+                        savePersistentUpgrade(item.id, 1);
                         try {
                           const { data: existing } = await supabase.from('player_credits').select('credits').eq('user_id', user.id).single();
                           if (existing) {
                             await supabase.from('player_credits').update({ credits: existing.credits - item.cost, updated_at: new Date().toISOString() }).eq('user_id', user.id);
                           }
-                          toast({ title: `✅ ${item.name} נקנה!` });
+                          toast({ title: `✅ ${item.name} נקנה! יופעל במשחק הבא` });
                         } catch { toast({ title: 'שגיאה ברכישה', variant: 'destructive' }); }
                       }}
                       disabled={cantAfford || !user}
@@ -1411,7 +1415,10 @@ const IronDomeGame: React.FC = () => {
                         <p className="text-white text-sm font-bold">{item.name}</p>
                         <p className="text-cyan-300/50 text-xs">{item.desc}</p>
                       </div>
-                      <p className="text-green-400 text-sm font-bold">{item.cost} 💰</p>
+                      <div className="text-right">
+                        <p className="text-green-400 text-sm font-bold">{item.cost} 💰</p>
+                        {owned > 0 && <p className="text-cyan-300/50 text-[10px]">x{owned} נקנו</p>}
+                      </div>
                     </button>
                   );
                 })}
