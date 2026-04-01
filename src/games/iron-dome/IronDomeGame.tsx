@@ -1777,29 +1777,32 @@ const IronDomeGame: React.FC = () => {
                 <p className="text-white font-bold text-lg">רוצה להוריד את האפליקציה?</p>
                 <p className="text-cyan-300/70 text-sm mt-1">התקן את Iron Dome על מסך הבית ושחק במסך מלא כמו אפליקציה אמיתית!</p>
               </div>
-            <button
-              onClick={async () => {
-                if (deferredPrompt) {
-                  deferredPrompt.prompt();
-                  await deferredPrompt.userChoice;
-                  setDeferredPrompt(null);
-                }
-                setShowInstallBanner(false);
-                localStorage.setItem('ironDomePWADismissed', '1');
-              }}
-              className="px-4 py-2 bg-cyan-500 text-white rounded-xl font-bold text-sm hover:bg-cyan-400 transition-colors whitespace-nowrap"
-            >
-              התקן
-            </button>
-            <button
-              onClick={() => {
-                setShowInstallBanner(false);
-                localStorage.setItem('ironDomePWADismissed', '1');
-              }}
-              className="text-white/40 hover:text-white/70 transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
+              <div className="flex gap-3 w-full">
+                <button
+                  onClick={async () => {
+                    if (deferredPrompt) {
+                      deferredPrompt.prompt();
+                      await deferredPrompt.userChoice;
+                      setDeferredPrompt(null);
+                    }
+                    setShowInstallBanner(false);
+                    localStorage.setItem('ironDomePWADismissed', '1');
+                  }}
+                  className="flex-1 py-3 bg-cyan-500 text-white rounded-xl font-bold text-base hover:bg-cyan-400 transition-colors"
+                >
+                  כן, להתקין! 🚀
+                </button>
+                <button
+                  onClick={() => {
+                    setShowInstallBanner(false);
+                    localStorage.setItem('ironDomePWADismissed', '1');
+                  }}
+                  className="flex-1 py-3 bg-white/10 text-white/70 rounded-xl font-medium text-base hover:bg-white/20 transition-colors"
+                >
+                  לא תודה
+                </button>
+              </div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
