@@ -56,6 +56,21 @@ const IronDomeGame: React.FC = () => {
   const [bestWave, setBestWave] = useState<number>(() => {
     try { return parseInt(localStorage.getItem('ironDomeBestWave') || '0'); } catch { return 0; }
   });
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [showInstallBanner, setShowInstallBanner] = useState(false);
+
+  // Load persistent shop purchases from localStorage
+  const getPersistentUpgrades = useCallback(() => {
+    try {
+      return JSON.parse(localStorage.getItem('ironDomeUpgrades') || '{}') as Record<string, number>;
+    } catch { return {} as Record<string, number>; }
+  }, []);
+
+  const savePersistentUpgrade = useCallback((id: string, count: number) => {
+    const upgrades = getPersistentUpgrades();
+    upgrades[id] = (upgrades[id] || 0) + count;
+    localStorage.setItem('ironDomeUpgrades', JSON.stringify(upgrades));
+  }, [getPersistentUpgrades]);
 
   const T = useCallback((key: string) => ironT(key, language), [language]);
   const { t: appT } = useLanguage();
