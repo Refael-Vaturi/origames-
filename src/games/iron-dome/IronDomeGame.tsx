@@ -659,6 +659,29 @@ const IronDomeGame: React.FC = () => {
     const h = window.innerHeight;
     const s = createInitialState(w, h);
     s.mode = mode;
+
+    // Apply persistent shop upgrades
+    const upgrades = getPersistentUpgrades();
+    if (upgrades['buy-first-aid']) {
+      const extra = upgrades['buy-first-aid'];
+      s.lives += extra;
+      s.maxLives += extra;
+    }
+    if (upgrades['buy-extra-ammo']) {
+      const extra = upgrades['buy-extra-ammo'] * 5;
+      s.maxAmmo += extra;
+      s.ammo = s.maxAmmo;
+    }
+    if (upgrades['buy-fast-reload']) {
+      s.fastReload = true;
+    }
+    if (upgrades['buy-shield']) {
+      s.shieldTimer = upgrades['buy-shield'] * 10000;
+    }
+    if (upgrades['buy-triple-dome']) {
+      s.tripleInterceptorTimer = upgrades['buy-triple-dome'] * 15000;
+    }
+
     stateRef.current = startWave(s, w, h, playerSkill);
     setPhase(stateRef.current.phase);
     setGameState({ ...stateRef.current });
