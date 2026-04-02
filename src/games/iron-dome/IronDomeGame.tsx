@@ -285,6 +285,11 @@ const IronDomeGame: React.FC = () => {
         setBestWave(gameState.wave);
         try { localStorage.setItem('ironDomeBestWave', String(gameState.wave)); } catch {}
       }
+      // Save campaign level progress
+      if (gameState.mode === 'campaign' && gameState.wave > campaignMaxLevel) {
+        setCampaignMaxLevel(gameState.wave);
+        try { localStorage.setItem('ironDomeCampaignLevel', String(gameState.wave)); } catch {}
+      }
 
       if (user && !scoreSaved) {
         saveScore(gameState);
