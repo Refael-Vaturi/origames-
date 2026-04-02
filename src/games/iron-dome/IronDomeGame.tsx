@@ -1810,8 +1810,8 @@ const IronDomeGame: React.FC = () => {
           >
             <img src="/iron-dome-icon-512.png" alt="Iron Dome" className="w-12 h-12 rounded-xl" />
             <div className="flex-1">
-              <p className="text-white font-bold text-sm">התקן את Iron Dome</p>
-              <p className="text-cyan-300/60 text-xs">שחק במסך מלא כמו אפליקציה!</p>
+              <p className="text-white font-bold text-sm">{T('installApp')}</p>
+              <p className="text-cyan-300/60 text-xs">{T('installDesc')}</p>
             </div>
             <button
               onClick={async () => {
