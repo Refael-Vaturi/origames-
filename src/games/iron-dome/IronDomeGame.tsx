@@ -1506,7 +1506,24 @@ const IronDomeGame: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {phase === 'playing' && gameState && gameState.mode === 'survival' && (
+      {/* Level Select Screen */}
+      <AnimatePresence>
+        {phase === 'level-select' && (
+          <LevelSelectScreen
+            maxUnlocked={campaignMaxLevel}
+            onSelectLevel={(level) => startGame('campaign', level)}
+            onBack={() => {
+              if (stateRef.current) {
+                stateRef.current.phase = 'menu';
+                setPhase('menu');
+              }
+            }}
+            T={T}
+          />
+        )}
+      </AnimatePresence>
+
+
         <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
           <motion.div
             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-black/50 backdrop-blur-sm border border-cyan-500/30"
