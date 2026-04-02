@@ -12,6 +12,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { t as ironT } from './i18n';
 import LanguageSelector from '@/components/LanguageSelector';
 import { supabase } from '@/integrations/supabase/client';
+import LevelSelectScreen from './LevelSelectScreen';
 import { lovable } from '@/integrations/lovable';
 import { GameMusic } from './music';
 import { toast } from '@/hooks/use-toast';
@@ -58,6 +59,9 @@ const IronDomeGame: React.FC = () => {
   });
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
+  const [campaignMaxLevel, setCampaignMaxLevel] = useState<number>(() => {
+    try { return parseInt(localStorage.getItem('ironDomeCampaignLevel') || '1'); } catch { return 1; }
+  });
 
   // Load persistent shop purchases from localStorage
   const getPersistentUpgrades = useCallback(() => {
@@ -280,6 +284,11 @@ const IronDomeGame: React.FC = () => {
       if (gameState.wave > bestWave) {
         setBestWave(gameState.wave);
         try { localStorage.setItem('ironDomeBestWave', String(gameState.wave)); } catch {}
+      }
+      // Save campaign level progress
+      if (gameState.mode === 'campaign' && gameState.wave > campaignMaxLevel) {
+        setCampaignMaxLevel(gameState.wave);
+        try { localStorage.setItem('ironDomeCampaignLevel', String(gameState.wave)); } catch {}
       }
 
       if (user && !scoreSaved) {
@@ -650,7 +659,7 @@ const IronDomeGame: React.FC = () => {
     toast({ title: '🔄 חזרת לחיים!' });
   };
 
-  const startGame = (mode: 'campaign' | 'survival') => {
+  const startGame = (mode: 'campaign' | 'survival', startLevel: number = 1) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     setScoreSaved(false);
@@ -659,6 +668,7 @@ const IronDomeGame: React.FC = () => {
     const h = window.innerHeight;
     const s = createInitialState(w, h);
     s.mode = mode;
+    s.wave = startLevel;
 
     // Apply persistent shop upgrades
     const upgrades = getPersistentUpgrades();
@@ -685,7 +695,7 @@ const IronDomeGame: React.FC = () => {
     stateRef.current = startWave(s, w, h, playerSkill);
     setPhase(stateRef.current.phase);
     setGameState({ ...stateRef.current });
-    if (musicEnabled) musicRef.current.start(1);
+    if (musicEnabled) musicRef.current.start(startLevel);
   };
 
   const handleNextWave = () => {
@@ -693,6 +703,16 @@ const IronDomeGame: React.FC = () => {
     if (!canvas || !stateRef.current) return;
     const w = window.innerWidth;
     const h = window.innerHeight;
+    
+    // Save campaign level progress
+    if (stateRef.current.mode === 'campaign') {
+      const nextLevel = stateRef.current.wave + 1;
+      if (nextLevel > campaignMaxLevel) {
+        setCampaignMaxLevel(nextLevel);
+        try { localStorage.setItem('ironDomeCampaignLevel', String(nextLevel)); } catch {}
+      }
+    }
+    
     stateRef.current = nextWave(stateRef.current, w, h, playerSkill);
     setPhase(stateRef.current.phase);
     setGameState({ ...stateRef.current });
@@ -826,7 +846,12 @@ const IronDomeGame: React.FC = () => {
               <p className="text-cyan-200/60 text-sm tracking-widest">{T('subtitle')}</p>
 
               <div className="flex flex-col gap-3 w-full mt-6">
-                <MenuButton icon={<Play className="w-5 h-5" />} label={T('campaign')} sub={T('play-∞-waves')} onClick={() => startGame('campaign')} color="cyan" />
+                <MenuButton icon={<Play className="w-5 h-5" />} label={T('campaign')} sub={T('selectLevel')} onClick={() => {
+                  if (stateRef.current) {
+                    stateRef.current.phase = 'level-select' as any;
+                    setPhase('level-select');
+                  }
+                }} color="cyan" />
                 <MenuButton icon={<InfinityIcon className="w-5 h-5" />} label={T('survival')} sub={T('howLong')} onClick={() => startGame('survival')} color="blue" />
 
                 <div className="flex gap-3 mt-2">
@@ -1486,6 +1511,23 @@ const IronDomeGame: React.FC = () => {
         )}
       </AnimatePresence>
 
+      {/* Level Select Screen */}
+      <AnimatePresence>
+        {phase === 'level-select' && (
+          <LevelSelectScreen
+            maxUnlocked={campaignMaxLevel}
+            onSelectLevel={(level) => startGame('campaign', level)}
+            onBack={() => {
+              if (stateRef.current) {
+                stateRef.current.phase = 'menu';
+                setPhase('menu');
+              }
+            }}
+            T={T}
+          />
+        )}
+      </AnimatePresence>
+
       {phase === 'playing' && gameState && gameState.mode === 'survival' && (
         <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
           <motion.div
@@ -1763,7 +1805,7 @@ const IronDomeGame: React.FC = () => {
 
       {/* PWA Install Banner */}
       <AnimatePresence>
-        {showInstallBanner && phase === 'menu' && (
+        {showInstallBanner && (phase === 'menu' || phase === 'level-select') && (
           <motion.div
             key="pwa-install"
             initial={{ y: 100, opacity: 0 }}
@@ -1773,8 +1815,8 @@ const IronDomeGame: React.FC = () => {
           >
             <img src="/iron-dome-icon-512.png" alt="Iron Dome" className="w-12 h-12 rounded-xl" />
             <div className="flex-1">
-              <p className="text-white font-bold text-sm">התקן את Iron Dome</p>
-              <p className="text-cyan-300/60 text-xs">שחק במסך מלא כמו אפליקציה!</p>
+              <p className="text-white font-bold text-sm">{T('installApp')}</p>
+              <p className="text-cyan-300/60 text-xs">{T('installDesc')}</p>
             </div>
             <button
               onClick={async () => {
@@ -1788,7 +1830,7 @@ const IronDomeGame: React.FC = () => {
               }}
               className="px-4 py-2 bg-cyan-500 text-white rounded-xl font-bold text-sm hover:bg-cyan-400 transition-colors whitespace-nowrap"
             >
-              התקן
+              {T('install')}
             </button>
             <button
               onClick={() => {
