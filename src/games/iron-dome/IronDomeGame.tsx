@@ -1825,7 +1825,7 @@ const IronDomeGame: React.FC = () => {
               }}
               className="px-4 py-2 bg-cyan-500 text-white rounded-xl font-bold text-sm hover:bg-cyan-400 transition-colors whitespace-nowrap"
             >
-              התקן
+              {T('install')}
             </button>
             <button
               onClick={() => {
