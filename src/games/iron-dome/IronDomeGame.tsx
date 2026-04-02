@@ -59,6 +59,9 @@ const IronDomeGame: React.FC = () => {
   });
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
+  const [campaignMaxLevel, setCampaignMaxLevel] = useState<number>(() => {
+    try { return parseInt(localStorage.getItem('ironDomeCampaignLevel') || '1'); } catch { return 1; }
+  });
 
   // Load persistent shop purchases from localStorage
   const getPersistentUpgrades = useCallback(() => {
