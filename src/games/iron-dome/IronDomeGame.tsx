@@ -654,7 +654,7 @@ const IronDomeGame: React.FC = () => {
     toast({ title: '🔄 חזרת לחיים!' });
   };
 
-  const startGame = (mode: 'campaign' | 'survival') => {
+  const startGame = (mode: 'campaign' | 'survival', startLevel: number = 1) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     setScoreSaved(false);
@@ -663,6 +663,7 @@ const IronDomeGame: React.FC = () => {
     const h = window.innerHeight;
     const s = createInitialState(w, h);
     s.mode = mode;
+    s.wave = startLevel;
 
     // Apply persistent shop upgrades
     const upgrades = getPersistentUpgrades();
@@ -689,7 +690,7 @@ const IronDomeGame: React.FC = () => {
     stateRef.current = startWave(s, w, h, playerSkill);
     setPhase(stateRef.current.phase);
     setGameState({ ...stateRef.current });
-    if (musicEnabled) musicRef.current.start(1);
+    if (musicEnabled) musicRef.current.start(startLevel);
   };
 
   const handleNextWave = () => {
