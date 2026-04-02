@@ -1800,7 +1800,7 @@ const IronDomeGame: React.FC = () => {
 
       {/* PWA Install Banner */}
       <AnimatePresence>
-        {showInstallBanner && phase === 'menu' && (
+        {showInstallBanner && (phase === 'menu' || phase === 'level-select') && (
           <motion.div
             key="pwa-install"
             initial={{ y: 100, opacity: 0 }}
