@@ -698,6 +698,16 @@ const IronDomeGame: React.FC = () => {
     if (!canvas || !stateRef.current) return;
     const w = window.innerWidth;
     const h = window.innerHeight;
+    
+    // Save campaign level progress
+    if (stateRef.current.mode === 'campaign') {
+      const nextLevel = stateRef.current.wave + 1;
+      if (nextLevel > campaignMaxLevel) {
+        setCampaignMaxLevel(nextLevel);
+        try { localStorage.setItem('ironDomeCampaignLevel', String(nextLevel)); } catch {}
+      }
+    }
+    
     stateRef.current = nextWave(stateRef.current, w, h, playerSkill);
     setPhase(stateRef.current.phase);
     setGameState({ ...stateRef.current });
