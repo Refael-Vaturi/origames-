@@ -105,7 +105,7 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({ maxUnlocked, star
         <span className={`text-base sm:text-xl ${!isUnlocked ? 'text-white/20' : ''}`}>{level}</span>
       </motion.button>
     );
-  }, [maxUnlocked, onSelectLevel]);
+  }, [maxUnlocked, stars, onSelectLevel]);
 
   return (
     <motion.div
