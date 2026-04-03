@@ -33,12 +33,13 @@ const useResponsiveCols = () => {
 
 interface LevelSelectScreenProps {
   maxUnlocked: number;
+  stars?: Record<number, number>;
   onSelectLevel: (level: number) => void;
   onBack: () => void;
   T: (key: string) => string;
 }
 
-const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({ maxUnlocked, onSelectLevel, onBack, T }) => {
+const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({ maxUnlocked, stars = {}, onSelectLevel, onBack, T }) => {
   const parentRef = useRef<HTMLDivElement>(null);
   const cols = useResponsiveCols();
   const totalRows = Math.ceil(TOTAL_LEVELS / cols);
