@@ -1575,7 +1575,7 @@ const IronDomeGame: React.FC = () => {
       )}
 
       {/* Helicopter Summon Button at bottom center */}
-      {phase === 'playing' && gameState && gameState.wave >= 10 && (
+      {phase === 'playing' && gameState && (
         <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-20">
           <motion.button
             onClick={() => {
