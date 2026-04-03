@@ -264,18 +264,34 @@ const IronDomeGame: React.FC = () => {
     return () => { musicRef.current.stop(); };
   }, []);
 
+  // Detect iOS Safari for manual install prompt
+  const isIOS = useMemo(() => {
+    const ua = navigator.userAgent;
+    return /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  }, []);
+  const isInStandaloneMode = useMemo(() => 
+    window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true,
+  []);
+
   // PWA install prompt
   useEffect(() => {
+    const dismissed = localStorage.getItem('ironDomePWADismissed');
+    if (dismissed) return;
+
+    // For iOS Safari: show manual install banner
+    if (isIOS && !isInStandaloneMode) {
+      setShowInstallBanner(true);
+      return;
+    }
+
     const handler = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e);
-      // Show banner if not dismissed before
-      const dismissed = localStorage.getItem('ironDomePWADismissed');
       if (!dismissed) setShowInstallBanner(true);
     };
     window.addEventListener('beforeinstallprompt', handler);
     return () => window.removeEventListener('beforeinstallprompt', handler);
-  }, []);
+  }, [isIOS, isInStandaloneMode]);
 
   // Auto-save score on game over or victory + save skill + save best wave
   useEffect(() => {
