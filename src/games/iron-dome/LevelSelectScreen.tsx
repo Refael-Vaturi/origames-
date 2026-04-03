@@ -72,8 +72,6 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({ maxUnlocked, star
     const isCompleted = level < maxUnlocked;
     const isCurrent = level === maxUnlocked;
     const levelStars = stars[level] || 0;
-    const isCompleted = level < maxUnlocked;
-    const isCurrent = level === maxUnlocked;
 
     if (level > TOTAL_LEVELS) return <div key={`empty-${level}`} className="w-full aspect-square" />;
 
