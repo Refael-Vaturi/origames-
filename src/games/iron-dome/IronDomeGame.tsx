@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useCallback, useState } from 'react';
+import React, { useRef, useEffect, useCallback, useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Play, Infinity as InfinityIcon, BookOpen, Trophy, Volume2, VolumeX, Music, Pause, LogIn, Mail, Lock, Eye, EyeOff, User, AtSign, Settings, X, ShoppingCart, CreditCard } from 'lucide-react';
@@ -264,18 +264,34 @@ const IronDomeGame: React.FC = () => {
     return () => { musicRef.current.stop(); };
   }, []);
 
+  // Detect iOS Safari for manual install prompt
+  const isIOS = useMemo(() => {
+    const ua = navigator.userAgent;
+    return /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  }, []);
+  const isInStandaloneMode = useMemo(() => 
+    window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true,
+  []);
+
   // PWA install prompt
   useEffect(() => {
+    const dismissed = localStorage.getItem('ironDomePWADismissed');
+    if (dismissed) return;
+
+    // For iOS Safari: show manual install banner
+    if (isIOS && !isInStandaloneMode) {
+      setShowInstallBanner(true);
+      return;
+    }
+
     const handler = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e);
-      // Show banner if not dismissed before
-      const dismissed = localStorage.getItem('ironDomePWADismissed');
       if (!dismissed) setShowInstallBanner(true);
     };
     window.addEventListener('beforeinstallprompt', handler);
     return () => window.removeEventListener('beforeinstallprompt', handler);
-  }, []);
+  }, [isIOS, isInStandaloneMode]);
 
   // Auto-save score on game over or victory + save skill + save best wave
   useEffect(() => {
@@ -1559,7 +1575,7 @@ const IronDomeGame: React.FC = () => {
       )}
 
       {/* Helicopter Summon Button at bottom center */}
-      {phase === 'playing' && gameState && gameState.wave >= 10 && (
+      {phase === 'playing' && gameState && (
         <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-20">
           <motion.button
             onClick={() => {
@@ -1813,25 +1829,29 @@ const IronDomeGame: React.FC = () => {
             exit={{ y: 100, opacity: 0 }}
             className="absolute bottom-4 left-4 right-4 z-50 bg-gradient-to-r from-cyan-900/90 to-blue-900/90 backdrop-blur-md border border-cyan-500/40 rounded-2xl p-4 flex items-center gap-3 shadow-[0_0_30px_rgba(0,200,255,0.2)]"
           >
-            <img src="/iron-dome-icon-512.png" alt="Iron Dome" className="w-12 h-12 rounded-xl" />
-            <div className="flex-1">
-              <p className="text-white font-bold text-sm">{T('installApp')}</p>
-              <p className="text-cyan-300/60 text-xs">{T('installDesc')}</p>
+            <img src="/iron-dome-icon-512.png" alt="Iron Dome" className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl" />
+            <div className="flex-1 min-w-0">
+              <p className="text-white font-bold text-xs sm:text-sm">{T('installApp')}</p>
+              <p className="text-cyan-300/60 text-[10px] sm:text-xs">
+                {isIOS ? T('installIOSDesc') || 'Tap Share ➜ Add to Home Screen' : T('installDesc')}
+              </p>
             </div>
-            <button
-              onClick={async () => {
-                if (deferredPrompt) {
-                  deferredPrompt.prompt();
-                  await deferredPrompt.userChoice;
-                  setDeferredPrompt(null);
-                }
-                setShowInstallBanner(false);
-                localStorage.setItem('ironDomePWADismissed', '1');
-              }}
-              className="px-4 py-2 bg-cyan-500 text-white rounded-xl font-bold text-sm hover:bg-cyan-400 transition-colors whitespace-nowrap"
-            >
-              {T('install')}
-            </button>
+            {!isIOS && (
+              <button
+                onClick={async () => {
+                  if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    await deferredPrompt.userChoice;
+                    setDeferredPrompt(null);
+                  }
+                  setShowInstallBanner(false);
+                  localStorage.setItem('ironDomePWADismissed', '1');
+                }}
+                className="px-3 py-2 bg-cyan-500 text-white rounded-xl font-bold text-xs sm:text-sm hover:bg-cyan-400 transition-colors whitespace-nowrap"
+              >
+                {T('install')}
+              </button>
+            )}
             <button
               onClick={() => {
                 setShowInstallBanner(false);
