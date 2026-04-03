@@ -97,7 +97,13 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({ maxUnlocked, star
         </div>
 
         {!isUnlocked && <Lock className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-white/20" />}
-        {isCompleted && <Check className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-green-300" />}
+        {isCompleted && (
+          <div className="flex gap-0.5">
+            {[1, 2, 3].map(i => (
+              <span key={i} className={`text-[10px] sm:text-xs ${i <= levelStars ? 'text-yellow-400' : 'text-white/15'}`}>★</span>
+            ))}
+          </div>
+        )}
         <span className={`text-base sm:text-xl ${!isUnlocked ? 'text-white/20' : ''}`}>{level}</span>
       </motion.button>
     );
