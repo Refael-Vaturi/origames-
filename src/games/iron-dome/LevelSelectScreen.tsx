@@ -1,14 +1,38 @@
-import React, { useRef, useMemo, useCallback } from 'react';
+import React, { useRef, useMemo, useCallback, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Lock, Check } from 'lucide-react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 
 const TOTAL_LEVELS = 10000;
-const COLS = 3;
-const TOTAL_ROWS = Math.ceil(TOTAL_LEVELS / COLS);
+
+const useResponsiveCols = () => {
+  const [cols, setCols] = useState(() => {
+    const w = window.innerWidth;
+    if (w >= 1200) return 8;
+    if (w >= 900) return 6;
+    if (w >= 600) return 5;
+    if (w >= 450) return 4;
+    return 3;
+  });
+
+  useEffect(() => {
+    const handler = () => {
+      const w = window.innerWidth;
+      if (w >= 1200) setCols(8);
+      else if (w >= 900) setCols(6);
+      else if (w >= 600) setCols(5);
+      else if (w >= 450) setCols(4);
+      else setCols(3);
+    };
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, []);
+
+  return cols;
+};
 
 interface LevelSelectScreenProps {
-  maxUnlocked: number; // highest level the player has reached
+  maxUnlocked: number;
   onSelectLevel: (level: number) => void;
   onBack: () => void;
   T: (key: string) => string;
@@ -16,15 +40,26 @@ interface LevelSelectScreenProps {
 
 const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({ maxUnlocked, onSelectLevel, onBack, T }) => {
   const parentRef = useRef<HTMLDivElement>(null);
+  const cols = useResponsiveCols();
+  const totalRows = Math.ceil(TOTAL_LEVELS / cols);
+
+  // Estimate tile size based on screen
+  const estimateRowSize = useCallback(() => {
+    const w = window.innerWidth;
+    const maxW = Math.min(w, 1200);
+    const gap = 8;
+    const padding = 16;
+    const tileW = (maxW - padding * 2 - gap * (cols - 1)) / cols;
+    return Math.min(tileW, 120) + gap; // tile height + gap
+  }, [cols]);
 
   const rowVirtualizer = useVirtualizer({
-    count: TOTAL_ROWS,
+    count: totalRows,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 110,
+    estimateSize: estimateRowSize,
     overscan: 10,
   });
 
-  // Memoize LEGO stud pattern via CSS
   const legoStudStyle = useMemo(() => ({
     backgroundImage: `radial-gradient(circle, rgba(255,255,255,0.08) 8px, transparent 8px)`,
     backgroundSize: '40px 40px',
@@ -44,23 +79,22 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({ maxUnlocked, onSe
         whileTap={isUnlocked ? { scale: 0.9 } : {}}
         onClick={() => isUnlocked && onSelectLevel(level)}
         disabled={!isUnlocked}
-        className={`relative w-full aspect-square rounded-2xl border-2 font-bold text-lg transition-all flex flex-col items-center justify-center gap-1 ${
+        className={`relative w-full aspect-square rounded-xl sm:rounded-2xl border-2 font-bold transition-all flex flex-col items-center justify-center gap-0.5 text-sm sm:text-lg ${
           isCompleted
             ? 'bg-gradient-to-br from-green-600/60 to-emerald-700/60 border-green-400/50 text-white shadow-[0_0_15px_rgba(34,197,94,0.2)]'
             : isCurrent
             ? 'bg-gradient-to-br from-cyan-600/70 to-blue-700/70 border-cyan-400/60 text-white shadow-[0_0_20px_rgba(0,200,255,0.3)] animate-pulse'
             : 'bg-black/40 border-white/10 text-white/25 cursor-not-allowed'
         }`}
-        style={{ fontFamily: "'Courier New', monospace" }}
+        style={{ fontFamily: "'Courier New', monospace", maxWidth: 120, maxHeight: 120 }}
       >
-        {/* LEGO stud on tile */}
-        <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 rounded-full border border-white/10 bg-white/5" />
+        <div className="absolute inset-0 rounded-xl sm:rounded-2xl overflow-hidden pointer-events-none">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 sm:w-6 sm:h-6 rounded-full border border-white/10 bg-white/5" />
         </div>
 
-        {!isUnlocked && <Lock className="w-5 h-5 text-white/20" />}
-        {isCompleted && <Check className="w-5 h-5 text-green-300" />}
-        <span className={`text-xl ${!isUnlocked ? 'text-white/20' : ''}`}>{level}</span>
+        {!isUnlocked && <Lock className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-white/20" />}
+        {isCompleted && <Check className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-green-300" />}
+        <span className={`text-base sm:text-xl ${!isUnlocked ? 'text-white/20' : ''}`}>{level}</span>
       </motion.button>
     );
   }, [maxUnlocked, onSelectLevel]);
@@ -75,7 +109,6 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({ maxUnlocked, onSe
         background: 'linear-gradient(135deg, #0a3d6b 0%, #1565a0 30%, #0d47a1 60%, #0a3068 100%)',
       }}
     >
-      {/* Animated LEGO stud background */}
       <motion.div
         className="absolute inset-0 pointer-events-none"
         style={legoStudStyle}
@@ -83,7 +116,6 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({ maxUnlocked, onSe
         transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
       />
       
-      {/* Depth/glow overlay */}
       <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,rgba(100,180,255,0.15)_0%,transparent_70%)]" />
 
       {/* Header */}
@@ -95,18 +127,18 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({ maxUnlocked, onSe
           <ArrowLeft className="w-4 h-4" />
         </button>
         <div className="flex-1 text-center">
-          <h2 className="text-xl font-bold text-white" style={{ fontFamily: "'Courier New', monospace" }}>
+          <h2 className="text-lg sm:text-xl font-bold text-white" style={{ fontFamily: "'Courier New', monospace" }}>
             🎯 {T('selectLevel')}
           </h2>
           <p className="text-cyan-300/50 text-xs">{T('campaign')} · {maxUnlocked - 1}/{TOTAL_LEVELS} ✅</p>
         </div>
-        <div className="w-12" /> {/* spacer */}
+        <div className="w-12" />
       </div>
 
-      {/* Scrollable level grid - virtualized */}
+      {/* Scrollable level grid */}
       <div
         ref={parentRef}
-        className="relative z-10 flex-1 overflow-y-auto px-3 py-3"
+        className="relative z-10 flex-1 overflow-y-auto px-2 sm:px-4 py-3"
         style={{ contain: 'strict' }}
       >
         <div
@@ -114,10 +146,12 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({ maxUnlocked, onSe
             height: `${rowVirtualizer.getTotalSize()}px`,
             width: '100%',
             position: 'relative',
+            maxWidth: 1200,
+            margin: '0 auto',
           }}
         >
           {rowVirtualizer.getVirtualItems().map(virtualRow => {
-            const startLevel = virtualRow.index * COLS + 1;
+            const startLevel = virtualRow.index * cols + 1;
             return (
               <div
                 key={virtualRow.index}
@@ -128,10 +162,15 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({ maxUnlocked, onSe
                   width: '100%',
                   height: `${virtualRow.size}px`,
                   transform: `translateY(${virtualRow.start}px)`,
+                  display: 'grid',
+                  gridTemplateColumns: `repeat(${cols}, 1fr)`,
+                  gap: '8px',
+                  padding: '0 4px',
+                  alignItems: 'center',
+                  justifyItems: 'center',
                 }}
-                className="grid grid-cols-3 gap-2 px-1"
               >
-                {Array.from({ length: COLS }, (_, col) => {
+                {Array.from({ length: cols }, (_, col) => {
                   const level = startLevel + col;
                   return renderTile(level);
                 })}
