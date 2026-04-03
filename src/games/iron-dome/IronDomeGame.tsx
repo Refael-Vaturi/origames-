@@ -779,7 +779,7 @@ const IronDomeGame: React.FC = () => {
       )}
 
       {/* Single settings button with rotation animation */}
-      <div className={`absolute z-30 ${phase === 'playing' ? 'bottom-14 right-3' : 'top-3 right-3'}`}>
+      <div className={`absolute z-30 ${phase === 'playing' ? 'bottom-14 right-3' : phase === 'level-select' ? 'hidden' : 'top-3 right-3'}`}>
         <motion.button
           onClick={() => setShowInGameSettings(!showInGameSettings)}
           className="p-2 bg-black/40 rounded-lg backdrop-blur-sm border border-white/10 text-white/70 hover:text-white transition-colors"
