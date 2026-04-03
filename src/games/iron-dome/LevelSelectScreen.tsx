@@ -1,6 +1,6 @@
 import React, { useRef, useMemo, useCallback, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Lock } from 'lucide-react';
+import { ArrowLeft, Lock, Search } from 'lucide-react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 
 const TOTAL_LEVELS = 10000;
@@ -43,15 +43,16 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({ maxUnlocked, star
   const parentRef = useRef<HTMLDivElement>(null);
   const cols = useResponsiveCols();
   const totalRows = Math.ceil(TOTAL_LEVELS / cols);
+  const [searchValue, setSearchValue] = useState('');
+  const [showSearch, setShowSearch] = useState(false);
 
-  // Estimate tile size based on screen
   const estimateRowSize = useCallback(() => {
     const w = window.innerWidth;
     const maxW = Math.min(w, 1200);
     const gap = 8;
     const padding = 16;
     const tileW = (maxW - padding * 2 - gap * (cols - 1)) / cols;
-    return Math.min(tileW, 120) + gap; // tile height + gap
+    return Math.min(tileW, 120) + gap;
   }, [cols]);
 
   const rowVirtualizer = useVirtualizer({
@@ -60,6 +61,31 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({ maxUnlocked, star
     estimateSize: estimateRowSize,
     overscan: 10,
   });
+
+  // Auto-scroll to current level on mount
+  useEffect(() => {
+    const targetRow = Math.floor((maxUnlocked - 1) / cols);
+    // Small delay to let virtualizer initialize
+    const timer = setTimeout(() => {
+      rowVirtualizer.scrollToIndex(Math.max(0, targetRow - 1), { align: 'start', behavior: 'smooth' });
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [maxUnlocked, cols]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const scrollToLevel = useCallback((level: number) => {
+    const clampedLevel = Math.max(1, Math.min(level, TOTAL_LEVELS));
+    const targetRow = Math.floor((clampedLevel - 1) / cols);
+    rowVirtualizer.scrollToIndex(targetRow, { align: 'center', behavior: 'smooth' });
+  }, [cols, rowVirtualizer]);
+
+  const handleSearchSubmit = useCallback(() => {
+    const num = parseInt(searchValue);
+    if (num >= 1 && num <= TOTAL_LEVELS) {
+      scrollToLevel(num);
+      setSearchValue('');
+      setShowSearch(false);
+    }
+  }, [searchValue, scrollToLevel]);
 
   const legoStudStyle = useMemo(() => ({
     backgroundImage: `radial-gradient(circle, rgba(255,255,255,0.08) 8px, transparent 8px)`,
@@ -127,21 +153,57 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({ maxUnlocked, star
       <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,rgba(100,180,255,0.15)_0%,transparent_70%)]" />
 
       {/* Header */}
-      <div className="relative z-10 flex items-center gap-3 px-4 py-3 bg-black/30 backdrop-blur-sm border-b border-white/10">
+      <div className="relative z-10 flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 bg-black/30 backdrop-blur-sm border-b border-white/10">
         <button
           onClick={onBack}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-black/30 border border-white/10 text-white/70 hover:text-white transition-colors"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg bg-black/30 border border-white/10 text-white/70 hover:text-white transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
         </button>
-        <div className="flex-1 text-center">
-          <h2 className="text-lg sm:text-xl font-bold text-white" style={{ fontFamily: "'Courier New', monospace" }}>
+        <div className="flex-1 text-center min-w-0">
+          <h2 className="text-base sm:text-xl font-bold text-white truncate" style={{ fontFamily: "'Courier New', monospace" }}>
             🎯 {T('selectLevel')}
           </h2>
-          <p className="text-cyan-300/50 text-xs">{T('campaign')} · {maxUnlocked - 1}/{TOTAL_LEVELS} ✅</p>
+          <p className="text-cyan-300/50 text-[10px] sm:text-xs">{T('campaign')} · {maxUnlocked - 1}/{TOTAL_LEVELS} ✅</p>
         </div>
-        <div className="w-12" />
+        <button
+          onClick={() => setShowSearch(!showSearch)}
+          className="flex items-center gap-1 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg bg-black/30 border border-white/10 text-white/70 hover:text-white transition-colors"
+        >
+          <Search className="w-4 h-4" />
+        </button>
       </div>
+
+      {/* Search bar */}
+      {showSearch && (
+        <motion.div
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: 'auto', opacity: 1 }}
+          exit={{ height: 0, opacity: 0 }}
+          className="relative z-10 px-3 sm:px-4 py-2 bg-black/20 backdrop-blur-sm border-b border-white/10"
+        >
+          <div className="flex gap-2 max-w-md mx-auto">
+            <input
+              type="number"
+              min={1}
+              max={TOTAL_LEVELS}
+              value={searchValue}
+              onChange={e => setSearchValue(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') handleSearchSubmit(); }}
+              placeholder={`1 - ${TOTAL_LEVELS}`}
+              className="flex-1 px-3 py-2 rounded-lg bg-black/40 border border-cyan-900/40 text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-cyan-500/60"
+              dir="ltr"
+              autoFocus
+            />
+            <button
+              onClick={handleSearchSubmit}
+              className="px-4 py-2 rounded-lg bg-cyan-600/60 text-white text-sm font-bold hover:bg-cyan-500/60 transition-colors"
+            >
+              🔍
+            </button>
+          </div>
+        </motion.div>
+      )}
 
       {/* Scrollable level grid */}
       <div
