@@ -1552,6 +1552,7 @@ const IronDomeGame: React.FC = () => {
         {phase === 'level-select' && (
           <LevelSelectScreen
             maxUnlocked={campaignMaxLevel}
+            stars={campaignStars}
             onSelectLevel={(level) => startGame('campaign', level)}
             onBack={() => {
               if (stateRef.current) {
