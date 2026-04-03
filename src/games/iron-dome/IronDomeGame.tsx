@@ -1829,25 +1829,29 @@ const IronDomeGame: React.FC = () => {
             exit={{ y: 100, opacity: 0 }}
             className="absolute bottom-4 left-4 right-4 z-50 bg-gradient-to-r from-cyan-900/90 to-blue-900/90 backdrop-blur-md border border-cyan-500/40 rounded-2xl p-4 flex items-center gap-3 shadow-[0_0_30px_rgba(0,200,255,0.2)]"
           >
-            <img src="/iron-dome-icon-512.png" alt="Iron Dome" className="w-12 h-12 rounded-xl" />
-            <div className="flex-1">
-              <p className="text-white font-bold text-sm">{T('installApp')}</p>
-              <p className="text-cyan-300/60 text-xs">{T('installDesc')}</p>
+            <img src="/iron-dome-icon-512.png" alt="Iron Dome" className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl" />
+            <div className="flex-1 min-w-0">
+              <p className="text-white font-bold text-xs sm:text-sm">{T('installApp')}</p>
+              <p className="text-cyan-300/60 text-[10px] sm:text-xs">
+                {isIOS ? T('installIOSDesc') || 'Tap Share ➜ Add to Home Screen' : T('installDesc')}
+              </p>
             </div>
-            <button
-              onClick={async () => {
-                if (deferredPrompt) {
-                  deferredPrompt.prompt();
-                  await deferredPrompt.userChoice;
-                  setDeferredPrompt(null);
-                }
-                setShowInstallBanner(false);
-                localStorage.setItem('ironDomePWADismissed', '1');
-              }}
-              className="px-4 py-2 bg-cyan-500 text-white rounded-xl font-bold text-sm hover:bg-cyan-400 transition-colors whitespace-nowrap"
-            >
-              {T('install')}
-            </button>
+            {!isIOS && (
+              <button
+                onClick={async () => {
+                  if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    await deferredPrompt.userChoice;
+                    setDeferredPrompt(null);
+                  }
+                  setShowInstallBanner(false);
+                  localStorage.setItem('ironDomePWADismissed', '1');
+                }}
+                className="px-3 py-2 bg-cyan-500 text-white rounded-xl font-bold text-xs sm:text-sm hover:bg-cyan-400 transition-colors whitespace-nowrap"
+              >
+                {T('install')}
+              </button>
+            )}
             <button
               onClick={() => {
                 setShowInstallBanner(false);
