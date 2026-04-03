@@ -1,6 +1,6 @@
 import React, { useRef, useMemo, useCallback, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Lock, Check } from 'lucide-react';
+import { ArrowLeft, Lock } from 'lucide-react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 
 const TOTAL_LEVELS = 10000;
@@ -33,12 +33,13 @@ const useResponsiveCols = () => {
 
 interface LevelSelectScreenProps {
   maxUnlocked: number;
+  stars?: Record<number, number>;
   onSelectLevel: (level: number) => void;
   onBack: () => void;
   T: (key: string) => string;
 }
 
-const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({ maxUnlocked, onSelectLevel, onBack, T }) => {
+const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({ maxUnlocked, stars = {}, onSelectLevel, onBack, T }) => {
   const parentRef = useRef<HTMLDivElement>(null);
   const cols = useResponsiveCols();
   const totalRows = Math.ceil(TOTAL_LEVELS / cols);
@@ -70,6 +71,7 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({ maxUnlocked, onSe
     const isUnlocked = level <= maxUnlocked;
     const isCompleted = level < maxUnlocked;
     const isCurrent = level === maxUnlocked;
+    const levelStars = stars[level] || 0;
 
     if (level > TOTAL_LEVELS) return <div key={`empty-${level}`} className="w-full aspect-square" />;
 
@@ -93,11 +95,17 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({ maxUnlocked, onSe
         </div>
 
         {!isUnlocked && <Lock className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-white/20" />}
-        {isCompleted && <Check className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-green-300" />}
+        {isCompleted && (
+          <div className="flex gap-0.5">
+            {[1, 2, 3].map(i => (
+              <span key={i} className={`text-[10px] sm:text-xs ${i <= levelStars ? 'text-yellow-400' : 'text-white/15'}`}>★</span>
+            ))}
+          </div>
+        )}
         <span className={`text-base sm:text-xl ${!isUnlocked ? 'text-white/20' : ''}`}>{level}</span>
       </motion.button>
     );
-  }, [maxUnlocked, onSelectLevel]);
+  }, [maxUnlocked, stars, onSelectLevel]);
 
   return (
     <motion.div

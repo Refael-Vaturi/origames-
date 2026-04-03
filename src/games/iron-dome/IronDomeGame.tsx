@@ -62,6 +62,19 @@ const IronDomeGame: React.FC = () => {
   const [campaignMaxLevel, setCampaignMaxLevel] = useState<number>(() => {
     try { return parseInt(localStorage.getItem('ironDomeCampaignLevel') || '1'); } catch { return 1; }
   });
+  const [campaignStars, setCampaignStars] = useState<Record<number, number>>(() => {
+    try { return JSON.parse(localStorage.getItem('ironDomeCampaignStars') || '{}'); } catch { return {}; }
+  });
+
+  const saveCampaignStars = useCallback((level: number, stars: number) => {
+    setCampaignStars(prev => {
+      const existing = prev[level] || 0;
+      if (stars <= existing) return prev;
+      const next = { ...prev, [level]: stars };
+      try { localStorage.setItem('ironDomeCampaignStars', JSON.stringify(next)); } catch {}
+      return next;
+    });
+  }, []);
 
   // Load persistent shop purchases from localStorage
   const getPersistentUpgrades = useCallback(() => {
@@ -221,25 +234,25 @@ const IronDomeGame: React.FC = () => {
 
   const fetchLeaderboard = useCallback(async (mode: 'campaign' | 'survival') => {
     setLoadingLB(true);
-    const orderCol = mode === 'survival' ? 'survival_time' : 'score';
+    const orderCol = mode === 'survival' ? 'survival_time' : 'wave';
     const { data } = await supabase
       .from('iron_dome_scores')
       .select('*')
       .eq('mode', mode)
       .order(orderCol, { ascending: false })
       .limit(100);
-    // Keep only the best entry per player (by survival_time for survival, score for campaign)
+    // Keep only the best entry per player
     const bestByPlayer = new Map<string, any>();
     (data || []).forEach(row => {
       const existing = bestByPlayer.get(row.user_id);
       if (!existing) {
         bestByPlayer.set(row.user_id, row);
-      } else if (mode === 'survival' ? (row.survival_time > existing.survival_time) : (row.score > existing.score)) {
+      } else if (mode === 'survival' ? (row.survival_time > existing.survival_time) : (row.wave > existing.wave || (row.wave === existing.wave && row.score > existing.score))) {
         bestByPlayer.set(row.user_id, row);
       }
     });
     const sorted = Array.from(bestByPlayer.values()).sort((a, b) =>
-      mode === 'survival' ? b.survival_time - a.survival_time : b.score - a.score
+      mode === 'survival' ? b.survival_time - a.survival_time : (b.wave - a.wave || b.score - a.score)
     );
     setLeaderboardData(sorted.slice(0, 15));
     setLoadingLB(false);
@@ -720,9 +733,16 @@ const IronDomeGame: React.FC = () => {
     const w = window.innerWidth;
     const h = window.innerHeight;
     
-    // Save campaign level progress
+    // Save campaign level progress and stars
     if (stateRef.current.mode === 'campaign') {
-      const nextLevel = stateRef.current.wave + 1;
+      const currentWave = stateRef.current.wave;
+      const nextLevel = currentWave + 1;
+      // Calculate stars: 3 = no cities lost, 2 = lost 1-2 cities, 1 = lost 3+ but survived
+      const citiesAlive = stateRef.current.cities.filter(c => c.alive).length;
+      const totalCities = stateRef.current.cities.length;
+      const citiesLost = totalCities - citiesAlive;
+      const stars = citiesLost === 0 ? 3 : citiesLost <= 2 ? 2 : 1;
+      saveCampaignStars(currentWave, stars);
       if (nextLevel > campaignMaxLevel) {
         setCampaignMaxLevel(nextLevel);
         try { localStorage.setItem('ironDomeCampaignLevel', String(nextLevel)); } catch {}
@@ -779,7 +799,7 @@ const IronDomeGame: React.FC = () => {
       )}
 
       {/* Single settings button with rotation animation */}
-      <div className={`absolute z-30 ${phase === 'playing' ? 'bottom-14 right-3' : 'top-3 right-3'}`}>
+      <div className={`absolute z-30 ${phase === 'playing' ? 'bottom-14 right-3' : phase === 'level-select' ? 'hidden' : 'top-3 right-3'}`}>
         <motion.button
           onClick={() => setShowInGameSettings(!showInGameSettings)}
           className="p-2 bg-black/40 rounded-lg backdrop-blur-sm border border-white/10 text-white/70 hover:text-white transition-colors"
@@ -1532,6 +1552,7 @@ const IronDomeGame: React.FC = () => {
         {phase === 'level-select' && (
           <LevelSelectScreen
             maxUnlocked={campaignMaxLevel}
+            stars={campaignStars}
             onSelectLevel={(level) => startGame('campaign', level)}
             onBack={() => {
               if (stateRef.current) {
