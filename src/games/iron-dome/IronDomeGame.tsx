@@ -221,25 +221,25 @@ const IronDomeGame: React.FC = () => {
 
   const fetchLeaderboard = useCallback(async (mode: 'campaign' | 'survival') => {
     setLoadingLB(true);
-    const orderCol = mode === 'survival' ? 'survival_time' : 'score';
+    const orderCol = mode === 'survival' ? 'survival_time' : 'wave';
     const { data } = await supabase
       .from('iron_dome_scores')
       .select('*')
       .eq('mode', mode)
       .order(orderCol, { ascending: false })
       .limit(100);
-    // Keep only the best entry per player (by survival_time for survival, score for campaign)
+    // Keep only the best entry per player
     const bestByPlayer = new Map<string, any>();
     (data || []).forEach(row => {
       const existing = bestByPlayer.get(row.user_id);
       if (!existing) {
         bestByPlayer.set(row.user_id, row);
-      } else if (mode === 'survival' ? (row.survival_time > existing.survival_time) : (row.score > existing.score)) {
+      } else if (mode === 'survival' ? (row.survival_time > existing.survival_time) : (row.wave > existing.wave || (row.wave === existing.wave && row.score > existing.score))) {
         bestByPlayer.set(row.user_id, row);
       }
     });
     const sorted = Array.from(bestByPlayer.values()).sort((a, b) =>
-      mode === 'survival' ? b.survival_time - a.survival_time : b.score - a.score
+      mode === 'survival' ? b.survival_time - a.survival_time : (b.wave - a.wave || b.score - a.score)
     );
     setLeaderboardData(sorted.slice(0, 15));
     setLoadingLB(false);
