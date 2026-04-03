@@ -1,6 +1,6 @@
 import React, { useRef, useMemo, useCallback, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Lock, Check } from 'lucide-react';
+import { ArrowLeft, Lock } from 'lucide-react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 
 const TOTAL_LEVELS = 10000;
