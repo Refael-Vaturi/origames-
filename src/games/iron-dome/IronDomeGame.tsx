@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useCallback, useState } from 'react';
+import React, { useRef, useEffect, useCallback, useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Play, Infinity as InfinityIcon, BookOpen, Trophy, Volume2, VolumeX, Music, Pause, LogIn, Mail, Lock, Eye, EyeOff, User, AtSign, Settings, X, ShoppingCart, CreditCard } from 'lucide-react';
