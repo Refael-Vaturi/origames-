@@ -62,6 +62,19 @@ const IronDomeGame: React.FC = () => {
   const [campaignMaxLevel, setCampaignMaxLevel] = useState<number>(() => {
     try { return parseInt(localStorage.getItem('ironDomeCampaignLevel') || '1'); } catch { return 1; }
   });
+  const [campaignStars, setCampaignStars] = useState<Record<number, number>>(() => {
+    try { return JSON.parse(localStorage.getItem('ironDomeCampaignStars') || '{}'); } catch { return {}; }
+  });
+
+  const saveCampaignStars = useCallback((level: number, stars: number) => {
+    setCampaignStars(prev => {
+      const existing = prev[level] || 0;
+      if (stars <= existing) return prev;
+      const next = { ...prev, [level]: stars };
+      try { localStorage.setItem('ironDomeCampaignStars', JSON.stringify(next)); } catch {}
+      return next;
+    });
+  }, []);
 
   // Load persistent shop purchases from localStorage
   const getPersistentUpgrades = useCallback(() => {
