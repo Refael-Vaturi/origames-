@@ -733,9 +733,16 @@ const IronDomeGame: React.FC = () => {
     const w = window.innerWidth;
     const h = window.innerHeight;
     
-    // Save campaign level progress
+    // Save campaign level progress and stars
     if (stateRef.current.mode === 'campaign') {
-      const nextLevel = stateRef.current.wave + 1;
+      const currentWave = stateRef.current.wave;
+      const nextLevel = currentWave + 1;
+      // Calculate stars: 3 = no cities lost, 2 = lost 1-2 cities, 1 = lost 3+ but survived
+      const citiesAlive = stateRef.current.cities.filter(c => c.alive).length;
+      const totalCities = stateRef.current.cities.length;
+      const citiesLost = totalCities - citiesAlive;
+      const stars = citiesLost === 0 ? 3 : citiesLost <= 2 ? 2 : 1;
+      saveCampaignStars(currentWave, stars);
       if (nextLevel > campaignMaxLevel) {
         setCampaignMaxLevel(nextLevel);
         try { localStorage.setItem('ironDomeCampaignLevel', String(nextLevel)); } catch {}
