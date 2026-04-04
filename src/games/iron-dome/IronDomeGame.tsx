@@ -748,6 +748,11 @@ const IronDomeGame: React.FC = () => {
       const citiesLost = totalCities - citiesAlive;
       const stars = citiesLost === 0 ? 3 : citiesLost <= 2 ? 2 : 1;
       saveCampaignStars(currentWave, stars);
+      // Trigger fireworks for 3 stars
+      if (stars === 3) {
+        setShowFireworks(true);
+        setTimeout(() => setShowFireworks(false), 3000);
+      }
       if (nextLevel > campaignMaxLevel) {
         setCampaignMaxLevel(nextLevel);
         try { localStorage.setItem('ironDomeCampaignLevel', String(nextLevel)); } catch {}
