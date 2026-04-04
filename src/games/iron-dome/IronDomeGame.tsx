@@ -1391,7 +1391,7 @@ const IronDomeGame: React.FC = () => {
                     ⏳
                   </motion.div>
                 </div>
-              ) : leaderboardData.length === 0 ? (
+              ) : (friendScores.length > 0 ? friendScores : leaderboardData).length === 0 ? (
                 <p className="text-cyan-300/50 text-sm text-center py-8">{T('noScores')}</p>
               ) : (
                 <div className="space-y-1">
