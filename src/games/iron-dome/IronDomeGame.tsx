@@ -1407,7 +1407,7 @@ const IronDomeGame: React.FC = () => {
                     )}
                     <span className="w-12 text-right">{T('maxCombo')}</span>
                   </div>
-                  {leaderboardData.map((entry, i) => {
+                  {(friendScores.length > 0 ? friendScores : leaderboardData).map((entry, i) => {
                     const isMe = user && entry.user_id === user.id;
                     const medals = ['🥇', '🥈', '🥉'];
                     const survSecs = entry.survival_time || 0;
