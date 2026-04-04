@@ -67,6 +67,9 @@ const IronDomeGame: React.FC = () => {
   const [campaignStars, setCampaignStars] = useState<Record<number, number>>(() => {
     try { return JSON.parse(localStorage.getItem('ironDomeCampaignStars') || '{}'); } catch { return {}; }
   });
+  const [showFireworks, setShowFireworks] = useState(false);
+  const [friendScores, setFriendScores] = useState<any[]>([]);
+  const { friends } = useFriends();
 
   const saveCampaignStars = useCallback((level: number, stars: number) => {
     setCampaignStars(prev => {
