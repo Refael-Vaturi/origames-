@@ -263,6 +263,32 @@ const IronDomeGame: React.FC = () => {
     setLoadingLB(false);
   }, []);
 
+  const fetchFriendScores = useCallback(async () => {
+    if (!user || friends.length === 0) {
+      setFriendScores([]);
+      return;
+    }
+    setLoadingLB(true);
+    const friendUserIds = friends.map(f => f.friend?.user_id).filter(Boolean) as string[];
+    friendUserIds.push(user.id); // include self
+    const { data } = await supabase
+      .from('iron_dome_scores')
+      .select('*')
+      .in('user_id', friendUserIds)
+      .order('wave', { ascending: false })
+      .limit(100);
+    const bestByPlayer = new Map<string, any>();
+    (data || []).forEach(row => {
+      const existing = bestByPlayer.get(row.user_id);
+      if (!existing || row.wave > existing.wave || (row.wave === existing.wave && row.score > existing.score)) {
+        bestByPlayer.set(row.user_id, row);
+      }
+    });
+    const sorted = Array.from(bestByPlayer.values()).sort((a, b) => b.wave - a.wave || b.score - a.score);
+    setFriendScores(sorted);
+    setLoadingLB(false);
+  }, [user, friends]);
+
   // Music toggle & cleanup
   useEffect(() => {
     if (musicEnabled && musicRef.current.isPlaying()) {
