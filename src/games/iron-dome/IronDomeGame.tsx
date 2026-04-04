@@ -1072,6 +1072,9 @@ const IronDomeGame: React.FC = () => {
         )}
       </AnimatePresence>
 
+      {/* 3-Star Fireworks Celebration */}
+      <FireworksEffect active={showFireworks} duration={3000} />
+
       {/* Store */}
       <AnimatePresence>
         {phase === 'store' && gameState && (
