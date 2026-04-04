@@ -13,9 +13,11 @@ import { t as ironT } from './i18n';
 import LanguageSelector from '@/components/LanguageSelector';
 import { supabase } from '@/integrations/supabase/client';
 import LevelSelectScreen from './LevelSelectScreen';
+import FireworksEffect from './FireworksEffect';
 import { lovable } from '@/integrations/lovable';
 import { GameMusic } from './music';
 import { toast } from '@/hooks/use-toast';
+import { useFriends } from '@/hooks/useFriends';
 
 const IronDomeGame: React.FC = () => {
   const navigate = useNavigate();
