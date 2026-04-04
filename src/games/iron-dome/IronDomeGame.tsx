@@ -1896,40 +1896,49 @@ const IronDomeGame: React.FC = () => {
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 100, opacity: 0 }}
-            className="absolute bottom-4 left-4 right-4 z-50 bg-gradient-to-r from-cyan-900/90 to-blue-900/90 backdrop-blur-md border border-cyan-500/40 rounded-2xl p-4 flex items-center gap-3 shadow-[0_0_30px_rgba(0,200,255,0.2)]"
+            className="absolute bottom-4 left-4 right-4 z-50 bg-gradient-to-r from-cyan-900/95 to-blue-900/95 backdrop-blur-md border border-cyan-500/40 rounded-2xl p-4 shadow-[0_0_30px_rgba(0,200,255,0.2)]"
           >
-            <img src="/iron-dome-icon-512.png" alt="Iron Dome" className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl" />
-            <div className="flex-1 min-w-0">
-              <p className="text-white font-bold text-xs sm:text-sm">{T('installApp')}</p>
-              <p className="text-cyan-300/60 text-[10px] sm:text-xs">
-                {isIOS ? T('installIOSDesc') || 'Tap Share ➜ Add to Home Screen' : T('installDesc')}
-              </p>
-            </div>
-            {!isIOS && (
+            <div className="flex items-center gap-3">
+              <img src="/iron-dome-icon-512.png" alt="Iron Dome" className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl" />
+              <div className="flex-1 min-w-0">
+                <p className="text-white font-bold text-xs sm:text-sm">{T('installApp')}</p>
+                {!isIOS && (
+                  <p className="text-cyan-300/60 text-[10px] sm:text-xs">{T('installDesc')}</p>
+                )}
+              </div>
+              {!isIOS && (
+                <button
+                  onClick={async () => {
+                    if (deferredPrompt) {
+                      deferredPrompt.prompt();
+                      await deferredPrompt.userChoice;
+                      setDeferredPrompt(null);
+                    }
+                    setShowInstallBanner(false);
+                    localStorage.setItem('ironDomePWADismissed', '1');
+                  }}
+                  className="px-3 py-2 bg-cyan-500 text-white rounded-xl font-bold text-xs sm:text-sm hover:bg-cyan-400 transition-colors whitespace-nowrap"
+                >
+                  📲 {T('download')}
+                </button>
+              )}
               <button
-                onClick={async () => {
-                  if (deferredPrompt) {
-                    deferredPrompt.prompt();
-                    await deferredPrompt.userChoice;
-                    setDeferredPrompt(null);
-                  }
+                onClick={() => {
                   setShowInstallBanner(false);
                   localStorage.setItem('ironDomePWADismissed', '1');
                 }}
-                className="px-3 py-2 bg-cyan-500 text-white rounded-xl font-bold text-xs sm:text-sm hover:bg-cyan-400 transition-colors whitespace-nowrap"
+                className="text-white/40 hover:text-white/70 transition-colors"
               >
-                {T('install')}
+                <X className="w-5 h-5" />
               </button>
+            </div>
+            {/* iOS step-by-step instructions */}
+            {isIOS && (
+              <div className="mt-3 pt-3 border-t border-cyan-500/20">
+                <p className="text-cyan-200/80 text-xs font-bold mb-2">{T('installIOSStep1')}</p>
+                <p className="text-cyan-200/80 text-xs font-bold">{T('installIOSStep2')}</p>
+              </div>
             )}
-            <button
-              onClick={() => {
-                setShowInstallBanner(false);
-                localStorage.setItem('ironDomePWADismissed', '1');
-              }}
-              className="text-white/40 hover:text-white/70 transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
           </motion.div>
         )}
       </AnimatePresence>
