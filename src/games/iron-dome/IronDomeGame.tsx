@@ -1327,23 +1327,32 @@ const IronDomeGame: React.FC = () => {
 
               {/* Mode tabs */}
               <div className="flex gap-2 mb-4 mt-3">
-                {(['campaign', 'survival'] as const).map(mode => (
+                {(['campaign', 'survival', 'friends'] as const).map(mode => (
                   <button
                     key={mode}
-                    onClick={() => { setLeaderboardMode(mode); fetchLeaderboard(mode); }}
+                    onClick={() => {
+                      if (mode === 'friends') {
+                        setLeaderboardMode('campaign');
+                        fetchFriendScores();
+                      } else {
+                        setFriendScores([]);
+                        setLeaderboardMode(mode);
+                        fetchLeaderboard(mode);
+                      }
+                    }}
                     className={`flex-1 py-2 rounded-xl text-sm font-bold transition-colors ${
-                      leaderboardMode === mode
+                      (mode === 'friends' ? friendScores.length > 0 : (friendScores.length === 0 && leaderboardMode === mode))
                         ? 'bg-cyan-600/80 text-white'
                         : 'bg-white/5 text-white/50 hover:bg-white/10'
                     }`}
                   >
-                    {mode === 'campaign' ? T('campaign') : T('survival')}
+                    {mode === 'campaign' ? T('campaign') : mode === 'survival' ? T('survival') : T('friendsScores')}
                   </button>
                 ))}
               </div>
 
               <p className="text-cyan-300/40 text-xs text-center mb-3">
-                {leaderboardMode === 'campaign' ? T('campaignTop') : T('survivalTop')}
+                {friendScores.length > 0 ? `👥 ${T('friendsScores')}` : leaderboardMode === 'campaign' ? T('campaignTop') : T('survivalTop')}
               </p>
 
               {loadingLB ? (
