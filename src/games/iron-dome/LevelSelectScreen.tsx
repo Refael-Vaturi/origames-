@@ -1,5 +1,5 @@
 import React, { useRef, useMemo, useCallback, useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Lock, Search } from 'lucide-react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 
@@ -45,6 +45,7 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({ maxUnlocked, star
   const totalRows = Math.ceil(TOTAL_LEVELS / cols);
   const [searchValue, setSearchValue] = useState('');
   const [showSearch, setShowSearch] = useState(false);
+  const [unlockingLevel, setUnlockingLevel] = useState<number | null>(null);
 
   const estimateRowSize = useCallback(() => {
     const w = window.innerWidth;
@@ -65,7 +66,6 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({ maxUnlocked, star
   // Auto-scroll to current level on mount
   useEffect(() => {
     const targetRow = Math.floor((maxUnlocked - 1) / cols);
-    // Small delay to let virtualizer initialize
     const timer = setTimeout(() => {
       rowVirtualizer.scrollToIndex(Math.max(0, targetRow - 1), { align: 'start', behavior: 'smooth' });
     }, 150);
@@ -87,6 +87,20 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({ maxUnlocked, star
     }
   }, [searchValue, scrollToLevel]);
 
+  const handleLevelClick = useCallback((level: number, isUnlocked: boolean, isCurrent: boolean) => {
+    if (!isUnlocked) return;
+    if (isCurrent) {
+      // Show unlock animation then start
+      setUnlockingLevel(level);
+      setTimeout(() => {
+        setUnlockingLevel(null);
+        onSelectLevel(level);
+      }, 1200);
+    } else {
+      onSelectLevel(level);
+    }
+  }, [onSelectLevel]);
+
   const legoStudStyle = useMemo(() => ({
     backgroundImage: `radial-gradient(circle, rgba(255,255,255,0.08) 8px, transparent 8px)`,
     backgroundSize: '40px 40px',
@@ -98,6 +112,7 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({ maxUnlocked, star
     const isCompleted = level < maxUnlocked;
     const isCurrent = level === maxUnlocked;
     const levelStars = stars[level] || 0;
+    const isUnlocking = unlockingLevel === level;
 
     if (level > TOTAL_LEVELS) return <div key={`empty-${level}`} className="w-full aspect-square" />;
 
@@ -105,33 +120,105 @@ const LevelSelectScreen: React.FC<LevelSelectScreenProps> = ({ maxUnlocked, star
       <motion.button
         key={level}
         whileTap={isUnlocked ? { scale: 0.9 } : {}}
-        onClick={() => isUnlocked && onSelectLevel(level)}
+        onClick={() => handleLevelClick(level, isUnlocked, isCurrent)}
         disabled={!isUnlocked}
         className={`relative w-full aspect-square rounded-xl sm:rounded-2xl border-2 font-bold transition-all flex flex-col items-center justify-center gap-0.5 text-sm sm:text-lg ${
           isCompleted
             ? 'bg-gradient-to-br from-green-600/60 to-emerald-700/60 border-green-400/50 text-white shadow-[0_0_15px_rgba(34,197,94,0.2)]'
             : isCurrent
-            ? 'bg-gradient-to-br from-cyan-600/70 to-blue-700/70 border-cyan-400/60 text-white shadow-[0_0_20px_rgba(0,200,255,0.3)] animate-pulse'
+            ? 'bg-gradient-to-br from-cyan-600/70 to-blue-700/70 border-cyan-400/60 text-white shadow-[0_0_20px_rgba(0,200,255,0.3)]'
             : 'bg-black/40 border-white/10 text-white/25 cursor-not-allowed'
         }`}
         style={{ fontFamily: "'Courier New', monospace", maxWidth: 120, maxHeight: 120 }}
       >
+        {/* Lego stud */}
         <div className="absolute inset-0 rounded-xl sm:rounded-2xl overflow-hidden pointer-events-none">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 sm:w-6 sm:h-6 rounded-full border border-white/10 bg-white/5" />
         </div>
 
+        {/* Locked levels */}
         {!isUnlocked && <Lock className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-white/20" />}
+        
+        {/* Current level - glowing lock */}
+        {isCurrent && !isUnlocking && (
+          <div className="flex flex-col items-center gap-0.5">
+            <motion.div
+              animate={{ 
+                filter: ['drop-shadow(0 0 4px rgba(0,200,255,0.6))', 'drop-shadow(0 0 12px rgba(0,200,255,0.9))', 'drop-shadow(0 0 4px rgba(0,200,255,0.6))'],
+              }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+            >
+              <Lock className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-300" />
+            </motion.div>
+            <span className="text-[8px] sm:text-[10px] text-cyan-300/80 font-bold">{T('tapToUnlock')}</span>
+          </div>
+        )}
+
+        {/* Unlock animation */}
+        <AnimatePresence>
+          {isUnlocking && (
+            <motion.div
+              className="absolute inset-0 flex items-center justify-center z-10"
+              initial={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <motion.div
+                initial={{ scale: 1, rotate: 0 }}
+                animate={{ 
+                  scale: [1, 1.3, 1.5, 0],
+                  rotate: [0, -10, 10, -20, 180],
+                  opacity: [1, 1, 0.8, 0],
+                }}
+                transition={{ duration: 1, ease: 'easeInOut' }}
+              >
+                <Lock className="w-8 h-8 text-yellow-400" />
+              </motion.div>
+              {/* Burst particles */}
+              {[...Array(8)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  className="absolute w-2 h-2 rounded-full bg-yellow-400"
+                  initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
+                  animate={{
+                    x: Math.cos((i * Math.PI * 2) / 8) * 40,
+                    y: Math.sin((i * Math.PI * 2) / 8) * 40,
+                    opacity: 0,
+                    scale: 0,
+                  }}
+                  transition={{ duration: 0.8, delay: 0.3 }}
+                />
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Completed stars */}
         {isCompleted && (
           <div className="flex gap-0.5">
             {[1, 2, 3].map(i => (
-              <span key={i} className={`text-[10px] sm:text-xs ${i <= levelStars ? 'text-yellow-400' : 'text-white/15'}`}>★</span>
+              <motion.span
+                key={i}
+                className={`text-[10px] sm:text-xs ${i <= levelStars ? 'text-yellow-400' : 'text-white/15'}`}
+                initial={levelStars === 3 && i <= 3 ? { scale: 0, rotate: -180 } : {}}
+                animate={levelStars === 3 && i <= 3 ? { scale: 1, rotate: 0 } : {}}
+                transition={{ delay: i * 0.1, type: 'spring' }}
+              >
+                ★
+              </motion.span>
             ))}
           </div>
         )}
-        <span className={`text-base sm:text-xl ${!isUnlocked ? 'text-white/20' : ''}`}>{level}</span>
+        
+        {/* Level number (not on current level with lock) */}
+        {!isCurrent && (
+          <span className={`text-base sm:text-xl ${!isUnlocked ? 'text-white/20' : ''}`}>{level}</span>
+        )}
+        {isCurrent && !isUnlocking && (
+          <span className="text-xs sm:text-sm text-cyan-200/60">{level}</span>
+        )}
       </motion.button>
     );
-  }, [maxUnlocked, stars, onSelectLevel]);
+  }, [maxUnlocked, stars, handleLevelClick, unlockingLevel, T]);
 
   return (
     <motion.div

@@ -13,9 +13,11 @@ import { t as ironT } from './i18n';
 import LanguageSelector from '@/components/LanguageSelector';
 import { supabase } from '@/integrations/supabase/client';
 import LevelSelectScreen from './LevelSelectScreen';
+import FireworksEffect from './FireworksEffect';
 import { lovable } from '@/integrations/lovable';
 import { GameMusic } from './music';
 import { toast } from '@/hooks/use-toast';
+import { useFriends } from '@/hooks/useFriends';
 
 const IronDomeGame: React.FC = () => {
   const navigate = useNavigate();
@@ -65,6 +67,9 @@ const IronDomeGame: React.FC = () => {
   const [campaignStars, setCampaignStars] = useState<Record<number, number>>(() => {
     try { return JSON.parse(localStorage.getItem('ironDomeCampaignStars') || '{}'); } catch { return {}; }
   });
+  const [showFireworks, setShowFireworks] = useState(false);
+  const [friendScores, setFriendScores] = useState<any[]>([]);
+  const { friends } = useFriends();
 
   const saveCampaignStars = useCallback((level: number, stars: number) => {
     setCampaignStars(prev => {
@@ -257,6 +262,32 @@ const IronDomeGame: React.FC = () => {
     setLeaderboardData(sorted.slice(0, 15));
     setLoadingLB(false);
   }, []);
+
+  const fetchFriendScores = useCallback(async () => {
+    if (!user || friends.length === 0) {
+      setFriendScores([]);
+      return;
+    }
+    setLoadingLB(true);
+    const friendUserIds = friends.map(f => f.friend?.user_id).filter(Boolean) as string[];
+    friendUserIds.push(user.id); // include self
+    const { data } = await supabase
+      .from('iron_dome_scores')
+      .select('*')
+      .in('user_id', friendUserIds)
+      .order('wave', { ascending: false })
+      .limit(100);
+    const bestByPlayer = new Map<string, any>();
+    (data || []).forEach(row => {
+      const existing = bestByPlayer.get(row.user_id);
+      if (!existing || row.wave > existing.wave || (row.wave === existing.wave && row.score > existing.score)) {
+        bestByPlayer.set(row.user_id, row);
+      }
+    });
+    const sorted = Array.from(bestByPlayer.values()).sort((a, b) => b.wave - a.wave || b.score - a.score);
+    setFriendScores(sorted);
+    setLoadingLB(false);
+  }, [user, friends]);
 
   // Music toggle & cleanup
   useEffect(() => {
@@ -743,6 +774,11 @@ const IronDomeGame: React.FC = () => {
       const citiesLost = totalCities - citiesAlive;
       const stars = citiesLost === 0 ? 3 : citiesLost <= 2 ? 2 : 1;
       saveCampaignStars(currentWave, stars);
+      // Trigger fireworks for 3 stars
+      if (stars === 3) {
+        setShowFireworks(true);
+        setTimeout(() => setShowFireworks(false), 3000);
+      }
       if (nextLevel > campaignMaxLevel) {
         setCampaignMaxLevel(nextLevel);
         try { localStorage.setItem('ironDomeCampaignLevel', String(nextLevel)); } catch {}
@@ -1036,6 +1072,9 @@ const IronDomeGame: React.FC = () => {
         )}
       </AnimatePresence>
 
+      {/* 3-Star Fireworks Celebration */}
+      <FireworksEffect active={showFireworks} duration={3000} />
+
       {/* Store */}
       <AnimatePresence>
         {phase === 'store' && gameState && (
@@ -1317,23 +1356,32 @@ const IronDomeGame: React.FC = () => {
 
               {/* Mode tabs */}
               <div className="flex gap-2 mb-4 mt-3">
-                {(['campaign', 'survival'] as const).map(mode => (
+                {(['campaign', 'survival', 'friends'] as const).map(mode => (
                   <button
                     key={mode}
-                    onClick={() => { setLeaderboardMode(mode); fetchLeaderboard(mode); }}
+                    onClick={() => {
+                      if (mode === 'friends') {
+                        setLeaderboardMode('campaign');
+                        fetchFriendScores();
+                      } else {
+                        setFriendScores([]);
+                        setLeaderboardMode(mode);
+                        fetchLeaderboard(mode);
+                      }
+                    }}
                     className={`flex-1 py-2 rounded-xl text-sm font-bold transition-colors ${
-                      leaderboardMode === mode
+                      (mode === 'friends' ? friendScores.length > 0 : (friendScores.length === 0 && leaderboardMode === mode))
                         ? 'bg-cyan-600/80 text-white'
                         : 'bg-white/5 text-white/50 hover:bg-white/10'
                     }`}
                   >
-                    {mode === 'campaign' ? T('campaign') : T('survival')}
+                    {mode === 'campaign' ? T('campaign') : mode === 'survival' ? T('survival') : T('friendsScores')}
                   </button>
                 ))}
               </div>
 
               <p className="text-cyan-300/40 text-xs text-center mb-3">
-                {leaderboardMode === 'campaign' ? T('campaignTop') : T('survivalTop')}
+                {friendScores.length > 0 ? `👥 ${T('friendsScores')}` : leaderboardMode === 'campaign' ? T('campaignTop') : T('survivalTop')}
               </p>
 
               {loadingLB ? (
@@ -1346,7 +1394,7 @@ const IronDomeGame: React.FC = () => {
                     ⏳
                   </motion.div>
                 </div>
-              ) : leaderboardData.length === 0 ? (
+              ) : (friendScores.length > 0 ? friendScores : leaderboardData).length === 0 ? (
                 <p className="text-cyan-300/50 text-sm text-center py-8">{T('noScores')}</p>
               ) : (
                 <div className="space-y-1">
@@ -1362,7 +1410,7 @@ const IronDomeGame: React.FC = () => {
                     )}
                     <span className="w-12 text-right">{T('maxCombo')}</span>
                   </div>
-                  {leaderboardData.map((entry, i) => {
+                  {(friendScores.length > 0 ? friendScores : leaderboardData).map((entry, i) => {
                     const isMe = user && entry.user_id === user.id;
                     const medals = ['🥇', '🥈', '🥉'];
                     const survSecs = entry.survival_time || 0;
@@ -1848,40 +1896,49 @@ const IronDomeGame: React.FC = () => {
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 100, opacity: 0 }}
-            className="absolute bottom-4 left-4 right-4 z-50 bg-gradient-to-r from-cyan-900/90 to-blue-900/90 backdrop-blur-md border border-cyan-500/40 rounded-2xl p-4 flex items-center gap-3 shadow-[0_0_30px_rgba(0,200,255,0.2)]"
+            className="absolute bottom-4 left-4 right-4 z-50 bg-gradient-to-r from-cyan-900/95 to-blue-900/95 backdrop-blur-md border border-cyan-500/40 rounded-2xl p-4 shadow-[0_0_30px_rgba(0,200,255,0.2)]"
           >
-            <img src="/iron-dome-icon-512.png" alt="Iron Dome" className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl" />
-            <div className="flex-1 min-w-0">
-              <p className="text-white font-bold text-xs sm:text-sm">{T('installApp')}</p>
-              <p className="text-cyan-300/60 text-[10px] sm:text-xs">
-                {isIOS ? T('installIOSDesc') || 'Tap Share ➜ Add to Home Screen' : T('installDesc')}
-              </p>
-            </div>
-            {!isIOS && (
+            <div className="flex items-center gap-3">
+              <img src="/iron-dome-icon-512.png" alt="Iron Dome" className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl" />
+              <div className="flex-1 min-w-0">
+                <p className="text-white font-bold text-xs sm:text-sm">{T('installApp')}</p>
+                {!isIOS && (
+                  <p className="text-cyan-300/60 text-[10px] sm:text-xs">{T('installDesc')}</p>
+                )}
+              </div>
+              {!isIOS && (
+                <button
+                  onClick={async () => {
+                    if (deferredPrompt) {
+                      deferredPrompt.prompt();
+                      await deferredPrompt.userChoice;
+                      setDeferredPrompt(null);
+                    }
+                    setShowInstallBanner(false);
+                    localStorage.setItem('ironDomePWADismissed', '1');
+                  }}
+                  className="px-3 py-2 bg-cyan-500 text-white rounded-xl font-bold text-xs sm:text-sm hover:bg-cyan-400 transition-colors whitespace-nowrap"
+                >
+                  📲 {T('download')}
+                </button>
+              )}
               <button
-                onClick={async () => {
-                  if (deferredPrompt) {
-                    deferredPrompt.prompt();
-                    await deferredPrompt.userChoice;
-                    setDeferredPrompt(null);
-                  }
+                onClick={() => {
                   setShowInstallBanner(false);
                   localStorage.setItem('ironDomePWADismissed', '1');
                 }}
-                className="px-3 py-2 bg-cyan-500 text-white rounded-xl font-bold text-xs sm:text-sm hover:bg-cyan-400 transition-colors whitespace-nowrap"
+                className="text-white/40 hover:text-white/70 transition-colors"
               >
-                {T('install')}
+                <X className="w-5 h-5" />
               </button>
+            </div>
+            {/* iOS step-by-step instructions */}
+            {isIOS && (
+              <div className="mt-3 pt-3 border-t border-cyan-500/20">
+                <p className="text-cyan-200/80 text-xs font-bold mb-2">{T('installIOSStep1')}</p>
+                <p className="text-cyan-200/80 text-xs font-bold">{T('installIOSStep2')}</p>
+              </div>
             )}
-            <button
-              onClick={() => {
-                setShowInstallBanner(false);
-                localStorage.setItem('ironDomePWADismissed', '1');
-              }}
-              className="text-white/40 hover:text-white/70 transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
           </motion.div>
         )}
       </AnimatePresence>
