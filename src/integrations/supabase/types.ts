@@ -226,6 +226,39 @@ export type Database = {
           },
         ]
       }
+      iron_dome_progress: {
+        Row: {
+          best_wave: number
+          created_at: string
+          id: string
+          max_level: number
+          stars: Json
+          updated_at: string
+          upgrades: Json
+          user_id: string
+        }
+        Insert: {
+          best_wave?: number
+          created_at?: string
+          id?: string
+          max_level?: number
+          stars?: Json
+          updated_at?: string
+          upgrades?: Json
+          user_id: string
+        }
+        Update: {
+          best_wave?: number
+          created_at?: string
+          id?: string
+          max_level?: number
+          stars?: Json
+          updated_at?: string
+          upgrades?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
       iron_dome_scores: {
         Row: {
           country: string | null

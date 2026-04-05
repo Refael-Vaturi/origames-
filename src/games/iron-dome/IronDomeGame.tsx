@@ -71,6 +71,20 @@ const IronDomeGame: React.FC = () => {
   const [friendScores, setFriendScores] = useState<any[]>([]);
   const { friends } = useFriends();
 
+  // Sync progress to DB (debounced)
+  const syncProgressToDb = useCallback(async (maxLevel: number, starsObj: Record<number, number>, upgradesObj: Record<string, number>, bw: number) => {
+    if (!user) return;
+    try {
+      const { data: existing } = await supabase.from('iron_dome_progress').select('id').eq('user_id', user.id).maybeSingle();
+      const payload = { max_level: maxLevel, stars: starsObj as any, upgrades: upgradesObj as any, best_wave: bw };
+      if (existing) {
+        await supabase.from('iron_dome_progress').update(payload).eq('user_id', user.id);
+      } else {
+        await supabase.from('iron_dome_progress').insert({ user_id: user.id, ...payload });
+      }
+    } catch (e) { console.error('Failed to sync progress:', e); }
+  }, [user]);
+
   const saveCampaignStars = useCallback((level: number, stars: number) => {
     setCampaignStars(prev => {
       const existing = prev[level] || 0;
@@ -340,16 +354,20 @@ const IronDomeGame: React.FC = () => {
   // Auto-save score on game over or victory + save skill + save best wave
   useEffect(() => {
     if ((phase === 'game-over' || phase === 'victory') && gameState) {
-      // Save best wave to localStorage
+      // Save best wave to localStorage & DB
       if (gameState.wave > bestWave) {
         setBestWave(gameState.wave);
         try { localStorage.setItem('ironDomeBestWave', String(gameState.wave)); } catch {}
       }
       // Save campaign level progress
+      const newBestWave = Math.max(gameState.wave, bestWave);
       if (gameState.mode === 'campaign' && gameState.wave > campaignMaxLevel) {
         setCampaignMaxLevel(gameState.wave);
         try { localStorage.setItem('ironDomeCampaignLevel', String(gameState.wave)); } catch {}
       }
+      // Sync to DB
+      const currentMaxLevel = gameState.mode === 'campaign' ? Math.max(gameState.wave, campaignMaxLevel) : campaignMaxLevel;
+      syncProgressToDb(currentMaxLevel, campaignStars, getPersistentUpgrades(), newBestWave);
 
       if (user && !scoreSaved) {
         saveScore(gameState);
@@ -385,7 +403,7 @@ const IronDomeGame: React.FC = () => {
         updateSkill();
       }
     }
-  }, [phase, gameState, user, scoreSaved, saveScore, bestWave]);
+  }, [phase, gameState, user, scoreSaved, saveScore, bestWave, campaignMaxLevel, campaignStars, syncProgressToDb, getPersistentUpgrades]);
 
   // Fetch persistent credits and player skill
   useEffect(() => {
@@ -400,6 +418,64 @@ const IronDomeGame: React.FC = () => {
     };
     fetchData();
   }, [user]);
+
+  // Load progress from DB when user logs in
+  useEffect(() => {
+    if (!user) return;
+    const loadProgress = async () => {
+      try {
+        const { data } = await supabase.from('iron_dome_progress').select('*').eq('user_id', user.id).maybeSingle();
+        if (data) {
+          const dbStars = (data.stars || {}) as Record<string, number>;
+          const dbUpgrades = (data.upgrades || {}) as Record<string, number>;
+          const dbMaxLevel = data.max_level || 1;
+          const dbBestWave = data.best_wave || 0;
+
+          // Merge with localStorage (take the best of both)
+          const localStars = (() => { try { return JSON.parse(localStorage.getItem('ironDomeCampaignStars') || '{}'); } catch { return {}; } })();
+          const localMaxLevel = (() => { try { return parseInt(localStorage.getItem('ironDomeCampaignLevel') || '1'); } catch { return 1; } })();
+          const localBestWave = (() => { try { return parseInt(localStorage.getItem('ironDomeBestWave') || '0'); } catch { return 0; } })();
+          const localUpgrades = (() => { try { return JSON.parse(localStorage.getItem('ironDomeUpgrades') || '{}'); } catch { return {}; } })();
+
+          // Merge stars (take max per level)
+          const mergedStars: Record<number, number> = {};
+          const allKeys = new Set([...Object.keys(dbStars), ...Object.keys(localStars)]);
+          allKeys.forEach(k => { mergedStars[Number(k)] = Math.max(dbStars[k] || 0, localStars[k] || 0); });
+
+          // Merge upgrades (take max)
+          const mergedUpgrades: Record<string, number> = {};
+          const upgradeKeys = new Set([...Object.keys(dbUpgrades), ...Object.keys(localUpgrades)]);
+          upgradeKeys.forEach(k => { mergedUpgrades[k] = Math.max(dbUpgrades[k] || 0, localUpgrades[k] || 0); });
+
+          const mergedMaxLevel = Math.max(dbMaxLevel, localMaxLevel);
+          const mergedBestWave = Math.max(dbBestWave, localBestWave);
+
+          setCampaignMaxLevel(mergedMaxLevel);
+          setCampaignStars(mergedStars);
+          setBestWave(mergedBestWave);
+
+          // Save merged back to localStorage
+          try {
+            localStorage.setItem('ironDomeCampaignLevel', String(mergedMaxLevel));
+            localStorage.setItem('ironDomeCampaignStars', JSON.stringify(mergedStars));
+            localStorage.setItem('ironDomeBestWave', String(mergedBestWave));
+            localStorage.setItem('ironDomeUpgrades', JSON.stringify(mergedUpgrades));
+          } catch {}
+
+          // Save merged back to DB
+          syncProgressToDb(mergedMaxLevel, mergedStars, mergedUpgrades, mergedBestWave);
+        } else {
+          // No DB record yet - push localStorage to DB
+          const localStars = (() => { try { return JSON.parse(localStorage.getItem('ironDomeCampaignStars') || '{}'); } catch { return {}; } })();
+          const localMaxLevel = (() => { try { return parseInt(localStorage.getItem('ironDomeCampaignLevel') || '1'); } catch { return 1; } })();
+          const localBestWave = (() => { try { return parseInt(localStorage.getItem('ironDomeBestWave') || '0'); } catch { return 0; } })();
+          const localUpgrades = (() => { try { return JSON.parse(localStorage.getItem('ironDomeUpgrades') || '{}'); } catch { return {}; } })();
+          syncProgressToDb(localMaxLevel, localStars, localUpgrades, localBestWave);
+        }
+      } catch (e) { console.error('Failed to load progress:', e); }
+    };
+    loadProgress();
+  }, [user, syncProgressToDb]);
 
   // Handle purchase return
   useEffect(() => {
@@ -779,10 +855,16 @@ const IronDomeGame: React.FC = () => {
         setShowFireworks(true);
         setTimeout(() => setShowFireworks(false), 3000);
       }
+      const newMaxLevel = Math.max(nextLevel, campaignMaxLevel);
       if (nextLevel > campaignMaxLevel) {
         setCampaignMaxLevel(nextLevel);
         try { localStorage.setItem('ironDomeCampaignLevel', String(nextLevel)); } catch {}
       }
+      // Sync wave-clear progress to DB
+      setCampaignStars(prev => {
+        syncProgressToDb(newMaxLevel, prev, getPersistentUpgrades(), bestWave);
+        return prev;
+      });
     }
     
     stateRef.current = nextWave(stateRef.current, w, h, playerSkill);
