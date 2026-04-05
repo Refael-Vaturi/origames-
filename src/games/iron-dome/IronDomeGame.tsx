@@ -68,6 +68,7 @@ const IronDomeGame: React.FC = () => {
     try { return JSON.parse(localStorage.getItem('ironDomeCampaignStars') || '{}'); } catch { return {}; }
   });
   const [showFireworks, setShowFireworks] = useState(false);
+  const [showReviveEffect, setShowReviveEffect] = useState(false);
   const [friendScores, setFriendScores] = useState<any[]>([]);
   const { friends } = useFriends();
 
@@ -777,22 +778,27 @@ const IronDomeGame: React.FC = () => {
   const performRevive = () => {
     if (!stateRef.current) return;
     setShowingAd(false);
-    // Reset lives
-    stateRef.current.lives = stateRef.current.maxLives;
-    // Refill ammo
-    stateRef.current.ammo = stateRef.current.maxAmmo;
-    stateRef.current.reloading = false;
-    stateRef.current.reloadTimer = 0;
-    // Clear all threats
-    stateRef.current.threats = [];
-    // Restore all cities
-    stateRef.current.cities = stateRef.current.cities.map(c => ({ ...c, alive: true }));
-    // Resume
-    stateRef.current.phase = 'playing';
-    setPhase('playing');
-    setGameState({ ...stateRef.current });
-    setReviveUsed(true);
-    toast({ title: '🔄 חזרת לחיים!' });
+    // Show golden revival effect
+    setShowReviveEffect(true);
+    setTimeout(() => {
+      // Reset lives
+      stateRef.current!.lives = stateRef.current!.maxLives;
+      // Refill ammo
+      stateRef.current!.ammo = stateRef.current!.maxAmmo;
+      stateRef.current!.reloading = false;
+      stateRef.current!.reloadTimer = 0;
+      // Clear all threats
+      stateRef.current!.threats = [];
+      // Restore all cities
+      stateRef.current!.cities = stateRef.current!.cities.map(c => ({ ...c, alive: true }));
+      // Resume
+      stateRef.current!.phase = 'playing';
+      setPhase('playing');
+      setGameState({ ...stateRef.current! });
+      setReviveUsed(true);
+      setTimeout(() => setShowReviveEffect(false), 800);
+      toast({ title: '🔄 חזרת לחיים!' });
+    }, 1500);
   };
 
   const startGame = (mode: 'campaign' | 'survival', startLevel: number = 1) => {
@@ -1966,6 +1972,70 @@ const IronDomeGame: React.FC = () => {
               </motion.p>
               <p className="text-white/40 text-sm mt-3">מכין את ההחייאה...</p>
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Golden Revive Effect */}
+      <AnimatePresence>
+        {showReviveEffect && (
+          <motion.div
+            key="revive-effect"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-50 pointer-events-none flex items-center justify-center"
+          >
+            {/* Golden radial flash */}
+            <motion.div
+              className="absolute inset-0"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: [0, 0.8, 0.3, 0] }}
+              transition={{ duration: 1.5, times: [0, 0.2, 0.6, 1] }}
+              style={{ background: 'radial-gradient(circle, rgba(255,215,0,0.6) 0%, rgba(255,165,0,0.3) 40%, transparent 70%)' }}
+            />
+            {/* Expanding golden ring */}
+            <motion.div
+              className="absolute rounded-full border-4 border-yellow-400"
+              initial={{ width: 0, height: 0, opacity: 1 }}
+              animate={{ width: 800, height: 800, opacity: 0 }}
+              transition={{ duration: 1.2, ease: 'easeOut' }}
+              style={{ boxShadow: '0 0 60px rgba(255,215,0,0.8), inset 0 0 60px rgba(255,215,0,0.4)' }}
+            />
+            {/* Second ring delayed */}
+            <motion.div
+              className="absolute rounded-full border-2 border-amber-300"
+              initial={{ width: 0, height: 0, opacity: 0.8 }}
+              animate={{ width: 600, height: 600, opacity: 0 }}
+              transition={{ duration: 1, ease: 'easeOut', delay: 0.2 }}
+              style={{ boxShadow: '0 0 40px rgba(255,215,0,0.5)' }}
+            />
+            {/* Center icon */}
+            <motion.div
+              className="text-7xl z-10"
+              initial={{ scale: 0, rotate: -180, opacity: 0 }}
+              animate={{ scale: [0, 1.5, 1], rotate: 0, opacity: [0, 1, 1] }}
+              transition={{ duration: 0.8, ease: 'easeOut' }}
+              style={{ filter: 'drop-shadow(0 0 20px rgba(255,215,0,0.8))' }}
+            >
+              ✨
+            </motion.div>
+            {/* Floating particles */}
+            {Array.from({ length: 12 }).map((_, i) => (
+              <motion.div
+                key={i}
+                className="absolute w-2 h-2 rounded-full bg-yellow-400"
+                initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
+                animate={{
+                  x: Math.cos((i / 12) * Math.PI * 2) * 200,
+                  y: Math.sin((i / 12) * Math.PI * 2) * 200,
+                  opacity: 0,
+                  scale: 0,
+                }}
+                transition={{ duration: 1, delay: 0.3, ease: 'easeOut' }}
+                style={{ boxShadow: '0 0 8px rgba(255,215,0,0.8)' }}
+              />
+            ))}
           </motion.div>
         )}
       </AnimatePresence>
