@@ -855,10 +855,16 @@ const IronDomeGame: React.FC = () => {
         setShowFireworks(true);
         setTimeout(() => setShowFireworks(false), 3000);
       }
+      const newMaxLevel = Math.max(nextLevel, campaignMaxLevel);
       if (nextLevel > campaignMaxLevel) {
         setCampaignMaxLevel(nextLevel);
         try { localStorage.setItem('ironDomeCampaignLevel', String(nextLevel)); } catch {}
       }
+      // Sync wave-clear progress to DB
+      setCampaignStars(prev => {
+        syncProgressToDb(newMaxLevel, prev, getPersistentUpgrades(), bestWave);
+        return prev;
+      });
     }
     
     stateRef.current = nextWave(stateRef.current, w, h, playerSkill);
