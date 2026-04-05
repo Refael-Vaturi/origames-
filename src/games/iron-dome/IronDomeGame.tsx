@@ -415,6 +415,64 @@ const IronDomeGame: React.FC = () => {
     fetchData();
   }, [user]);
 
+  // Load progress from DB when user logs in
+  useEffect(() => {
+    if (!user) return;
+    const loadProgress = async () => {
+      try {
+        const { data } = await supabase.from('iron_dome_progress').select('*').eq('user_id', user.id).maybeSingle();
+        if (data) {
+          const dbStars = (data.stars || {}) as Record<string, number>;
+          const dbUpgrades = (data.upgrades || {}) as Record<string, number>;
+          const dbMaxLevel = data.max_level || 1;
+          const dbBestWave = data.best_wave || 0;
+
+          // Merge with localStorage (take the best of both)
+          const localStars = (() => { try { return JSON.parse(localStorage.getItem('ironDomeCampaignStars') || '{}'); } catch { return {}; } })();
+          const localMaxLevel = (() => { try { return parseInt(localStorage.getItem('ironDomeCampaignLevel') || '1'); } catch { return 1; } })();
+          const localBestWave = (() => { try { return parseInt(localStorage.getItem('ironDomeBestWave') || '0'); } catch { return 0; } })();
+          const localUpgrades = (() => { try { return JSON.parse(localStorage.getItem('ironDomeUpgrades') || '{}'); } catch { return {}; } })();
+
+          // Merge stars (take max per level)
+          const mergedStars: Record<number, number> = {};
+          const allKeys = new Set([...Object.keys(dbStars), ...Object.keys(localStars)]);
+          allKeys.forEach(k => { mergedStars[Number(k)] = Math.max(dbStars[k] || 0, localStars[k] || 0); });
+
+          // Merge upgrades (take max)
+          const mergedUpgrades: Record<string, number> = {};
+          const upgradeKeys = new Set([...Object.keys(dbUpgrades), ...Object.keys(localUpgrades)]);
+          upgradeKeys.forEach(k => { mergedUpgrades[k] = Math.max(dbUpgrades[k] || 0, localUpgrades[k] || 0); });
+
+          const mergedMaxLevel = Math.max(dbMaxLevel, localMaxLevel);
+          const mergedBestWave = Math.max(dbBestWave, localBestWave);
+
+          setCampaignMaxLevel(mergedMaxLevel);
+          setCampaignStars(mergedStars);
+          setBestWave(mergedBestWave);
+
+          // Save merged back to localStorage
+          try {
+            localStorage.setItem('ironDomeCampaignLevel', String(mergedMaxLevel));
+            localStorage.setItem('ironDomeCampaignStars', JSON.stringify(mergedStars));
+            localStorage.setItem('ironDomeBestWave', String(mergedBestWave));
+            localStorage.setItem('ironDomeUpgrades', JSON.stringify(mergedUpgrades));
+          } catch {}
+
+          // Save merged back to DB
+          syncProgressToDb(mergedMaxLevel, mergedStars, mergedUpgrades, mergedBestWave);
+        } else {
+          // No DB record yet - push localStorage to DB
+          const localStars = (() => { try { return JSON.parse(localStorage.getItem('ironDomeCampaignStars') || '{}'); } catch { return {}; } })();
+          const localMaxLevel = (() => { try { return parseInt(localStorage.getItem('ironDomeCampaignLevel') || '1'); } catch { return 1; } })();
+          const localBestWave = (() => { try { return parseInt(localStorage.getItem('ironDomeBestWave') || '0'); } catch { return 0; } })();
+          const localUpgrades = (() => { try { return JSON.parse(localStorage.getItem('ironDomeUpgrades') || '{}'); } catch { return {}; } })();
+          syncProgressToDb(localMaxLevel, localStars, localUpgrades, localBestWave);
+        }
+      } catch (e) { console.error('Failed to load progress:', e); }
+    };
+    loadProgress();
+  }, [user, syncProgressToDb]);
+
   // Handle purchase return
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
