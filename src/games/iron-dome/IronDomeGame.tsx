@@ -71,6 +71,20 @@ const IronDomeGame: React.FC = () => {
   const [friendScores, setFriendScores] = useState<any[]>([]);
   const { friends } = useFriends();
 
+  // Sync progress to DB (debounced)
+  const syncProgressToDb = useCallback(async (maxLevel: number, starsObj: Record<number, number>, upgradesObj: Record<string, number>, bw: number) => {
+    if (!user) return;
+    try {
+      const { data: existing } = await supabase.from('iron_dome_progress').select('id').eq('user_id', user.id).maybeSingle();
+      const payload = { max_level: maxLevel, stars: starsObj as any, upgrades: upgradesObj as any, best_wave: bw };
+      if (existing) {
+        await supabase.from('iron_dome_progress').update(payload).eq('user_id', user.id);
+      } else {
+        await supabase.from('iron_dome_progress').insert({ user_id: user.id, ...payload });
+      }
+    } catch (e) { console.error('Failed to sync progress:', e); }
+  }, [user]);
+
   const saveCampaignStars = useCallback((level: number, stars: number) => {
     setCampaignStars(prev => {
       const existing = prev[level] || 0;
