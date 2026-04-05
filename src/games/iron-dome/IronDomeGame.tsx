@@ -354,16 +354,20 @@ const IronDomeGame: React.FC = () => {
   // Auto-save score on game over or victory + save skill + save best wave
   useEffect(() => {
     if ((phase === 'game-over' || phase === 'victory') && gameState) {
-      // Save best wave to localStorage
+      // Save best wave to localStorage & DB
       if (gameState.wave > bestWave) {
         setBestWave(gameState.wave);
         try { localStorage.setItem('ironDomeBestWave', String(gameState.wave)); } catch {}
       }
       // Save campaign level progress
+      const newBestWave = Math.max(gameState.wave, bestWave);
       if (gameState.mode === 'campaign' && gameState.wave > campaignMaxLevel) {
         setCampaignMaxLevel(gameState.wave);
         try { localStorage.setItem('ironDomeCampaignLevel', String(gameState.wave)); } catch {}
       }
+      // Sync to DB
+      const currentMaxLevel = gameState.mode === 'campaign' ? Math.max(gameState.wave, campaignMaxLevel) : campaignMaxLevel;
+      syncProgressToDb(currentMaxLevel, campaignStars, getPersistentUpgrades(), newBestWave);
 
       if (user && !scoreSaved) {
         saveScore(gameState);
