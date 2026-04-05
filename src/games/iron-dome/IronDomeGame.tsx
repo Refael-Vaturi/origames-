@@ -403,7 +403,7 @@ const IronDomeGame: React.FC = () => {
         updateSkill();
       }
     }
-  }, [phase, gameState, user, scoreSaved, saveScore, bestWave]);
+  }, [phase, gameState, user, scoreSaved, saveScore, bestWave, campaignMaxLevel, campaignStars, syncProgressToDb, getPersistentUpgrades]);
 
   // Fetch persistent credits and player skill
   useEffect(() => {
