@@ -735,9 +735,9 @@ const IronDomeGame: React.FC = () => {
   const handleRevive = () => {
     if (!stateRef.current || reviveUsed) return;
     
-    // Start 9-second countdown overlay
+    // Start 10-second countdown overlay
     setShowingAd(true);
-    setAdCountdown(9);
+    setAdCountdown(10);
     
     const countdownInterval = setInterval(() => {
       setAdCountdown(prev => {
