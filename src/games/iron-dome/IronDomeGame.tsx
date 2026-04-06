@@ -18,6 +18,7 @@ import { lovable } from '@/integrations/lovable';
 import { GameMusic } from './music';
 import { toast } from '@/hooks/use-toast';
 import { useFriends } from '@/hooks/useFriends';
+import { playReviveSound } from '@/hooks/useSound';
 
 const IronDomeGame: React.FC = () => {
   const navigate = useNavigate();
@@ -788,6 +789,8 @@ const IronDomeGame: React.FC = () => {
   const performRevive = () => {
     if (!stateRef.current) return;
     setShowingAd(false);
+    // Play dramatic revive sound
+    playReviveSound();
     // Show golden revival effect
     setShowReviveEffect(true);
     setTimeout(() => {
