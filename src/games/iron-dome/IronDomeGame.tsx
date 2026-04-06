@@ -740,33 +740,43 @@ const IronDomeGame: React.FC = () => {
     setShowingAd(true);
     setAdCountdown(10);
     
+    let reviveDone = false;
+    const safePerformRevive = () => {
+      if (reviveDone) return;
+      reviveDone = true;
+      performRevive();
+    };
+    
     const countdownInterval = setInterval(() => {
       setAdCountdown(prev => {
         if (prev <= 1) {
           clearInterval(countdownInterval);
-          // Try to show real ad
+          // Try to show real ad, but always fallback after 3s
           const adBreakFn = (window as any).adBreak;
           if (typeof adBreakFn === 'function') {
+            // Safety timeout — if ad SDK doesn't respond in 3s, revive anyway
+            const fallbackTimer = setTimeout(safePerformRevive, 3000);
             adBreakFn({
               type: 'reward',
               name: 'revive',
               beforeReward: () => {},
               adDismissed: () => {
+                clearTimeout(fallbackTimer);
                 setShowingAd(false);
                 toast({ title: '😔 הפרסומת בוטלה', variant: 'destructive' });
               },
               adViewed: () => {
-                performRevive();
+                clearTimeout(fallbackTimer);
+                safePerformRevive();
               },
               adBreakDone: (info: any) => {
-                if (info?.breakStatus === 'noAdPreloaded' || info?.breakStatus === 'frequencyCapped' || info?.breakStatus === 'other') {
-                  performRevive();
-                }
+                clearTimeout(fallbackTimer);
+                safePerformRevive();
               },
             });
           } else {
-            // No ad SDK — free revive (testing mode)
-            performRevive();
+            // No ad SDK — free revive
+            safePerformRevive();
           }
           return 0;
         }
