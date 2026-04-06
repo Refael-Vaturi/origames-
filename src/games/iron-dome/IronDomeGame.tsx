@@ -788,6 +788,8 @@ const IronDomeGame: React.FC = () => {
   const performRevive = () => {
     if (!stateRef.current) return;
     setShowingAd(false);
+    // Play dramatic revive sound
+    playReviveSound();
     // Show golden revival effect
     setShowReviveEffect(true);
     setTimeout(() => {
