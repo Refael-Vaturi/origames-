@@ -10,14 +10,16 @@ export const useArcadeScore = (gameId: GameId) => {
   const submitScore = useCallback(
     async (score: number, level: number = 1, metadata: Record<string, unknown> = {}) => {
       if (!user) return { ok: false, reason: "not_authenticated" as const };
-      const { error } = await supabase.from("arcade_scores").insert({
-        user_id: user.id,
-        display_name: profile?.display_name || "Player",
-        game_id: gameId,
-        score,
-        level,
-        metadata,
-      });
+      const { error } = await supabase.from("arcade_scores").insert([
+        {
+          user_id: user.id,
+          display_name: profile?.display_name || "Player",
+          game_id: gameId,
+          score,
+          level,
+          metadata: metadata as never,
+        },
+      ]);
       return { ok: !error, error };
     },
     [user, profile, gameId]
