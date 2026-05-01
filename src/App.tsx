@@ -9,6 +9,9 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import PortalScreen from "./pages/PortalScreen";
 import IronDomeGame from "./games/iron-dome/IronDomeGame";
+import ClickerGame from "./games/clicker/ClickerGame";
+import ColorIdentifyGame from "./games/color-identify/ColorIdentifyGame";
+import CityFindGame from "./games/city-find/CityFindGame";
 import WelcomeScreen from "./pages/WelcomeScreen";
 import HomeScreen from "./pages/HomeScreen";
 import JoinByCodeScreen from "./pages/JoinByCodeScreen";
@@ -47,6 +50,11 @@ const App = () => (
 
               {/* Iron Dome game */}
               <Route path="/iron-dome" element={<IronDomeGame />} />
+
+              {/* New arcade games */}
+              <Route path="/clicker" element={<ClickerGame />} />
+              <Route path="/color-identify" element={<ColorIdentifyGame />} />
+              <Route path="/city-find" element={<CityFindGame />} />
 
               {/* Fake It Fast game routes */}
               <Route path="/fake-it-fast" element={<HomeScreen />} />
