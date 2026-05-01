@@ -11,7 +11,8 @@ import logoImage from "@/assets/ori-games-logo.png";
 interface GameCard {
   id: string;
   name: string;
-  image: string;
+  image?: string;
+  emoji: string;
   route: string;
   description: string;
   color: string;
@@ -29,6 +30,7 @@ const PortalScreen = () => {
       id: "fake-it-fast",
       name: "Fake It Fast",
       image: fakeItFastCard,
+      emoji: "🕵️",
       route: "/fake-it-fast",
       description: t("portal.fakeItFastDesc"),
       color: "from-[hsl(267,84%,58%)] to-[hsl(340,82%,62%)]",
@@ -38,12 +40,41 @@ const PortalScreen = () => {
       id: "iron-dome",
       name: "Iron Dome",
       image: ironDomeCard,
+      emoji: "🛡️",
       route: "/iron-dome",
       description: t("portal.ironDomeDesc"),
       color: "from-[hsl(190,80%,30%)] to-[hsl(210,80%,20%)]",
       players: "1",
     },
+    {
+      id: "clicker",
+      name: "Clicker",
+      emoji: "👆",
+      route: "/clicker",
+      description: "Tap fast, buy upgrades, climb the leaderboard.",
+      color: "from-[hsl(38,100%,55%)] to-[hsl(340,82%,62%)]",
+      players: "1",
+    },
+    {
+      id: "color-identify",
+      name: "Identify the Color",
+      emoji: "🎨",
+      route: "/color-identify",
+      description: "Spot the odd-colored tile. Tiers get harder.",
+      color: "from-[hsl(174,72%,45%)] to-[hsl(267,84%,58%)]",
+      players: "1",
+    },
+    {
+      id: "city-find",
+      name: "CityFind",
+      emoji: "🌍",
+      route: "/city-find",
+      description: "Guess cities from photos. English or Hebrew.",
+      color: "from-[hsl(142,70%,40%)] to-[hsl(190,80%,30%)]",
+      players: "1",
+    },
   ];
+
 
   return (
     <div className="min-h-screen bg-background flex flex-col relative overflow-x-hidden overflow-y-auto">
@@ -167,12 +198,14 @@ const PortalScreen = () => {
               {/* Background gradient */}
               <div className={`absolute inset-0 bg-gradient-to-br ${game.color} opacity-90`} />
 
-              {/* Game image */}
-              <img
-                src={game.image}
-                alt={game.name}
-                className="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-60 group-hover:opacity-80 transition-opacity"
-              />
+              {/* Game image (if any) */}
+              {game.image && (
+                <img
+                  src={game.image}
+                  alt={game.name}
+                  className="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-60 group-hover:opacity-80 transition-opacity"
+                />
+              )}
 
               {/* Game name at top */}
               <div className="absolute top-0 left-0 right-0 p-3 z-10">
@@ -191,7 +224,7 @@ const PortalScreen = () => {
                   animate={{ scale: [1, 1.05, 1] }}
                   transition={{ duration: 2, repeat: Infinity }}
                 >
-                  <span className="text-3xl">{game.id === 'iron-dome' ? '🛡️' : '🕵️'}</span>
+                  <span className="text-3xl">{game.emoji}</span>
                 </motion.div>
               </div>
 
