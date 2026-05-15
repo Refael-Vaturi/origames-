@@ -26,6 +26,8 @@ const PortalScreen = () => {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
   const { t } = useLanguage();
+  const { isAdmin } = useIsAdmin();
+  useOnlinePresence({ track: !!user });
 
   const games: GameCard[] = [
     {
