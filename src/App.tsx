@@ -93,6 +93,18 @@ const App = () => (
               <Route path="/game" element={<GameScreen />} />
               <Route path="/results" element={<ResultsScreen />} />
 
+              {/* Admin */}
+              <Route element={<AdminGuard />}>
+                <Route path="/admin" element={<AdminLayout />}>
+                  <Route index element={<AdminDashboard />} />
+                  <Route path="users" element={<AdminUsers />} />
+                  <Route path="player-actions" element={<AdminPlayerActions />} />
+                  <Route path="live" element={<AdminLivePlayers />} />
+                  <Route path="logs" element={<AdminLogs />} />
+                  <Route path="download" element={<AdminDownload />} />
+                </Route>
+              </Route>
+
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
