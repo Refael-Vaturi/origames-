@@ -2,7 +2,9 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { UserCircle, Settings, LogIn } from "lucide-react";
+import { UserCircle, Settings, LogIn, ShieldCheck } from "lucide-react";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
+import { useOnlinePresence } from "@/hooks/useOnlinePresence";
 import LanguageSelector from "@/components/LanguageSelector";
 import fakeItFastCard from "@/assets/fake-it-fast-card.png";
 import ironDomeCard from "@/assets/iron-dome-card.png";
@@ -24,6 +26,8 @@ const PortalScreen = () => {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
   const { t } = useLanguage();
+  const { isAdmin } = useIsAdmin();
+  useOnlinePresence({ track: !!user });
 
   const games: GameCard[] = [
     {
@@ -137,6 +141,15 @@ const PortalScreen = () => {
 
         <div className="flex items-center gap-2">
           <LanguageSelector />
+          {isAdmin && (
+            <button
+              className="p-2 rounded-xl hover:bg-muted transition-colors text-primary"
+              onClick={() => navigate("/admin")}
+              title="Admin Panel"
+            >
+              <ShieldCheck className="w-5 h-5" />
+            </button>
+          )}
           <button
             className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground"
             onClick={() => navigate("/settings")}

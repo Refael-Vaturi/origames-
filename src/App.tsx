@@ -27,6 +27,14 @@ import SettingsScreen from "./pages/SettingsScreen";
 import FriendsScreen from "./pages/FriendsScreen";
 import PracticeScreen from "./pages/PracticeScreen";
 import NotFound from "./pages/NotFound";
+import AdminGuard from "./components/AdminGuard";
+import AdminLayout from "./pages/admin/AdminLayout";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminPlayerActions from "./pages/admin/AdminPlayerActions";
+import AdminLivePlayers from "./pages/admin/AdminLivePlayers";
+import AdminLogs from "./pages/admin/AdminLogs";
+import AdminDownload from "./pages/admin/AdminDownload";
 
 const queryClient = new QueryClient();
 
@@ -84,6 +92,18 @@ const App = () => (
               <Route path="/practice" element={<PracticeScreen />} />
               <Route path="/game" element={<GameScreen />} />
               <Route path="/results" element={<ResultsScreen />} />
+
+              {/* Admin */}
+              <Route element={<AdminGuard />}>
+                <Route path="/admin" element={<AdminLayout />}>
+                  <Route index element={<AdminDashboard />} />
+                  <Route path="users" element={<AdminUsers />} />
+                  <Route path="player-actions" element={<AdminPlayerActions />} />
+                  <Route path="live" element={<AdminLivePlayers />} />
+                  <Route path="logs" element={<AdminLogs />} />
+                  <Route path="download" element={<AdminDownload />} />
+                </Route>
+              </Route>
 
               <Route path="*" element={<NotFound />} />
             </Routes>

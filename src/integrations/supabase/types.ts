@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_actions_log: {
+        Row: {
+          action_type: string
+          admin_email: string
+          amount: number | null
+          created_at: string
+          details: Json
+          id: string
+          level_number: number | null
+          target_user_id: string | null
+          target_username: string | null
+        }
+        Insert: {
+          action_type: string
+          admin_email: string
+          amount?: number | null
+          created_at?: string
+          details?: Json
+          id?: string
+          level_number?: number | null
+          target_user_id?: string | null
+          target_username?: string | null
+        }
+        Update: {
+          action_type?: string
+          admin_email?: string
+          amount?: number | null
+          created_at?: string
+          details?: Json
+          id?: string
+          level_number?: number | null
+          target_user_id?: string | null
+          target_username?: string | null
+        }
+        Relationships: []
+      }
       arcade_scores: {
         Row: {
           created_at: string
@@ -429,15 +465,22 @@ export type Database = {
       }
       profiles: {
         Row: {
+          admin_max_level: number
           avatar_url: string | null
+          country: string | null
           created_at: string
+          current_level: number
           display_name: string
+          email: string | null
           fakes_caught: number
           games_played: number
+          hearts: number
           id: string
           last_seen: string | null
           level: number
+          money: number
           survived: number
+          unlocked_levels: number[]
           updated_at: string
           user_id: string
           username: string | null
@@ -445,15 +488,22 @@ export type Database = {
           xp: number
         }
         Insert: {
+          admin_max_level?: number
           avatar_url?: string | null
+          country?: string | null
           created_at?: string
+          current_level?: number
           display_name?: string
+          email?: string | null
           fakes_caught?: number
           games_played?: number
+          hearts?: number
           id?: string
           last_seen?: string | null
           level?: number
+          money?: number
           survived?: number
+          unlocked_levels?: number[]
           updated_at?: string
           user_id: string
           username?: string | null
@@ -461,15 +511,22 @@ export type Database = {
           xp?: number
         }
         Update: {
+          admin_max_level?: number
           avatar_url?: string | null
+          country?: string | null
           created_at?: string
+          current_level?: number
           display_name?: string
+          email?: string | null
           fakes_caught?: number
           games_played?: number
+          hearts?: number
           id?: string
           last_seen?: string | null
           level?: number
+          money?: number
           survived?: number
+          unlocked_levels?: number[]
           updated_at?: string
           user_id?: string
           username?: string | null
@@ -626,6 +683,7 @@ export type Database = {
         Args: { p_amount: number; p_field: string; p_user_id: string }
         Returns: undefined
       }
+      is_admin: { Args: never; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
