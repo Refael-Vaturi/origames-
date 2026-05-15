@@ -27,6 +27,14 @@ import SettingsScreen from "./pages/SettingsScreen";
 import FriendsScreen from "./pages/FriendsScreen";
 import PracticeScreen from "./pages/PracticeScreen";
 import NotFound from "./pages/NotFound";
+import AdminGuard from "./components/AdminGuard";
+import AdminLayout from "./pages/admin/AdminLayout";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminPlayerActions from "./pages/admin/AdminPlayerActions";
+import AdminLivePlayers from "./pages/admin/AdminLivePlayers";
+import AdminLogs from "./pages/admin/AdminLogs";
+import AdminDownload from "./pages/admin/AdminDownload";
 
 const queryClient = new QueryClient();
 
