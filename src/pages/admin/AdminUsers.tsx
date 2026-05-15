@@ -114,10 +114,10 @@ export default function AdminUsers() {
 
   const bulkGive = async (field: "hearts" | "money", amount: number) => {
     if (!amount) return;
-    const { data: all } = await supabase.from("profiles").select("user_id," + field);
+    const { data: all } = await supabase.from("profiles").select(`user_id,${field}`);
     if (!all) return;
     let ok = 0;
-    for (const row of all as Array<{ user_id: string } & Record<string, number>>) {
+    for (const row of all as unknown as Array<{ user_id: string } & Record<string, number>>) {
       const { error } = await supabase
         .from("profiles")
         .update({ [field]: (row[field] ?? 0) + amount })
