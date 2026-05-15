@@ -141,6 +141,15 @@ const PortalScreen = () => {
 
         <div className="flex items-center gap-2">
           <LanguageSelector />
+          {isAdmin && (
+            <button
+              className="p-2 rounded-xl hover:bg-muted transition-colors text-primary"
+              onClick={() => navigate("/admin")}
+              title="Admin Panel"
+            >
+              <ShieldCheck className="w-5 h-5" />
+            </button>
+          )}
           <button
             className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground"
             onClick={() => navigate("/settings")}
