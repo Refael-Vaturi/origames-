@@ -99,6 +99,20 @@
     font-family: var(--font-body);
   }
 
+  /* Safe gutters on large screens so content doesn't touch the edges */
+  @media (min-width: 1280px) {
+    #root {
+      max-width: 1200px;
+      margin-inline: auto;
+      padding-inline: 2rem;
+    }
+  }
+  @media (min-width: 1600px) {
+    #root {
+      max-width: 1400px;
+    }
+  }
+
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
   }
