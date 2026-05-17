@@ -34,6 +34,9 @@ const IronDomeGame: React.FC = () => {
   const [musicEnabled, setMusicEnabled] = useState(true);
   const [leaderboardData, setLeaderboardData] = useState<any[]>([]);
   const [leaderboardMode, setLeaderboardMode] = useState<'campaign' | 'survival'>('campaign');
+  const [lbTab, setLbTab] = useState<'campaign' | 'survival' | 'friends'>('campaign');
+  const [friendUsernameInput, setFriendUsernameInput] = useState('');
+  const [addingFriend, setAddingFriend] = useState(false);
   const [scoreSaved, setScoreSaved] = useState(false);
   const [loadingLB, setLoadingLB] = useState(false);
   const { user } = useAuth();
