@@ -289,7 +289,7 @@ const IronDomeGame: React.FC = () => {
     const sorted = Array.from(bestByPlayer.values()).sort((a, b) =>
       mode === 'survival' ? b.survival_time - a.survival_time : (b.wave - a.wave || b.score - a.score)
     );
-    setLeaderboardData(sorted.slice(0, 15));
+    setLeaderboardData(sorted.slice(0, 10));
     setLoadingLB(false);
   }, []);
 
