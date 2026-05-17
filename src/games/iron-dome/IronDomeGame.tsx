@@ -260,10 +260,22 @@ const IronDomeGame: React.FC = () => {
       .select('*')
       .eq('mode', mode)
       .order(orderCol, { ascending: false })
-      .limit(100);
+      .limit(300);
+
+    // Drop scores from users whose profile no longer exists (deleted users)
+    const ids = Array.from(new Set((data || []).map((r: any) => r.user_id)));
+    let validIds = new Set<string>(ids);
+    if (ids.length > 0) {
+      const { data: profs } = await supabase
+        .from('profiles')
+        .select('user_id')
+        .in('user_id', ids);
+      if (profs) validIds = new Set(profs.map((p: any) => p.user_id));
+    }
+
     // Keep only the best entry per player
     const bestByPlayer = new Map<string, any>();
-    (data || []).forEach(row => {
+    (data || []).filter((r: any) => validIds.has(r.user_id)).forEach(row => {
       const existing = bestByPlayer.get(row.user_id);
       if (!existing) {
         bestByPlayer.set(row.user_id, row);
