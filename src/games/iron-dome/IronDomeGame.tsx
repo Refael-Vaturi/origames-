@@ -1070,6 +1070,7 @@ const IronDomeGame: React.FC = () => {
                     }
                   }} />
                   <MenuButtonSmall icon="🏆" label={T('leaderboard')} onClick={() => {
+                    setLbTab('campaign');
                     fetchLeaderboard('campaign');
                     setLeaderboardMode('campaign');
                     if (stateRef.current) {
