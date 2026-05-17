@@ -34,6 +34,9 @@ const IronDomeGame: React.FC = () => {
   const [musicEnabled, setMusicEnabled] = useState(true);
   const [leaderboardData, setLeaderboardData] = useState<any[]>([]);
   const [leaderboardMode, setLeaderboardMode] = useState<'campaign' | 'survival'>('campaign');
+  const [lbTab, setLbTab] = useState<'campaign' | 'survival' | 'friends'>('campaign');
+  const [friendUsernameInput, setFriendUsernameInput] = useState('');
+  const [addingFriend, setAddingFriend] = useState(false);
   const [scoreSaved, setScoreSaved] = useState(false);
   const [loadingLB, setLoadingLB] = useState(false);
   const { user } = useAuth();
@@ -70,7 +73,7 @@ const IronDomeGame: React.FC = () => {
   const [showFireworks, setShowFireworks] = useState(false);
   const [showReviveEffect, setShowReviveEffect] = useState(false);
   const [friendScores, setFriendScores] = useState<any[]>([]);
-  const { friends } = useFriends();
+  const { friends, sendRequest, removeFriend } = useFriends();
 
   // Sync progress to DB (debounced)
   const syncProgressToDb = useCallback(async (maxLevel: number, starsObj: Record<number, number>, upgradesObj: Record<string, number>, bw: number) => {
@@ -286,7 +289,7 @@ const IronDomeGame: React.FC = () => {
     const sorted = Array.from(bestByPlayer.values()).sort((a, b) =>
       mode === 'survival' ? b.survival_time - a.survival_time : (b.wave - a.wave || b.score - a.score)
     );
-    setLeaderboardData(sorted.slice(0, 15));
+    setLeaderboardData(sorted.slice(0, 10));
     setLoadingLB(false);
   }, []);
 
@@ -1067,6 +1070,7 @@ const IronDomeGame: React.FC = () => {
                     }
                   }} />
                   <MenuButtonSmall icon="🏆" label={T('leaderboard')} onClick={() => {
+                    setLbTab('campaign');
                     fetchLeaderboard('campaign');
                     setLeaderboardMode('campaign');
                     if (stateRef.current) {
@@ -1493,29 +1497,100 @@ const IronDomeGame: React.FC = () => {
                   <button
                     key={mode}
                     onClick={() => {
+                      setLbTab(mode);
                       if (mode === 'friends') {
-                        setLeaderboardMode('campaign');
                         fetchFriendScores();
                       } else {
-                        setFriendScores([]);
                         setLeaderboardMode(mode);
                         fetchLeaderboard(mode);
                       }
                     }}
                     className={`flex-1 py-2 rounded-xl text-sm font-bold transition-colors ${
-                      (mode === 'friends' ? friendScores.length > 0 : (friendScores.length === 0 && leaderboardMode === mode))
+                      lbTab === mode
                         ? 'bg-cyan-600/80 text-white'
                         : 'bg-white/5 text-white/50 hover:bg-white/10'
                     }`}
                   >
-                    {mode === 'campaign' ? T('campaign') : mode === 'survival' ? T('survival') : T('friendsScores')}
+                    {mode === 'campaign' ? T('campaign') : mode === 'survival' ? T('survival') : `👥 ${T('friendsScores')}`}
                   </button>
                 ))}
               </div>
 
               <p className="text-cyan-300/40 text-xs text-center mb-3">
-                {friendScores.length > 0 ? `👥 ${T('friendsScores')}` : leaderboardMode === 'campaign' ? T('campaignTop') : T('survivalTop')}
+                {lbTab === 'friends' ? `👥 ${T('friendsScores')}` : lbTab === 'survival' ? T('survivalTop') : T('campaignTop')}
               </p>
+
+              {/* Friends management — only on Friends tab */}
+              {lbTab === 'friends' && (
+                <div className="mb-4 bg-black/30 border border-cyan-900/30 rounded-xl p-3">
+                  <div className="flex gap-2 mb-2">
+                    <input
+                      value={friendUsernameInput}
+                      onChange={(e) => setFriendUsernameInput(e.target.value)}
+                      placeholder={T('addFriendPlaceholder') || 'Username…'}
+                      className="flex-1 bg-black/40 border border-cyan-900/40 rounded-lg px-3 py-2 text-sm text-white placeholder:text-cyan-300/30 focus:outline-none focus:border-cyan-500/60"
+                    />
+                    <button
+                      disabled={addingFriend || !friendUsernameInput.trim() || !user}
+                      onClick={async () => {
+                        if (!user) {
+                          toast({ title: T('loginRequired') || 'Login required' });
+                          return;
+                        }
+                        setAddingFriend(true);
+                        const handle = friendUsernameInput.trim().replace(/^@/, '');
+                        const res = await sendRequest(handle);
+                        setAddingFriend(false);
+                        if (res.error) {
+                          toast({ title: res.error, variant: 'destructive' });
+                        } else {
+                          toast({ title: `✅ ${T('friendRequestSent') || 'Friend request sent'}` });
+                          setFriendUsernameInput('');
+                        }
+                      }}
+                      className="px-3 py-2 bg-cyan-600/80 text-white rounded-lg text-sm font-bold disabled:opacity-40"
+                    >
+                      ➕ {T('add') || 'Add'}
+                    </button>
+                    {user && (
+                      <button
+                        onClick={() => {
+                          const link = `${window.location.origin}/profile?u=${encodeURIComponent((user.user_metadata?.username) || user.email?.split('@')[0] || user.id)}`;
+                          navigator.clipboard.writeText(link).then(() => {
+                            toast({ title: `🔗 ${T('linkCopied') || 'Invite link copied'}` });
+                          });
+                        }}
+                        className="px-3 py-2 bg-white/10 text-white rounded-lg text-sm font-bold"
+                        title={T('copyInviteLink') || 'Copy invite link'}
+                      >
+                        🔗
+                      </button>
+                    )}
+                  </div>
+
+                  {friends.length === 0 ? (
+                    <p className="text-cyan-300/40 text-xs text-center py-2">{T('noFriendsYet') || 'No friends yet. Add some above!'}</p>
+                  ) : (
+                    <div className="space-y-1 max-h-32 overflow-y-auto">
+                      {friends.map((f) => (
+                        <div key={f.id} className="flex items-center gap-2 px-2 py-1.5 bg-black/30 rounded-lg text-sm">
+                          <span className="flex-1 truncate text-white/80">{f.friend?.display_name || 'Player'}</span>
+                          <button
+                            onClick={async () => {
+                              await removeFriend(f.id);
+                              fetchFriendScores();
+                              toast({ title: T('friendRemoved') || 'Friend removed' });
+                            }}
+                            className="text-red-400/70 hover:text-red-400 text-xs px-2 py-1 rounded hover:bg-red-500/10"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {loadingLB ? (
                 <div className="text-center py-8">
@@ -1527,8 +1602,10 @@ const IronDomeGame: React.FC = () => {
                     ⏳
                   </motion.div>
                 </div>
-              ) : (friendScores.length > 0 ? friendScores : leaderboardData).length === 0 ? (
-                <p className="text-cyan-300/50 text-sm text-center py-8">{T('noScores')}</p>
+              ) : (lbTab === 'friends' ? friendScores : leaderboardData).length === 0 ? (
+                <p className="text-cyan-300/50 text-sm text-center py-4">
+                  {lbTab === 'friends' ? (T('noFriendScores') || 'No scores from friends yet.') : T('noScores')}
+                </p>
               ) : (
                 <div className="space-y-1">
                   {/* Header */}
@@ -1536,14 +1613,14 @@ const IronDomeGame: React.FC = () => {
                     <span className="w-8">{T('rank')}</span>
                     <span className="flex-1">{T('player')}</span>
                     <span className="w-16 text-right">{T('score')}</span>
-                    {leaderboardMode === 'survival' ? (
+                    {leaderboardMode === 'survival' && lbTab !== 'friends' ? (
                       <span className="w-14 text-right">⏱ {T('time') || 'Time'}</span>
                     ) : (
                       <span className="w-12 text-right">{T('wave')}</span>
                     )}
                     <span className="w-12 text-right">{T('maxCombo')}</span>
                   </div>
-                  {(friendScores.length > 0 ? friendScores : leaderboardData).map((entry, i) => {
+                  {(lbTab === 'friends' ? friendScores : leaderboardData).slice(0, 10).map((entry, i) => {
                     const isMe = user && entry.user_id === user.id;
                     const medals = ['🥇', '🥈', '🥉'];
                     const survSecs = entry.survival_time || 0;
@@ -1571,7 +1648,7 @@ const IronDomeGame: React.FC = () => {
                           {entry.display_name} {entry.country || ''}
                         </span>
                         <span className="w-16 text-right font-bold text-yellow-400">{entry.score}</span>
-                        {leaderboardMode === 'survival' ? (
+                        {leaderboardMode === 'survival' && lbTab !== 'friends' ? (
                           <span className="w-14 text-right text-green-400/80">{survDisplay}</span>
                         ) : (
                           <span className="w-12 text-right text-cyan-300/60">{entry.wave}</span>
