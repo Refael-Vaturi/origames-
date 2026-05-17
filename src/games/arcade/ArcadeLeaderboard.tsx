@@ -25,21 +25,46 @@ const ArcadeLeaderboard = ({ gameId, currentUserId, refreshKey = 0, limit = 10 }
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
-      setLoading(true);
       const { data } = await supabase
         .from("arcade_scores")
         .select("id, display_name, score, level, user_id")
         .eq("game_id", gameId)
         .order("score", { ascending: false })
-        .limit(limit);
-      if (!cancelled) {
-        setEntries((data as Entry[]) || []);
-        setLoading(false);
+        .limit(limit * 3); // overfetch — we may filter deleted users out
+
+      if (cancelled) return;
+      const rows = (data as Entry[]) || [];
+
+      // Filter out scores belonging to users whose profile no longer exists
+      const userIds = Array.from(new Set(rows.map((r) => r.user_id)));
+      let validIds = new Set(userIds);
+      if (userIds.length > 0) {
+        const { data: profs } = await supabase
+          .from("profiles")
+          .select("user_id")
+          .in("user_id", userIds);
+        if (profs) validIds = new Set(profs.map((p: any) => p.user_id));
       }
+      if (cancelled) return;
+      setEntries(rows.filter((r) => validIds.has(r.user_id)).slice(0, limit));
+      setLoading(false);
     };
     load();
+
+    // Realtime: refresh on changes to scores (for this game) or to profiles
+    const channel = supabase
+      .channel(`arcade-lb-${gameId}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "arcade_scores", filter: `game_id=eq.${gameId}` }, load)
+      .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, load)
+      .subscribe();
+
+    // Safety: poll every 30s
+    const interval = setInterval(load, 30000);
+
     return () => {
       cancelled = true;
+      supabase.removeChannel(channel);
+      clearInterval(interval);
     };
   }, [gameId, refreshKey, limit]);
 
