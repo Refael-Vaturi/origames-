@@ -316,6 +316,29 @@ const IronDomeGame: React.FC = () => {
     setLoadingLB(false);
   }, [user, friends]);
 
+  // Realtime: refresh leaderboard when scores change or users get deleted
+  useEffect(() => {
+    const channel = supabase
+      .channel('iron-dome-lb-rt')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'iron_dome_scores' }, () => {
+        fetchLeaderboard(leaderboardMode);
+        fetchFriendScores();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
+        fetchLeaderboard(leaderboardMode);
+        fetchFriendScores();
+      })
+      .subscribe();
+    const interval = setInterval(() => {
+      fetchLeaderboard(leaderboardMode);
+      fetchFriendScores();
+    }, 30000);
+    return () => {
+      supabase.removeChannel(channel);
+      clearInterval(interval);
+    };
+  }, [leaderboardMode, fetchLeaderboard, fetchFriendScores]);
+
   // Music toggle & cleanup
   useEffect(() => {
     if (musicEnabled && musicRef.current.isPlaying()) {
