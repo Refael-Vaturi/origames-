@@ -73,7 +73,7 @@ const IronDomeGame: React.FC = () => {
   const [showFireworks, setShowFireworks] = useState(false);
   const [showReviveEffect, setShowReviveEffect] = useState(false);
   const [friendScores, setFriendScores] = useState<any[]>([]);
-  const { friends } = useFriends();
+  const { friends, sendRequest, removeFriend } = useFriends();
 
   // Sync progress to DB (debounced)
   const syncProgressToDb = useCallback(async (maxLevel: number, starsObj: Record<number, number>, upgradesObj: Record<string, number>, bw: number) => {
