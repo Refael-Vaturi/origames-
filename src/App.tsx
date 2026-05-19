@@ -35,6 +35,7 @@ import AdminPlayerActions from "./pages/admin/AdminPlayerActions";
 import AdminLivePlayers from "./pages/admin/AdminLivePlayers";
 import AdminLogs from "./pages/admin/AdminLogs";
 import AdminDownload from "./pages/admin/AdminDownload";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 const queryClient = new QueryClient();
 
@@ -81,6 +82,7 @@ const App = () => (
               <Route path="/profile" element={<ProfileScreen />} />
               <Route path="/settings" element={<SettingsScreen />} />
               <Route path="/friends" element={<FriendsScreen />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
 
               {/* Legacy redirects */}
               <Route path="/welcome" element={<WelcomeScreen />} />
