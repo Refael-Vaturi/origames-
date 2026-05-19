@@ -284,6 +284,16 @@ const PortalScreen = () => {
           </motion.div>
         </motion.div>
       </div>
+
+      {/* Footer */}
+      <footer className="relative z-10 py-4 text-center">
+        <button
+          onClick={() => navigate("/privacy-policy")}
+          className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4 transition-colors"
+        >
+          {t("portal.privacyPolicy") || "Privacy Policy"}
+        </button>
+      </footer>
     </div>
   );
 };
