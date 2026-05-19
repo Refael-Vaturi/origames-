@@ -95,11 +95,14 @@ const PrivacyPolicy = () => {
             <div>
               <h2 className="text-2xl font-semibold mt-8 mb-3">5. Children's Privacy</h2>
               <p>
-                Our Service is suitable for general audiences but is not
-                directed to children under 13. We do not knowingly collect
-                personal information from children under 13. If you believe a
-                child has provided us with personal information, please contact
-                us so we can remove it.
+                Our Service is suitable for all ages, including children under
+                13. We design our games to be family-friendly and we minimize
+                the personal information we collect from any user. For
+                children, we only collect the minimum data needed to run the
+                game (such as username, progress, and scores) and we do not
+                use this data for behavioral advertising or sell it to third
+                parties. Parents or guardians may contact us at any time to
+                review, change, or delete their child's information.
               </p>
             </div>
 
