@@ -286,7 +286,19 @@ const PortalScreen = () => {
       </div>
 
       {/* Footer */}
-      <footer className="relative z-10 py-4 text-center">
+      <footer className="relative z-10 py-4 text-center flex items-center justify-center gap-4 flex-wrap">
+        <button
+          onClick={() => navigate("/about")}
+          className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4 transition-colors"
+        >
+          About
+        </button>
+        <button
+          onClick={() => navigate("/contact")}
+          className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4 transition-colors"
+        >
+          Contact Us
+        </button>
         <button
           onClick={() => navigate("/privacy-policy")}
           className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4 transition-colors"
