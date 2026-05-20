@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Lightbulb, Send, Timer, Image as ImageIcon } from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { ArrowLeft, Lightbulb, Send, Timer, Image as ImageIcon, Users, Copy, Share2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
@@ -14,18 +14,45 @@ import { toast } from "@/hooks/use-toast";
 const ROUNDS = 5;
 const TIME_PER_ROUND = 45;
 const HINT_COST = 50;
+const GOOGLE_MAPS_API_KEY = "AIzaSyBNItXNypmi4rHtyK1PMdl5xiRoz9PrVgY";
 
 type Phase = "intro" | "playing" | "reveal" | "game-over";
 
-const pickCities = (count: number): CityData[] => {
-  const arr = [...CITIES].sort(() => Math.random() - 0.5);
+// Seeded RNG (mulberry32) for shared multiplayer rooms
+const hashSeed = (s: string) => {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+};
+const mulberry32 = (a: number) => () => {
+  let t = (a += 0x6d2b79f5);
+  t = Math.imul(t ^ (t >>> 15), t | 1);
+  t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+};
+
+const pickCities = (count: number, seed?: string): CityData[] => {
+  const rng = seed ? mulberry32(hashSeed(seed)) : Math.random;
+  const arr = [...CITIES].sort(() => rng() - 0.5);
   return arr.slice(0, count);
+};
+
+const genRoomCode = () => {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let c = "";
+  for (let i = 0; i < 6; i++) c += chars[Math.floor(Math.random() * chars.length)];
+  return c;
 };
 
 const CityFindGame = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { submitScore, userId } = useArcadeScore("city_find");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const roomCode = searchParams.get("room");
 
   const [phase, setPhase] = useState<Phase>("intro");
   const [cities, setCities] = useState<CityData[]>([]);
@@ -45,7 +72,7 @@ const CityFindGame = () => {
 
   const startGame = () => {
     playPop();
-    setCities(pickCities(ROUNDS));
+    setCities(pickCities(ROUNDS, roomCode || undefined));
     setRoundIdx(0);
     setImgIdx(0);
     setGuess("");
@@ -56,6 +83,31 @@ const CityFindGame = () => {
     setSubmitted(false);
     setPhase("playing");
     setTimeout(() => inputRef.current?.focus(), 100);
+  };
+
+  const createRoom = () => {
+    const code = genRoomCode();
+    setSearchParams({ room: code });
+    playPop();
+    toast({ title: `Room created: ${code}`, description: "Share the link with friends!" });
+  };
+
+  const shareRoom = async () => {
+    if (!roomCode) return;
+    const url = `${window.location.origin}/city-find?room=${roomCode}`;
+    const shareData = { title: "CityFind", text: `Join my CityFind room: ${roomCode}`, url };
+    if (navigator.share) {
+      await navigator.share(shareData).catch(() => {});
+    } else {
+      await navigator.clipboard.writeText(url);
+      toast({ title: "Link copied!" });
+    }
+  };
+
+  const copyCode = async () => {
+    if (!roomCode) return;
+    await navigator.clipboard.writeText(roomCode);
+    toast({ title: "Code copied!" });
   };
 
   // Timer
@@ -79,6 +131,7 @@ const CityFindGame = () => {
       const hintPenalty = hintsUsed * HINT_COST;
       gain = Math.max(0, base + timeBonus - hintPenalty);
       playSuccess();
+      toast({ title: "🎉 Correct!", description: `+${gain} points` });
     } else {
       playError();
     }
@@ -115,14 +168,14 @@ const CityFindGame = () => {
       toast({ title: "Sign in to save your score" });
       return;
     }
-    submitScore(score, ROUNDS, { rounds: ROUNDS }).then((r) => {
+    submitScore(score, ROUNDS, { rounds: ROUNDS, room: roomCode || null }).then((r) => {
       if (r.ok) {
         setSubmitted(true);
         setRefreshKey((k) => k + 1);
         toast({ title: "Score saved!" });
       }
     });
-  }, [phase, submitted, user, score, submitScore]);
+  }, [phase, submitted, user, score, submitScore, roomCode]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted flex flex-col">
@@ -134,6 +187,19 @@ const CityFindGame = () => {
         <div className="text-sm font-bold text-primary tabular-nums">{score}</div>
       </header>
 
+      {roomCode && (
+        <div className="bg-primary/10 border-b border-primary/20 px-4 py-2 flex items-center justify-center gap-3 text-sm">
+          <Users className="w-4 h-4 text-primary" />
+          <span className="font-semibold">Room: <span className="font-mono">{roomCode}</span></span>
+          <Button size="sm" variant="ghost" onClick={copyCode} className="h-7 px-2">
+            <Copy className="w-3.5 h-3.5" />
+          </Button>
+          <Button size="sm" variant="ghost" onClick={shareRoom} className="h-7 px-2">
+            <Share2 className="w-3.5 h-3.5" />
+          </Button>
+        </div>
+      )}
+
       <div className="grid lg:grid-cols-[1fr_320px] gap-4 p-4 max-w-6xl mx-auto w-full flex-1">
         <div className="flex flex-col gap-3">
           <AnimatePresence mode="wait">
@@ -143,14 +209,36 @@ const CityFindGame = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="bg-card rounded-2xl p-6 shadow-card text-center max-w-md mx-auto mt-8"
+                className="bg-card rounded-2xl p-6 shadow-card text-center max-w-md mx-auto mt-8 w-full"
               >
                 <h2 className="font-display text-2xl font-bold mb-2">Guess the City</h2>
                 <p className="text-muted-foreground mb-4">
                   You'll see photos from {ROUNDS} cities around the world. Type your guess in English or Hebrew.
                   Faster guesses earn more points!
                 </p>
-                <Button onClick={startGame} size="lg" className="w-full">Start</Button>
+                {roomCode ? (
+                  <p className="text-xs text-primary mb-3">
+                    You're in room <span className="font-mono font-bold">{roomCode}</span> — everyone gets the same cities!
+                  </p>
+                ) : null}
+                <Button onClick={startGame} size="lg" className="w-full mb-3">Start</Button>
+
+                {!roomCode ? (
+                  <Button onClick={createRoom} variant="outline" size="lg" className="w-full">
+                    <Users className="w-4 h-4 mr-2" /> Play with Friends
+                  </Button>
+                ) : (
+                  <Button onClick={shareRoom} variant="outline" size="lg" className="w-full">
+                    <Share2 className="w-4 h-4 mr-2" /> Share Room Link
+                  </Button>
+                )}
+
+                {!roomCode && (
+                  <div className="mt-4 pt-4 border-t border-border">
+                    <p className="text-xs text-muted-foreground mb-2">Have a code?</p>
+                    <JoinRoomInput onJoin={(code) => setSearchParams({ room: code })} />
+                  </div>
+                )}
               </motion.div>
             )}
 
@@ -174,7 +262,6 @@ const CityFindGame = () => {
                     alt="Mystery city"
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      // try next image if one fails
                       if (imgIdx + 1 < currentCity.images.length) setImgIdx((i) => i + 1);
                       else (e.target as HTMLImageElement).style.opacity = "0.3";
                     }}
@@ -252,13 +339,37 @@ const CityFindGame = () => {
                 key="reveal"
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                className="bg-card rounded-2xl p-6 shadow-card text-center max-w-md mx-auto mt-4"
+                className="bg-card rounded-2xl p-6 shadow-card text-center max-w-md mx-auto mt-4 w-full"
               >
+                {lastResult.correct && (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                    className="flex items-center justify-center gap-2 mb-3 text-game-green"
+                  >
+                    <CheckCircle2 className="w-8 h-8" />
+                    <span className="font-display text-2xl font-bold">Correct!</span>
+                  </motion.div>
+                )}
                 <div className="text-5xl mb-2">{lastResult.city.flag}</div>
                 <h3 className="font-display text-2xl font-bold">
                   {lastResult.city.name_en}
                 </h3>
                 <p className="text-muted-foreground text-sm">{lastResult.city.country_en}</p>
+
+                <div className="mt-4 rounded-xl overflow-hidden border border-border aspect-video">
+                  <iframe
+                    title={`Map of ${lastResult.city.name_en}`}
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    src={`https://www.google.com/maps/embed/v1/place?key=${GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(`${lastResult.city.name_en}, ${lastResult.city.country_en}`)}&zoom=11`}
+                  />
+                </div>
+
                 <div
                   className={`mt-4 text-3xl font-bold ${
                     lastResult.correct ? "text-game-green" : "text-destructive"
@@ -280,13 +391,18 @@ const CityFindGame = () => {
                 key="over"
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                className="bg-card rounded-2xl p-6 shadow-card text-center max-w-md mx-auto mt-4"
+                className="bg-card rounded-2xl p-6 shadow-card text-center max-w-md mx-auto mt-4 w-full"
               >
                 <h2 className="font-display text-3xl font-bold mb-2">Game Over</h2>
                 <p className="text-5xl font-display font-bold bg-gradient-to-r from-primary to-game-pink bg-clip-text text-transparent my-4">
                   {score}
                 </p>
                 <p className="text-sm text-muted-foreground mb-4">out of {ROUNDS * 800} max</p>
+                {roomCode && (
+                  <Button onClick={shareRoom} variant="outline" className="w-full mb-2">
+                    <Share2 className="w-4 h-4 mr-2" /> Challenge More Friends
+                  </Button>
+                )}
                 <div className="flex gap-2">
                   <Button onClick={startGame} className="flex-1">Play Again</Button>
                   <Button variant="outline" onClick={() => navigate("/")} className="flex-1">Home</Button>
@@ -300,6 +416,24 @@ const CityFindGame = () => {
           <ArcadeLeaderboard gameId="city_find" currentUserId={userId} refreshKey={refreshKey} />
         </aside>
       </div>
+    </div>
+  );
+};
+
+const JoinRoomInput = ({ onJoin }: { onJoin: (code: string) => void }) => {
+  const [code, setCode] = useState("");
+  return (
+    <div className="flex gap-2">
+      <Input
+        value={code}
+        onChange={(e) => setCode(e.target.value.toUpperCase())}
+        placeholder="Enter room code"
+        maxLength={6}
+        className="font-mono uppercase"
+      />
+      <Button onClick={() => code.trim() && onJoin(code.trim())} disabled={!code.trim()}>
+        Join
+      </Button>
     </div>
   );
 };
