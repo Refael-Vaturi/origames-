@@ -374,17 +374,10 @@ const CityFindGame = () => {
                 </h3>
                 <p className="text-muted-foreground text-sm">{lastResult.city.country_en}</p>
 
-                <div className="mt-4 rounded-xl overflow-hidden border border-border aspect-video">
-                  <iframe
-                    title={`Map of ${lastResult.city.name_en}`}
-                    width="100%"
-                    height="100%"
-                    style={{ border: 0 }}
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                    src={`https://www.google.com/maps/embed/v1/place?key=${GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(`${lastResult.city.name_en}, ${lastResult.city.country_en}`)}&zoom=11`}
-                  />
+                <div className="mt-4 rounded-xl overflow-hidden border border-border aspect-video relative">
+                  <StreetViewOrMap city={lastResult.city} />
                 </div>
+
 
                 <div
                   className={`mt-4 text-3xl font-bold ${
