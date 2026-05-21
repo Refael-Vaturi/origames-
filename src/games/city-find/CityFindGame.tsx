@@ -16,6 +16,22 @@ const TIME_PER_ROUND = 45;
 const HINT_COST = 50;
 const GOOGLE_MAPS_API_KEY = "AIzaSyBNItXNypmi4rHtyK1PMdl5xiRoz9PrVgY";
 
+// Lat/Lng for each city (for Street View). Falls back to place name search.
+const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
+  "tel-aviv": { lat: 32.0809, lng: 34.7806 },
+  paris: { lat: 48.8584, lng: 2.2945 }, // Eiffel Tower
+  london: { lat: 51.5007, lng: -0.1246 }, // Big Ben
+  "new-york": { lat: 40.7580, lng: -73.9855 }, // Times Square
+  tokyo: { lat: 35.6595, lng: 139.7004 }, // Shibuya
+  rome: { lat: 41.8902, lng: 12.4922 }, // Colosseum
+  barcelona: { lat: 41.4036, lng: 2.1744 }, // Sagrada Familia
+  amsterdam: { lat: 52.3676, lng: 4.9041 },
+  prague: { lat: 50.0875, lng: 14.4213 }, // Old Town Square
+  istanbul: { lat: 41.0086, lng: 28.9802 }, // Hagia Sophia
+  sydney: { lat: -33.8568, lng: 151.2153 }, // Opera House
+  rio: { lat: -22.9519, lng: -43.2105 }, // Christ the Redeemer
+};
+
 type Phase = "intro" | "playing" | "reveal" | "game-over";
 
 // Seeded RNG (mulberry32) for shared multiplayer rooms
@@ -358,17 +374,10 @@ const CityFindGame = () => {
                 </h3>
                 <p className="text-muted-foreground text-sm">{lastResult.city.country_en}</p>
 
-                <div className="mt-4 rounded-xl overflow-hidden border border-border aspect-video">
-                  <iframe
-                    title={`Map of ${lastResult.city.name_en}`}
-                    width="100%"
-                    height="100%"
-                    style={{ border: 0 }}
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                    src={`https://www.google.com/maps/embed/v1/place?key=${GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(`${lastResult.city.name_en}, ${lastResult.city.country_en}`)}&zoom=11`}
-                  />
+                <div className="mt-4 rounded-xl overflow-hidden border border-border aspect-video relative">
+                  <StreetViewOrMap city={lastResult.city} />
                 </div>
+
 
                 <div
                   className={`mt-4 text-3xl font-bold ${
@@ -419,6 +428,53 @@ const CityFindGame = () => {
     </div>
   );
 };
+
+const StreetViewOrMap = ({ city }: { city: CityData }) => {
+  const [mode, setMode] = useState<"street" | "map">("street");
+  const coords = CITY_COORDS[city.id];
+  const placeQ = encodeURIComponent(`${city.name_en}, ${city.country_en}`);
+
+  const streetSrc = coords
+    ? `https://www.google.com/maps/embed/v1/streetview?key=${GOOGLE_MAPS_API_KEY}&location=${coords.lat},${coords.lng}&heading=0&pitch=0&fov=90`
+    : null;
+
+  const mapSrc = `https://www.google.com/maps/embed/v1/place?key=${GOOGLE_MAPS_API_KEY}&q=${placeQ}&zoom=12`;
+
+  const showStreet = mode === "street" && streetSrc;
+
+  return (
+    <>
+      <iframe
+        key={mode}
+        title={`${mode === "street" ? "Street View" : "Map"} of ${city.name_en}`}
+        width="100%"
+        height="100%"
+        style={{ border: 0 }}
+        loading="lazy"
+        allowFullScreen
+        referrerPolicy="no-referrer-when-downgrade"
+        src={showStreet ? streetSrc! : mapSrc}
+      />
+      {streetSrc && (
+        <div className="absolute top-2 right-2 bg-card/90 backdrop-blur rounded-lg p-0.5 flex gap-0.5 shadow-card text-xs">
+          <button
+            onClick={() => setMode("street")}
+            className={`px-2 py-1 rounded-md font-semibold transition-colors ${mode === "street" ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-muted"}`}
+          >
+            🚶 Street
+          </button>
+          <button
+            onClick={() => setMode("map")}
+            className={`px-2 py-1 rounded-md font-semibold transition-colors ${mode === "map" ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-muted"}`}
+          >
+            🗺️ Map
+          </button>
+        </div>
+      )}
+    </>
+  );
+};
+
 
 const JoinRoomInput = ({ onJoin }: { onJoin: (code: string) => void }) => {
   const [code, setCode] = useState("");
