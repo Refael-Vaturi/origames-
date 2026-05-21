@@ -429,6 +429,53 @@ const CityFindGame = () => {
   );
 };
 
+const StreetViewOrMap = ({ city }: { city: CityData }) => {
+  const [mode, setMode] = useState<"street" | "map">("street");
+  const coords = CITY_COORDS[city.id];
+  const placeQ = encodeURIComponent(`${city.name_en}, ${city.country_en}`);
+
+  const streetSrc = coords
+    ? `https://www.google.com/maps/embed/v1/streetview?key=${GOOGLE_MAPS_API_KEY}&location=${coords.lat},${coords.lng}&heading=0&pitch=0&fov=90`
+    : null;
+
+  const mapSrc = `https://www.google.com/maps/embed/v1/place?key=${GOOGLE_MAPS_API_KEY}&q=${placeQ}&zoom=12`;
+
+  const showStreet = mode === "street" && streetSrc;
+
+  return (
+    <>
+      <iframe
+        key={mode}
+        title={`${mode === "street" ? "Street View" : "Map"} of ${city.name_en}`}
+        width="100%"
+        height="100%"
+        style={{ border: 0 }}
+        loading="lazy"
+        allowFullScreen
+        referrerPolicy="no-referrer-when-downgrade"
+        src={showStreet ? streetSrc! : mapSrc}
+      />
+      {streetSrc && (
+        <div className="absolute top-2 right-2 bg-card/90 backdrop-blur rounded-lg p-0.5 flex gap-0.5 shadow-card text-xs">
+          <button
+            onClick={() => setMode("street")}
+            className={`px-2 py-1 rounded-md font-semibold transition-colors ${mode === "street" ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-muted"}`}
+          >
+            🚶 Street
+          </button>
+          <button
+            onClick={() => setMode("map")}
+            className={`px-2 py-1 rounded-md font-semibold transition-colors ${mode === "map" ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-muted"}`}
+          >
+            🗺️ Map
+          </button>
+        </div>
+      )}
+    </>
+  );
+};
+
+
 const JoinRoomInput = ({ onJoin }: { onJoin: (code: string) => void }) => {
   const [code, setCode] = useState("");
   return (
