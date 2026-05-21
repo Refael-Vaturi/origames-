@@ -16,6 +16,22 @@ const TIME_PER_ROUND = 45;
 const HINT_COST = 50;
 const GOOGLE_MAPS_API_KEY = "AIzaSyBNItXNypmi4rHtyK1PMdl5xiRoz9PrVgY";
 
+// Lat/Lng for each city (for Street View). Falls back to place name search.
+const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
+  "tel-aviv": { lat: 32.0809, lng: 34.7806 },
+  paris: { lat: 48.8584, lng: 2.2945 }, // Eiffel Tower
+  london: { lat: 51.5007, lng: -0.1246 }, // Big Ben
+  "new-york": { lat: 40.7580, lng: -73.9855 }, // Times Square
+  tokyo: { lat: 35.6595, lng: 139.7004 }, // Shibuya
+  rome: { lat: 41.8902, lng: 12.4922 }, // Colosseum
+  barcelona: { lat: 41.4036, lng: 2.1744 }, // Sagrada Familia
+  amsterdam: { lat: 52.3676, lng: 4.9041 },
+  prague: { lat: 50.0875, lng: 14.4213 }, // Old Town Square
+  istanbul: { lat: 41.0086, lng: 28.9802 }, // Hagia Sophia
+  sydney: { lat: -33.8568, lng: 151.2153 }, // Opera House
+  rio: { lat: -22.9519, lng: -43.2105 }, // Christ the Redeemer
+};
+
 type Phase = "intro" | "playing" | "reveal" | "game-over";
 
 // Seeded RNG (mulberry32) for shared multiplayer rooms
