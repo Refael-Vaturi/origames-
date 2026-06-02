@@ -2,13 +2,15 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { UserCircle, Settings, LogIn, ShieldCheck } from "lucide-react";
+import { Settings, LogIn, ShieldCheck, ChevronRight, Sparkles, Search } from "lucide-react";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { useOnlinePresence } from "@/hooks/useOnlinePresence";
 import LanguageSelector from "@/components/LanguageSelector";
+import BottomNav from "@/components/BottomNav";
 import fakeItFastCard from "@/assets/fake-it-fast-card.png";
 import ironDomeCard from "@/assets/iron-dome-card.png";
 import logoImage from "@/assets/ori-games-logo.png";
+import { useEffect, useState } from "react";
 
 interface GameCard {
   id: string;
@@ -19,7 +21,7 @@ interface GameCard {
   description: string;
   color: string;
   players: string;
-  comingSoon?: boolean;
+  tag?: string;
 }
 
 const PortalScreen = () => {
@@ -39,6 +41,7 @@ const PortalScreen = () => {
       description: t("portal.fakeItFastDesc"),
       color: "from-[hsl(267,84%,58%)] to-[hsl(340,82%,62%)]",
       players: "3+",
+      tag: "Multiplayer",
     },
     {
       id: "iron-dome",
@@ -49,263 +52,283 @@ const PortalScreen = () => {
       description: t("portal.ironDomeDesc"),
       color: "from-[hsl(190,80%,30%)] to-[hsl(210,80%,20%)]",
       players: "1",
+      tag: "Action",
     },
     {
       id: "clicker",
       name: "Clicker",
       emoji: "👆",
       route: "/clicker",
-      description: "Tap fast, buy upgrades, climb the leaderboard.",
+      description: "Tap fast, buy upgrades, climb.",
       color: "from-[hsl(38,100%,55%)] to-[hsl(340,82%,62%)]",
       players: "1",
+      tag: "Arcade",
     },
     {
       id: "color-identify",
       name: "Identify the Color",
       emoji: "🎨",
       route: "/color-identify",
-      description: "Spot the odd-colored tile. Tiers get harder.",
+      description: "Spot the odd tile.",
       color: "from-[hsl(174,72%,45%)] to-[hsl(267,84%,58%)]",
       players: "1",
+      tag: "Puzzle",
     },
     {
       id: "city-find",
       name: "CityFind",
       emoji: "🌍",
       route: "/city-find",
-      description: "Guess cities from photos. English or Hebrew.",
+      description: "Guess cities from Street View.",
       color: "from-[hsl(142,70%,40%)] to-[hsl(190,80%,30%)]",
       players: "1",
+      tag: "Geo",
     },
   ];
 
+  const featured = [games[0], games[1], games[4]];
+  const [heroIdx, setHeroIdx] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => setHeroIdx((i) => (i + 1) % featured.length), 4200);
+    return () => clearInterval(id);
+  }, [featured.length]);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col relative overflow-x-hidden overflow-y-auto">
-      {/* Background particles */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(6)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute rounded-full"
-            style={{
-              width: 20 + Math.random() * 40,
-              height: 20 + Math.random() * 40,
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              background: `hsl(${[267, 340, 174, 38, 142][i % 5]} 70% 60% / 0.12)`,
-            }}
-            animate={{
-              y: [0, -20, 0],
-              x: [0, 10, 0],
-              scale: [1, 1.2, 1],
-            }}
-            transition={{ duration: 4 + i, repeat: Infinity, ease: "easeInOut" }}
-          />
-        ))}
-      </div>
+    <div className="min-h-screen bg-background flex flex-col relative overflow-x-hidden">
+      {/* Soft background gradient */}
+      <div
+        className="absolute inset-0 pointer-events-none opacity-60"
+        style={{
+          background:
+            "radial-gradient(circle at 15% 0%, hsl(267 84% 58% / 0.12), transparent 50%), radial-gradient(circle at 90% 10%, hsl(340 82% 62% / 0.10), transparent 50%)",
+        }}
+      />
 
-      {/* Header */}
-      <motion.header
-        className="flex items-center justify-between px-4 py-3 relative z-10"
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-      >
+      {/* Top bar */}
+      <header className="relative z-10 flex items-center justify-between px-4 pt-3 pb-2">
         <button
-          className="flex items-center gap-3"
+          className="flex items-center gap-2.5 active:scale-95 transition-transform"
           onClick={() => (user ? navigate("/profile") : navigate("/auth"))}
         >
-          <motion.div
-            className="w-10 h-10 rounded-full gradient-hero flex items-center justify-center"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <UserCircle className="w-6 h-6 text-primary-foreground" />
-          </motion.div>
-          <div className="text-start">
-            {user ? (
-              <>
-                <p className="font-display font-semibold text-foreground text-sm">
-                  {profile?.display_name || "Player"}
-                </p>
-                <p className="text-xs text-muted-foreground">{t("portal.level")} {profile?.level || 1}</p>
-              </>
-            ) : (
-              <p className="font-display font-semibold text-primary text-sm flex items-center gap-1">
-                <LogIn className="w-4 h-4" />
-                {t("welcome.login")}
-              </p>
-            )}
+          <div className="w-10 h-10 rounded-2xl gradient-hero flex items-center justify-center shadow-button">
+            <span className="text-primary-foreground font-display font-bold text-sm">
+              {profile?.display_name?.[0]?.toUpperCase() || (user ? "P" : "G")}
+            </span>
+          </div>
+          <div className="text-start leading-tight">
+            <p className="text-[11px] text-muted-foreground font-body">
+              {user ? `${t("portal.level") || "Level"} ${profile?.level || 1}` : "Welcome"}
+            </p>
+            <p className="font-display font-semibold text-foreground text-sm">
+              {user ? profile?.display_name || "Player" : (
+                <span className="flex items-center gap-1 text-primary">
+                  <LogIn className="w-3.5 h-3.5" /> {t("welcome.login")}
+                </span>
+              )}
+            </p>
           </div>
         </button>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <LanguageSelector />
           {isAdmin && (
             <button
-              className="p-2 rounded-xl hover:bg-muted transition-colors text-primary"
+              className="p-2 rounded-xl hover:bg-muted active:scale-95 transition text-primary"
               onClick={() => navigate("/admin")}
-              title="Admin Panel"
+              title="Admin"
             >
               <ShieldCheck className="w-5 h-5" />
             </button>
           )}
           <button
-            className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground"
+            className="p-2 rounded-xl hover:bg-muted active:scale-95 transition text-muted-foreground"
             onClick={() => navigate("/settings")}
+            aria-label="Settings"
           >
             <Settings className="w-5 h-5" />
           </button>
         </div>
-      </motion.header>
+      </header>
 
-      {/* Logo & Title */}
+      {/* Brand row */}
       <motion.div
-        className="flex flex-col items-center pt-4 pb-6 relative z-10"
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ type: "spring", duration: 0.6 }}
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative z-10 flex items-center gap-2 px-4 pt-1"
       >
-        <motion.img
-          src={logoImage}
-          alt="Ori Games"
-          className="w-20 h-20 mb-2"
-          animate={{ rotate: [0, -3, 3, 0] }}
-          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <h1 className="font-display text-4xl font-bold bg-gradient-to-r from-primary to-[hsl(var(--game-pink))] bg-clip-text text-transparent">
+        <img src={logoImage} alt="Ori Games" className="w-7 h-7" />
+        <h1 className="font-display text-2xl font-bold bg-gradient-to-r from-primary to-[hsl(var(--game-pink))] bg-clip-text text-transparent">
           Ori Games
         </h1>
-        <p className="text-muted-foreground font-body text-sm mt-1">
-          {t("portal.subtitle") || "Pick a game and have fun! 🎮"}
-        </p>
       </motion.div>
 
-      {/* Games Grid */}
-      <div className="flex-1 px-4 pb-8 relative z-10">
-        <motion.div
-          className="grid grid-cols-2 gap-4 max-w-lg mx-auto"
-          initial="hidden"
-          animate="visible"
-          variants={{
-            hidden: {},
-            visible: { transition: { staggerChildren: 0.12 } },
-          }}
-        >
-          {games.map((game) => (
-            <motion.button
-              key={game.id}
-              variants={{
-                hidden: { y: 30, opacity: 0, scale: 0.9 },
-                visible: { y: 0, opacity: 1, scale: 1 },
-              }}
-              whileHover={{ scale: 1.05, y: -4 }}
-              whileTap={{ scale: 0.97 }}
-              onClick={() => {
-                if (!game.comingSoon) navigate(game.route);
-              }}
-              className={`relative rounded-3xl overflow-hidden shadow-card aspect-square group ${
-                game.comingSoon ? "opacity-60 cursor-not-allowed" : "cursor-pointer"
-              }`}
-            >
-              {/* Background gradient */}
-              <div className={`absolute inset-0 bg-gradient-to-br ${game.color} opacity-90`} />
+      {/* Search-like pill (decorative trigger) */}
+      <button
+        onClick={() => {}}
+        className="relative z-10 mx-4 mt-3 mb-1 h-11 rounded-2xl bg-card border border-border/70 flex items-center gap-2 px-4 text-muted-foreground text-sm active:scale-[0.98] transition-transform"
+      >
+        <Search className="w-4 h-4" />
+        <span className="font-body">Browse games…</span>
+      </button>
 
-              {/* Game image (if any) */}
-              {game.image && (
-                <img
-                  src={game.image}
-                  alt={game.name}
-                  className="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-60 group-hover:opacity-80 transition-opacity"
+      <main className="relative z-10 flex-1 pb-32">
+        {/* Hero featured carousel */}
+        <section className="px-4 pt-4">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="font-display font-bold text-foreground text-base flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4 text-primary" /> Featured
+            </h2>
+            <div className="flex gap-1">
+              {featured.map((_, i) => (
+                <span
+                  key={i}
+                  className={`h-1.5 rounded-full transition-all ${
+                    i === heroIdx ? "w-5 bg-primary" : "w-1.5 bg-border"
+                  }`}
                 />
-              )}
-
-              {/* Game name at top */}
-              <div className="absolute top-0 left-0 right-0 p-3 z-10">
-                <p className="font-display font-bold text-primary-foreground text-sm drop-shadow-lg text-start">
-                  {game.name}
-                </p>
-                <p className="text-primary-foreground/70 text-[10px] font-body drop-shadow text-start mt-0.5">
-                  👥 {t("portal.players") || "Players"}: {game.players}
-                </p>
-              </div>
-
-              {/* Center logo area */}
-              <div className="absolute inset-0 flex items-center justify-center z-10">
-                <motion.div
-                  className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center"
-                  animate={{ scale: [1, 1.05, 1] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                >
-                  <span className="text-3xl">{game.emoji}</span>
-                </motion.div>
-              </div>
-
-              {/* Description at bottom */}
-              <div className="absolute bottom-0 left-0 right-0 p-3 z-10">
-                <p className="text-primary-foreground/80 text-xs font-body drop-shadow text-start">
-                  {game.description}
-                </p>
-              </div>
-
-              {/* Coming soon badge */}
-              {game.comingSoon && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/40 z-20">
-                    <span className="font-display font-bold text-primary-foreground text-lg px-4 py-2 rounded-full bg-black/30 backdrop-blur">
-                      {t("portal.comingSoon")}
-                    </span>
-                </div>
-              )}
-
-              {/* Hover shine effect */}
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent z-10 opacity-0 group-hover:opacity-100 transition-opacity"
-              />
-            </motion.button>
-          ))}
-
-          {/* "More coming soon" placeholder */}
-          <motion.div
-            variants={{
-              hidden: { y: 30, opacity: 0, scale: 0.9 },
-              visible: { y: 0, opacity: 1, scale: 1 },
-            }}
-            className="rounded-3xl border-2 border-dashed border-border aspect-square flex flex-col items-center justify-center gap-2 text-muted-foreground"
+              ))}
+            </div>
+          </div>
+          <motion.button
+            key={featured[heroIdx].id}
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => navigate(featured[heroIdx].route)}
+            className="relative w-full h-44 rounded-3xl overflow-hidden shadow-card block"
           >
-            <motion.span
-              className="text-4xl"
-              animate={{ rotate: [0, 10, -10, 0] }}
-              transition={{ duration: 3, repeat: Infinity }}
-            >
-              🎲
-            </motion.span>
-            <p className="font-display font-semibold text-sm">{t("portal.comingSoon")}</p>
-            <p className="text-xs">{t("portal.moreGames")}</p>
-          </motion.div>
-        </motion.div>
-      </div>
+            <div className={`absolute inset-0 bg-gradient-to-br ${featured[heroIdx].color}`} />
+            {featured[heroIdx].image && (
+              <img
+                src={featured[heroIdx].image}
+                alt={featured[heroIdx].name}
+                className="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-70"
+              />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+            <div className="absolute inset-0 p-4 flex flex-col justify-between text-start">
+              <span className="self-start px-2.5 py-1 rounded-full bg-white/25 backdrop-blur-md text-primary-foreground text-[10px] font-display font-semibold">
+                {featured[heroIdx].tag}
+              </span>
+              <div>
+                <p className="font-display font-bold text-primary-foreground text-2xl drop-shadow">
+                  {featured[heroIdx].name}
+                </p>
+                <p className="text-primary-foreground/85 text-xs font-body mt-1 max-w-[80%]">
+                  {featured[heroIdx].description}
+                </p>
+                <span className="inline-flex items-center gap-1 mt-3 px-3 py-1.5 rounded-full bg-white text-foreground text-xs font-display font-semibold">
+                  Play now <ChevronRight className="w-3.5 h-3.5" />
+                </span>
+              </div>
+            </div>
+          </motion.button>
+        </section>
 
-      {/* Footer */}
-      <footer className="relative z-10 py-4 text-center flex items-center justify-center gap-4 flex-wrap">
-        <button
-          onClick={() => navigate("/about")}
-          className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4 transition-colors"
-        >
-          About
-        </button>
-        <button
-          onClick={() => navigate("/contact")}
-          className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4 transition-colors"
-        >
-          Contact Us
-        </button>
-        <button
-          onClick={() => navigate("/privacy-policy")}
-          className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4 transition-colors"
-        >
-          {t("portal.privacyPolicy") || "Privacy Policy"}
-        </button>
-      </footer>
+        {/* Horizontal quick-play rail */}
+        <section className="pt-6">
+          <div className="flex items-center justify-between px-4 mb-2">
+            <h2 className="font-display font-bold text-foreground text-base">Quick play</h2>
+            <span className="text-xs text-muted-foreground">Solo · 1 min</span>
+          </div>
+          <div className="flex gap-3 overflow-x-auto px-4 pb-2 snap-x snap-mandatory scrollbar-hide">
+            {games.filter((g) => g.players === "1").map((g) => (
+              <motion.button
+                key={g.id}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => navigate(g.route)}
+                className="relative shrink-0 w-32 h-40 rounded-2xl overflow-hidden shadow-card snap-start"
+              >
+                <div className={`absolute inset-0 bg-gradient-to-br ${g.color}`} />
+                {g.image && (
+                  <img src={g.image} alt={g.name} className="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-60" />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/55 to-transparent" />
+                <div className="absolute inset-0 p-2.5 flex flex-col justify-between text-start">
+                  <div className="w-10 h-10 rounded-xl bg-white/25 backdrop-blur-md flex items-center justify-center text-xl">
+                    {g.emoji}
+                  </div>
+                  <div>
+                    <p className="font-display font-semibold text-primary-foreground text-sm leading-tight drop-shadow">
+                      {g.name}
+                    </p>
+                    <p className="text-primary-foreground/75 text-[10px] font-body">{g.tag}</p>
+                  </div>
+                </div>
+              </motion.button>
+            ))}
+          </div>
+        </section>
+
+        {/* All games grid */}
+        <section className="pt-6 px-4">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-display font-bold text-foreground text-base">All games</h2>
+            <span className="text-xs text-muted-foreground">{games.length} games</span>
+          </div>
+          <motion.div
+            className="grid grid-cols-2 gap-3"
+            initial="hidden"
+            animate="visible"
+            variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.06 } } }}
+          >
+            {games.map((game) => (
+              <motion.button
+                key={game.id}
+                variants={{
+                  hidden: { y: 16, opacity: 0 },
+                  visible: { y: 0, opacity: 1 },
+                }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => navigate(game.route)}
+                className="relative rounded-2xl overflow-hidden shadow-card aspect-[4/5]"
+              >
+                <div className={`absolute inset-0 bg-gradient-to-br ${game.color}`} />
+                {game.image && (
+                  <img
+                    src={game.image}
+                    alt={game.name}
+                    className="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-60"
+                  />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                <div className="absolute top-2.5 left-2.5">
+                  <span className="px-2 py-0.5 rounded-full bg-white/25 backdrop-blur-md text-primary-foreground text-[9px] font-display font-semibold">
+                    {game.tag}
+                  </span>
+                </div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-2xl">
+                    {game.emoji}
+                  </div>
+                </div>
+                <div className="absolute bottom-0 inset-x-0 p-3 text-start">
+                  <p className="font-display font-bold text-primary-foreground text-sm drop-shadow">
+                    {game.name}
+                  </p>
+                  <p className="text-primary-foreground/75 text-[10px] font-body">
+                    👥 {game.players}
+                  </p>
+                </div>
+              </motion.button>
+            ))}
+          </motion.div>
+        </section>
+
+        {/* Footer */}
+        <footer className="pt-8 pb-2 flex items-center justify-center gap-4 flex-wrap text-xs text-muted-foreground">
+          <button onClick={() => navigate("/about")} className="hover:text-foreground">About</button>
+          <span className="opacity-30">·</span>
+          <button onClick={() => navigate("/contact")} className="hover:text-foreground">Contact</button>
+          <span className="opacity-30">·</span>
+          <button onClick={() => navigate("/privacy-policy")} className="hover:text-foreground">
+            {t("portal.privacyPolicy") || "Privacy"}
+          </button>
+        </footer>
+      </main>
+
+      <BottomNav />
     </div>
   );
 };
