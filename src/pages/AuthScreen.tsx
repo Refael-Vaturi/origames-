@@ -54,7 +54,21 @@ const AuthScreen = () => {
     toast({ title: t("auth.error") || "Error", description: message, variant: "destructive" });
   };
 
+  const inWebView = isInWebView();
+  const androidWebView = isAndroidWebView();
+
   const handleGoogleSignIn = async () => {
+    // Plain Android WebViews are blocked by Google with "disallowed_useragent".
+    // Warn the user instead of triggering a confusing error page.
+    if (androidWebView) {
+      toast({
+        title: t("auth.googleBlockedInApp") || "Google sign-in needs an app update",
+        description:
+          "Use username or email login here. To enable Google, update the Android WebView user-agent (see app settings).",
+        variant: "destructive",
+      });
+      return;
+    }
     setLoading(true);
     try {
       const result = await lovable.auth.signInWithOAuth("google", {
