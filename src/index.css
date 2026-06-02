@@ -195,4 +195,8 @@
   .animate-pulse-ring { animation: pulse-ring 1.5s infinite; }
   .animate-bounce-in { animation: bounce-in 0.5s ease-out; }
   .animate-wiggle { animation: wiggle 0.5s ease-in-out; }
+
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 }
+
