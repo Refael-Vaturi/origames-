@@ -5,6 +5,7 @@ import { ArrowLeft, Lightbulb, Send, Timer, Image as ImageIcon, Users, Copy, Sha
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { playClick, playSuccess, playError, playPop } from "@/hooks/useSound";
 import ArcadeLeaderboard from "../arcade/ArcadeLeaderboard";
 import { useArcadeScore } from "../arcade/useArcadeScore";
@@ -66,6 +67,7 @@ const genRoomCode = () => {
 const CityFindGame = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t, tf } = useLanguage();
   const { submitScore, userId } = useArcadeScore("city_find");
   const [searchParams, setSearchParams] = useSearchParams();
   const roomCode = searchParams.get("room");
@@ -105,7 +107,7 @@ const CityFindGame = () => {
     const code = genRoomCode();
     setSearchParams({ room: code });
     playPop();
-    toast({ title: `Room created: ${code}`, description: "Share the link with friends!" });
+    toast({ title: tf("cityFind.roomCreated", { code }), description: t("cityFind.shareWithFriends") });
   };
 
   const shareRoom = async () => {
@@ -116,14 +118,14 @@ const CityFindGame = () => {
       await navigator.share(shareData).catch(() => {});
     } else {
       await navigator.clipboard.writeText(url);
-      toast({ title: "Link copied!" });
+      toast({ title: t("cityFind.linkCopied") });
     }
   };
 
   const copyCode = async () => {
     if (!roomCode) return;
     await navigator.clipboard.writeText(roomCode);
-    toast({ title: "Code copied!" });
+    toast({ title: t("cityFind.codeCopied") });
   };
 
   // Timer
@@ -147,7 +149,7 @@ const CityFindGame = () => {
       const hintPenalty = hintsUsed * HINT_COST;
       gain = Math.max(0, base + timeBonus - hintPenalty);
       playSuccess();
-      toast({ title: "🎉 Correct!", description: `+${gain} points` });
+      toast({ title: `🎉 ${t("cityFind.correct")}`, description: `+${gain} points` });
     } else {
       playError();
     }
@@ -181,14 +183,14 @@ const CityFindGame = () => {
   useEffect(() => {
     if (phase !== "game-over" || submitted) return;
     if (!user) {
-      toast({ title: "Sign in to save your score" });
+      toast({ title: t("cityFind.signInSave") });
       return;
     }
     submitScore(score, ROUNDS, { rounds: ROUNDS, room: roomCode || null }).then((r) => {
       if (r.ok) {
         setSubmitted(true);
         setRefreshKey((k) => k + 1);
-        toast({ title: "Score saved!" });
+        toast({ title: t("cityFind.scoreSaved") });
       }
     });
   }, [phase, submitted, user, score, submitScore, roomCode]);
@@ -197,9 +199,9 @@ const CityFindGame = () => {
     <div className="min-h-screen bg-gradient-to-br from-background to-muted flex flex-col">
       <header className="flex items-center justify-between px-4 py-3 border-b border-border/50">
         <Button variant="ghost" size="sm" onClick={() => { playClick(); navigate("/"); }}>
-          <ArrowLeft className="w-4 h-4 mr-1" /> Back
+          <ArrowLeft className="w-4 h-4 mr-1" /> {t("cityFind.back")}
         </Button>
-        <h1 className="font-display font-bold text-lg">CityFind</h1>
+        <h1 className="font-display font-bold text-lg">{t("cityFind.title")}</h1>
         <div className="text-sm font-bold text-primary tabular-nums">{score}</div>
       </header>
 
@@ -227,31 +229,30 @@ const CityFindGame = () => {
                 exit={{ opacity: 0 }}
                 className="bg-card rounded-2xl p-6 shadow-card text-center max-w-md mx-auto mt-8 w-full"
               >
-                <h2 className="font-display text-2xl font-bold mb-2">Guess the City</h2>
+                <h2 className="font-display text-2xl font-bold mb-2">{t("cityFind.guessTheCity")}</h2>
                 <p className="text-muted-foreground mb-4">
-                  You'll see photos from {ROUNDS} cities around the world. Type your guess in English or Hebrew.
-                  Faster guesses earn more points!
+                  {tf("cityFind.intro", { rounds: ROUNDS })}
                 </p>
                 {roomCode ? (
                   <p className="text-xs text-primary mb-3">
-                    You're in room <span className="font-mono font-bold">{roomCode}</span> — everyone gets the same cities!
+                    {tf("cityFind.roomNotice", { room: roomCode })}
                   </p>
                 ) : null}
-                <Button onClick={startGame} size="lg" className="w-full mb-3">Start</Button>
+                <Button onClick={startGame} size="lg" className="w-full mb-3">{t("general.start")}</Button>
 
                 {!roomCode ? (
                   <Button onClick={createRoom} variant="outline" size="lg" className="w-full">
-                    <Users className="w-4 h-4 mr-2" /> Play with Friends
+                    <Users className="w-4 h-4 mr-2" /> {t("cityFind.playWithFriends")}
                   </Button>
                 ) : (
                   <Button onClick={shareRoom} variant="outline" size="lg" className="w-full">
-                    <Share2 className="w-4 h-4 mr-2" /> Share Room Link
+                    <Share2 className="w-4 h-4 mr-2" /> {t("cityFind.shareRoomLink")}
                   </Button>
                 )}
 
                 {!roomCode && (
                   <div className="mt-4 pt-4 border-t border-border">
-                    <p className="text-xs text-muted-foreground mb-2">Have a code?</p>
+                    <p className="text-xs text-muted-foreground mb-2">{t("cityFind.haveCode")}</p>
                     <JoinRoomInput onJoin={(code) => setSearchParams({ room: code })} />
                   </div>
                 )}
@@ -266,7 +267,7 @@ const CityFindGame = () => {
                 className="flex flex-col gap-3"
               >
                 <div className="flex items-center justify-between text-sm">
-                  <span className="font-semibold">Round {roundIdx + 1} / {ROUNDS}</span>
+                  <span className="font-semibold">{tf("cityFind.round", { current: roundIdx + 1, total: ROUNDS })}</span>
                   <span className="flex items-center gap-1 text-muted-foreground">
                     <Timer className="w-4 h-4" /> {timeLeft}s
                   </span>
@@ -280,12 +281,12 @@ const CityFindGame = () => {
 
                 {hintsUsed >= 1 && (
                   <div className="bg-accent/10 border border-accent/30 rounded-xl px-3 py-2 text-sm">
-                    <strong>Continent hint:</strong> {countryToContinent(currentCity.country_en)}
+                    <strong>{t("cityFind.continentHint")}</strong> {countryToContinent(currentCity.country_en)}
                   </div>
                 )}
                 {hintsUsed >= 2 && (
                   <div className="bg-accent/10 border border-accent/30 rounded-xl px-3 py-2 text-sm">
-                    <strong>Country:</strong> {currentCity.flag} {currentCity.country_en}
+                    <strong>{t("cityFind.countryHint")}</strong> {currentCity.flag} {currentCity.country_en}
                   </div>
                 )}
 
@@ -296,7 +297,7 @@ const CityFindGame = () => {
                       value={guess}
                       onChange={(e) => setGuess(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && submitGuess()}
-                      placeholder="Type a city name (English or Hebrew)…"
+                      placeholder={t("cityFind.typeCity")}
                       dir="auto"
                       className="flex-1"
                     />
@@ -330,7 +331,7 @@ const CityFindGame = () => {
                     disabled={hintsUsed >= 2}
                   >
                     <Lightbulb className="w-3.5 h-3.5 mr-1" />
-                    Hint ({hintsUsed}/2) · -{HINT_COST}
+                    {t("cityFind.hint")} ({hintsUsed}/2) · -{HINT_COST}
                   </Button>
                 </div>
               </motion.div>
@@ -351,7 +352,7 @@ const CityFindGame = () => {
                     className="flex items-center justify-center gap-2 mb-3 text-game-green"
                   >
                     <CheckCircle2 className="w-8 h-8" />
-                    <span className="font-display text-2xl font-bold">Correct!</span>
+                      <span className="font-display text-2xl font-bold">{t("cityFind.correct")}</span>
                   </motion.div>
                 )}
                 <div className="text-5xl mb-2">{lastResult.city.flag}</div>
@@ -370,13 +371,13 @@ const CityFindGame = () => {
                     lastResult.correct ? "text-game-green" : "text-destructive"
                   }`}
                 >
-                  {lastResult.correct ? `+${lastResult.gain}` : "Wrong!"}
+                  {lastResult.correct ? `+${lastResult.gain}` : t("cityFind.wrong")}
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Total: {score}
+                  {tf("cityFind.total", { score })}
                 </p>
                 <Button onClick={nextRound} size="lg" className="mt-4 w-full">
-                  {roundIdx + 1 >= cities.length ? "See Results" : "Next Round →"}
+                  {roundIdx + 1 >= cities.length ? t("cityFind.seeResults") : t("cityFind.nextRound")}
                 </Button>
               </motion.div>
             )}
@@ -388,19 +389,19 @@ const CityFindGame = () => {
                 animate={{ scale: 1, opacity: 1 }}
                 className="bg-card rounded-2xl p-6 shadow-card text-center max-w-md mx-auto mt-4 w-full"
               >
-                <h2 className="font-display text-3xl font-bold mb-2">Game Over</h2>
+                <h2 className="font-display text-3xl font-bold mb-2">{t("cityFind.gameOver")}</h2>
                 <p className="text-5xl font-display font-bold bg-gradient-to-r from-primary to-game-pink bg-clip-text text-transparent my-4">
                   {score}
                 </p>
-                <p className="text-sm text-muted-foreground mb-4">out of {ROUNDS * 800} max</p>
+                <p className="text-sm text-muted-foreground mb-4">{tf("cityFind.outOfMax", { max: ROUNDS * 800 })}</p>
                 {roomCode && (
                   <Button onClick={shareRoom} variant="outline" className="w-full mb-2">
-                    <Share2 className="w-4 h-4 mr-2" /> Challenge More Friends
+                    <Share2 className="w-4 h-4 mr-2" /> {t("cityFind.challengeFriends")}
                   </Button>
                 )}
                 <div className="flex gap-2">
-                  <Button onClick={startGame} className="flex-1">Play Again</Button>
-                  <Button variant="outline" onClick={() => navigate("/")} className="flex-1">Home</Button>
+                  <Button onClick={startGame} className="flex-1">{t("cityFind.playAgain")}</Button>
+                  <Button variant="outline" onClick={() => navigate("/")} className="flex-1">{t("general.home")}</Button>
                 </div>
               </motion.div>
             )}
@@ -417,6 +418,7 @@ const CityFindGame = () => {
 
 const StreetViewOrMap = ({ city }: { city: CityData }) => {
   const [mode, setMode] = useState<"street" | "map">("street");
+  const { t } = useLanguage();
   const coords = CITY_COORDS[city.id];
   const placeQ = encodeURIComponent(`${city.name_en}, ${city.country_en}`);
 
@@ -447,13 +449,13 @@ const StreetViewOrMap = ({ city }: { city: CityData }) => {
             onClick={() => setMode("street")}
             className={`px-2 py-1 rounded-md font-semibold transition-colors ${mode === "street" ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-muted"}`}
           >
-            🚶 Street
+            🚶 {t("cityFind.street")}
           </button>
           <button
             onClick={() => setMode("map")}
             className={`px-2 py-1 rounded-md font-semibold transition-colors ${mode === "map" ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-muted"}`}
           >
-            🗺️ Map
+            🗺️ {t("cityFind.map")}
           </button>
         </div>
       )}
@@ -510,17 +512,18 @@ const MysteryStreetView = ({ city }: { city: CityData }) => {
 
 const JoinRoomInput = ({ onJoin }: { onJoin: (code: string) => void }) => {
   const [code, setCode] = useState("");
+  const { t } = useLanguage();
   return (
     <div className="flex gap-2">
       <Input
         value={code}
         onChange={(e) => setCode(e.target.value.toUpperCase())}
-        placeholder="Enter room code"
+        placeholder={t("cityFind.enterRoomCode")}
         maxLength={6}
         className="font-mono uppercase"
       />
       <Button onClick={() => code.trim() && onJoin(code.trim())} disabled={!code.trim()}>
-        Join
+        {t("general.join")}
       </Button>
     </div>
   );

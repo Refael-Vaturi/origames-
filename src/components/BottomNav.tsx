@@ -3,16 +3,17 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Home, Gamepad2, Users, UserCircle, X } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import fakeItFastCard from "@/assets/fake-it-fast-card.png";
 import ironDomeCard from "@/assets/iron-dome-card.png";
 
 type Item = { id: string; icon: typeof Home; label: string; route?: string };
 
 const items: Item[] = [
-  { id: "home", icon: Home, label: "Home", route: "/" },
-  { id: "play", icon: Gamepad2, label: "Play" },
-  { id: "friends", icon: Users, label: "Friends", route: "/friends" },
-  { id: "profile", icon: UserCircle, label: "Me", route: "/profile" },
+  { id: "home", icon: Home, label: "nav.home", route: "/" },
+  { id: "play", icon: Gamepad2, label: "nav.play" },
+  { id: "friends", icon: Users, label: "nav.friends", route: "/friends" },
+  { id: "profile", icon: UserCircle, label: "nav.me", route: "/profile" },
 ];
 
 const gameOptions = [
@@ -27,6 +28,7 @@ const BottomNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [playOpen, setPlayOpen] = useState(false);
 
   return (
@@ -66,7 +68,7 @@ const BottomNav = () => {
                 )}
                 <Icon className={`w-5 h-5 transition-colors ${active ? "text-primary" : "text-muted-foreground"}`} />
                 <span className={`text-[10px] font-display mt-0.5 transition-colors ${active ? "text-primary font-semibold" : "text-muted-foreground"}`}>
-                  {label}
+                  {t(label)}
                 </span>
               </motion.button>
             );
@@ -96,7 +98,7 @@ const BottomNav = () => {
               <div className="sticky top-0 bg-background/90 backdrop-blur-md flex items-center justify-between px-5 pt-4 pb-3 border-b border-border/50">
                 <div className="flex-1">
                   <div className="w-12 h-1.5 rounded-full bg-border mx-auto mb-2" />
-                  <h2 className="font-display text-lg font-bold text-foreground text-center">Choose a game</h2>
+                  <h2 className="font-display text-lg font-bold text-foreground text-center">{t("nav.chooseGame")}</h2>
                 </div>
                 <button
                   onClick={() => setPlayOpen(false)}

@@ -64,7 +64,7 @@ const AuthScreen = () => {
       toast({
         title: t("auth.googleBlockedInApp") || "Google sign-in needs an app update",
         description:
-          "Use username or email login here. To enable Google, update the Android WebView user-agent (see app settings).",
+          t("auth.inAppNotice"),
         variant: "destructive",
       });
       return;
