@@ -5,6 +5,7 @@ import { ArrowLeft, Lightbulb, Send, Timer, Image as ImageIcon, Users, Copy, Sha
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { playClick, playSuccess, playError, playPop } from "@/hooks/useSound";
 import ArcadeLeaderboard from "../arcade/ArcadeLeaderboard";
 import { useArcadeScore } from "../arcade/useArcadeScore";
@@ -66,6 +67,7 @@ const genRoomCode = () => {
 const CityFindGame = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t, tf } = useLanguage();
   const { submitScore, userId } = useArcadeScore("city_find");
   const [searchParams, setSearchParams] = useSearchParams();
   const roomCode = searchParams.get("room");
@@ -105,7 +107,7 @@ const CityFindGame = () => {
     const code = genRoomCode();
     setSearchParams({ room: code });
     playPop();
-    toast({ title: `Room created: ${code}`, description: "Share the link with friends!" });
+    toast({ title: tf("cityFind.roomCreated", { code }), description: t("cityFind.shareWithFriends") });
   };
 
   const shareRoom = async () => {
@@ -116,14 +118,14 @@ const CityFindGame = () => {
       await navigator.share(shareData).catch(() => {});
     } else {
       await navigator.clipboard.writeText(url);
-      toast({ title: "Link copied!" });
+      toast({ title: t("cityFind.linkCopied") });
     }
   };
 
   const copyCode = async () => {
     if (!roomCode) return;
     await navigator.clipboard.writeText(roomCode);
-    toast({ title: "Code copied!" });
+    toast({ title: t("cityFind.codeCopied") });
   };
 
   // Timer
@@ -147,7 +149,7 @@ const CityFindGame = () => {
       const hintPenalty = hintsUsed * HINT_COST;
       gain = Math.max(0, base + timeBonus - hintPenalty);
       playSuccess();
-      toast({ title: "🎉 Correct!", description: `+${gain} points` });
+      toast({ title: `🎉 ${t("cityFind.correct")}`, description: `+${gain} points` });
     } else {
       playError();
     }
@@ -181,14 +183,14 @@ const CityFindGame = () => {
   useEffect(() => {
     if (phase !== "game-over" || submitted) return;
     if (!user) {
-      toast({ title: "Sign in to save your score" });
+      toast({ title: t("cityFind.signInSave") });
       return;
     }
     submitScore(score, ROUNDS, { rounds: ROUNDS, room: roomCode || null }).then((r) => {
       if (r.ok) {
         setSubmitted(true);
         setRefreshKey((k) => k + 1);
-        toast({ title: "Score saved!" });
+        toast({ title: t("cityFind.scoreSaved") });
       }
     });
   }, [phase, submitted, user, score, submitScore, roomCode]);

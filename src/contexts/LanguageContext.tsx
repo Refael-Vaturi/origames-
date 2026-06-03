@@ -370,6 +370,7 @@ interface LanguageContextValue {
   setLanguage: (lang: Language) => void;
   toggleLanguage: () => void;
   t: (key: string) => string;
+  tf: (key: string, vars?: Record<string, string | number>) => string;
   dir: "ltr" | "rtl";
 }
 
@@ -399,11 +400,23 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     [language],
   );
 
+  const tf = useCallback(
+    (key: string, vars?: Record<string, string | number>) => {
+      let value = t(key);
+      if (!vars) return value;
+      for (const [name, replacement] of Object.entries(vars)) {
+        value = value.replaceAll(`{${name}}`, String(replacement));
+      }
+      return value;
+    },
+    [t],
+  );
+
   const langOption = LANGUAGES.find((l) => l.code === language);
   const dir = langOption?.dir || "ltr";
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage: handleSetLanguage, toggleLanguage, t, dir }}>
+    <LanguageContext.Provider value={{ language, setLanguage: handleSetLanguage, toggleLanguage, t, tf, dir }}>
       <div dir={dir}>{children}</div>
     </LanguageContext.Provider>
   );
