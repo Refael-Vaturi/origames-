@@ -405,7 +405,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       let value = t(key);
       if (!vars) return value;
       for (const [name, replacement] of Object.entries(vars)) {
-        value = value.replaceAll(`{${name}}`, String(replacement));
+        value = value.split(`{${name}}`).join(String(replacement));
       }
       return value;
     },
