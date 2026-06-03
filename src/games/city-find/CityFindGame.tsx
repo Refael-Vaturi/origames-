@@ -461,6 +461,52 @@ const StreetViewOrMap = ({ city }: { city: CityData }) => {
   );
 };
 
+// Mystery Street View: rotates heading automatically, hides labels/addresses, falls back to image.
+const MysteryStreetView = ({ city }: { city: CityData }) => {
+  const coords = CITY_COORDS[city.id];
+  const [heading, setHeading] = useState(() => Math.floor(Math.random() * 360));
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    setHeading(Math.floor(Math.random() * 360));
+    setFailed(false);
+  }, [city.id]);
+
+  useEffect(() => {
+    if (!coords || failed) return;
+    const id = setInterval(() => setHeading((h) => (h + 6) % 360), 1500);
+    return () => clearInterval(id);
+  }, [coords, failed]);
+
+  if (!coords || failed) {
+    return (
+      <img
+        src={city.images[0]}
+        alt="Mystery location"
+        className="w-full h-full object-cover"
+        onError={() => setFailed(true)}
+      />
+    );
+  }
+
+  const src = `https://www.google.com/maps/embed/v1/streetview?key=${GOOGLE_MAPS_API_KEY}&location=${coords.lat},${coords.lng}&heading=${heading}&pitch=0&fov=85`;
+
+  return (
+    <iframe
+      key={`mystery-${city.id}-${Math.floor(heading / 30)}`}
+      title="Mystery location"
+      width="100%"
+      height="100%"
+      style={{ border: 0 }}
+      loading="lazy"
+      referrerPolicy="no-referrer-when-downgrade"
+      src={src}
+    />
+  );
+};
+
+
+
 
 const JoinRoomInput = ({ onJoin }: { onJoin: (code: string) => void }) => {
   const [code, setCode] = useState("");
