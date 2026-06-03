@@ -273,23 +273,9 @@ const CityFindGame = () => {
                 </div>
 
                 <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-muted shadow-card">
-                  <img
-                    src={currentCity.images[imgIdx % currentCity.images.length]}
-                    alt="Mystery city"
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      if (imgIdx + 1 < currentCity.images.length) setImgIdx((i) => i + 1);
-                      else (e.target as HTMLImageElement).style.opacity = "0.3";
-                    }}
-                  />
-                  {currentCity.images.length > 1 && (
-                    <button
-                      onClick={() => setImgIdx((i) => (i + 1) % currentCity.images.length)}
-                      className="absolute bottom-2 right-2 bg-card/90 backdrop-blur px-2.5 py-1 rounded-lg text-xs font-medium flex items-center gap-1 shadow"
-                    >
-                      <ImageIcon className="w-3 h-3" /> Next photo
-                    </button>
-                  )}
+                  <MysteryStreetView city={currentCity} />
+                  {/* Block address/labels overlay from Google Street View */}
+                  <div className="pointer-events-none absolute inset-x-0 top-0 h-12 bg-gradient-to-b from-background/80 to-transparent" />
                 </div>
 
                 {hintsUsed >= 1 && (
@@ -474,6 +460,52 @@ const StreetViewOrMap = ({ city }: { city: CityData }) => {
     </>
   );
 };
+
+// Mystery Street View: rotates heading automatically, hides labels/addresses, falls back to image.
+const MysteryStreetView = ({ city }: { city: CityData }) => {
+  const coords = CITY_COORDS[city.id];
+  const [heading, setHeading] = useState(() => Math.floor(Math.random() * 360));
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    setHeading(Math.floor(Math.random() * 360));
+    setFailed(false);
+  }, [city.id]);
+
+  useEffect(() => {
+    if (!coords || failed) return;
+    const id = setInterval(() => setHeading((h) => (h + 6) % 360), 1500);
+    return () => clearInterval(id);
+  }, [coords, failed]);
+
+  if (!coords || failed) {
+    return (
+      <img
+        src={city.images[0]}
+        alt="Mystery location"
+        className="w-full h-full object-cover"
+        onError={() => setFailed(true)}
+      />
+    );
+  }
+
+  const src = `https://www.google.com/maps/embed/v1/streetview?key=${GOOGLE_MAPS_API_KEY}&location=${coords.lat},${coords.lng}&heading=${heading}&pitch=0&fov=85`;
+
+  return (
+    <iframe
+      key={`mystery-${city.id}-${Math.floor(heading / 30)}`}
+      title="Mystery location"
+      width="100%"
+      height="100%"
+      style={{ border: 0 }}
+      loading="lazy"
+      referrerPolicy="no-referrer-when-downgrade"
+      src={src}
+    />
+  );
+};
+
+
 
 
 const JoinRoomInput = ({ onJoin }: { onJoin: (code: string) => void }) => {
