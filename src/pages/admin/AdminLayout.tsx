@@ -33,8 +33,8 @@ export default function AdminLayout() {
       {/* Sidebar */}
       <aside className="hidden md:flex w-60 flex-col border-r border-border bg-card">
         <div className="px-4 py-5 border-b border-border">
-          <div className="text-lg font-bold">🛡️ Admin Panel</div>
-          <div className="text-xs text-muted-foreground">Iron Dome</div>
+          <div className="text-lg font-bold">🛡️ {t("admin.layout.adminPanel")}</div>
+          <div className="text-xs text-muted-foreground">{t("admin.layout.ironDome")}</div>
         </div>
         <nav className="flex-1 p-2 space-y-1">
           {links.map((l) => (
