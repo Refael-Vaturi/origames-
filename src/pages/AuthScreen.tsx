@@ -95,6 +95,23 @@ const AuthScreen = () => {
   const handleAppleSignIn = async () => {
     setLoading(true);
     try {
+      if (isInWebView()) {
+        const { data, error } = await supabase.auth.signInWithOAuth({
+          provider: "apple",
+          options: {
+            redirectTo: window.location.origin + redirectPath,
+            skipBrowserRedirect: true,
+          },
+        });
+        if (error) {
+          handleAuthError(error);
+          return;
+        }
+        if (data?.url) {
+          await openOAuth(data.url);
+        }
+        return;
+      }
       const result = await lovable.auth.signInWithOAuth("apple", {
         redirect_uri: window.location.origin + redirectPath,
       });
