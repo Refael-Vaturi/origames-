@@ -430,6 +430,7 @@ const translations: Translations = {
   "admin.playerActions.confirmResetTitle": { en: "Reset all progress?", he: "לאפס את כל ההתקדמות?" },
   "admin.playerActions.confirmResetDesc": { en: "The player will go back to Level 1 with only Level 1 unlocked.", he: "השחקן יחזור לרמה 1 עם רמה 1 בלבד פתוחה." },
   "admin.playerActions.giveToUser": { en: "Adjusted {field} ({amount}) for {user}", he: "עודכן {field} ({amount}) עבור {user}" },
+  "admin.playerActions.unlocked": { en: "unlocked", he: "פתוח" },
 
   "admin.live.title": { en: "Live Players", he: "שחקנים חיים" },
   "admin.live.subtitle": { en: "Real-time presence across the world", he: "נוכחות בזמן אמת ברחבי העולם" },
