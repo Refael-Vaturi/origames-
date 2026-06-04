@@ -25,6 +25,7 @@ const links = [
 
 export default function AdminLayout() {
   const { user, signOut } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   return (
