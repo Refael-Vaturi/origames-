@@ -1,0 +1,22 @@
+# Ori Games
+
+> A free portal of browser games for solo play and multiplayer fun — featuring Fake It Fast (social deduction), Iron Dome (defense arcade), CityFind (geography with Street View), and more. Play instantly in 20 languages, no install required.
+
+## Games
+
+- [Fake It Fast](/fake-it-fast): A fast social-deduction party game for 3–8 players. Find the fake before it fools everyone.
+- [Iron Dome](/iron-dome): Defense arcade game — intercept missiles, unlock power-ups, and survive waves.
+- [CityFind](/city-find): Guess your location from rotating Google Street View. Geography trivia with real-world imagery.
+- [Clicker](/clicker): Classic arcade clicker game.
+- [Color Identify](/color-identify): Fast color-matching arcade challenge.
+
+## Info Pages
+
+- [About](/about): Learn more about Ori Games and our mission.
+- [Contact](/contact): Get in touch with the Ori Games team.
+- [Privacy Policy](/privacy-policy): How we handle data and player privacy.
+
+## Optional
+
+- [Iron Dome Tutorial](/fake-it-fast/tutorial): How to play Fake It Fast — rules, hints, and strategy.
+- [Join Game](/fake-it-fast/join): Enter a room code to join a friend's game.
