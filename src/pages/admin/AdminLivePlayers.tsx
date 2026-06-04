@@ -24,8 +24,8 @@ export default function AdminLivePlayers() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-bold">Live Players</h1>
-        <p className="text-sm text-muted-foreground">Real-time presence across the world</p>
+        <h1 className="text-2xl font-bold">{t("admin.live.title")}</h1>
+        <p className="text-sm text-muted-foreground">{t("admin.live.subtitle")}</p>
       </div>
 
       <Card>
