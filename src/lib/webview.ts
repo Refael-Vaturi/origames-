@@ -1,6 +1,9 @@
 // Detects if the app is running inside a native WebView (Android/iOS wrapper).
 // Important: Google OAuth refuses to load inside a plain Android WebView
-// (error: "disallowed_useragent"). When detected we surface a friendlier flow.
+// (error: "disallowed_useragent"). When detected we use Capacitor Browser
+// (Chrome Custom Tabs / SFSafariViewController) which Google accepts.
+
+import { Browser } from "@capacitor/browser";
 
 export const isAndroidWebView = (): boolean => {
   if (typeof navigator === "undefined") return false;
@@ -21,13 +24,17 @@ export const isIosWebView = (): boolean => {
 export const isInWebView = (): boolean => isAndroidWebView() || isIosWebView();
 
 /**
- * Open OAuth in a way that stays inside the WebView container.
- * - In WebView: uses location.assign (full in-place redirect, no popup blockers,
- *   no external Chrome window). The OAuth flow will return to the same origin
- *   and Supabase will restore the session from the URL hash.
- * - In a normal browser: same in-place redirect — popups are unreliable on mobile.
+ * Open OAuth in a way that works in WebViews.
+ * - When Capacitor Browser is available (native app): opens Chrome Custom Tabs
+ *   or SFSafariViewController — Google accepts these.
+ * - In a plain browser: uses location.assign (in-place redirect).
  */
-export const inAppRedirect = (url: string) => {
-  // Replace so the OAuth provider page is not in browser history.
-  window.location.assign(url);
+export const openOAuth = async (url: string) => {
+  try {
+    // Capacitor Browser opens a system native browser view that Google trusts.
+    await Browser.open({ url, presentationStyle: "fullscreen" });
+  } catch {
+    // Fallback for plain web or if Capacitor is not available.
+    window.location.assign(url);
+  }
 };
