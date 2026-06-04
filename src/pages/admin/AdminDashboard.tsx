@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { Users, ScrollText, Radio, TrendingUp } from "lucide-react";
 import { useOnlinePresence } from "@/hooks/useOnlinePresence";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function AdminDashboard() {
   const { onlineUsers } = useOnlinePresence({ track: false });
