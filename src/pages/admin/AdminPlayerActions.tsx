@@ -448,49 +448,49 @@ function LevelsPanel({
           />
           <div className="flex flex-wrap gap-2">
             <Button size="sm" onClick={unlockOne}>
-              Unlock This Level
+              {t("admin.playerActions.unlockThis")}
             </Button>
             <Button size="sm" variant="outline" onClick={unlockUpTo}>
-              Unlock Up To This
+              {t("admin.playerActions.unlockUpTo")}
             </Button>
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button size="sm" variant="outline">
-                  Unlock ALL Levels
+                  {t("admin.playerActions.unlockAll")}
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Unlock all {TOTAL_LEVELS} levels?</AlertDialogTitle>
+                  <AlertDialogTitle>{tf("admin.playerActions.confirmUnlockAllTitle", { levels: String(TOTAL_LEVELS) })}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This grants the player access to every level in the game.
+                    {t("admin.playerActions.confirmUnlockAllDesc")}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={unlockAll}>Unlock all</AlertDialogAction>
+                  <AlertDialogCancel>{t("admin.common.cancel")}</AlertDialogCancel>
+                  <AlertDialogAction onClick={unlockAll}>{t("admin.common.confirm")}</AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
             <Button size="sm" variant="outline" onClick={lockOne}>
-              Lock This Level
+              {t("admin.playerActions.lockThis")}
             </Button>
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button size="sm" variant="destructive">
-                  Reset Progress
+                  {t("admin.playerActions.resetProgress")}
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Reset all progress?</AlertDialogTitle>
+                  <AlertDialogTitle>{t("admin.playerActions.confirmResetTitle")}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    The player will go back to Level 1 with only Level 1 unlocked.
+                    {t("admin.playerActions.confirmResetDesc")}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={reset}>Reset</AlertDialogAction>
+                  <AlertDialogCancel>{t("admin.common.cancel")}</AlertDialogCancel>
+                  <AlertDialogAction onClick={reset}>{t("admin.common.confirm")}</AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
@@ -498,7 +498,7 @@ function LevelsPanel({
         </div>
 
         <div className="space-y-2">
-          <Label>Set Current Level (teleport)</Label>
+          <Label>{t("admin.playerActions.setCurrent")}</Label>
           <div className="flex gap-2">
             <Input
               type="number"
