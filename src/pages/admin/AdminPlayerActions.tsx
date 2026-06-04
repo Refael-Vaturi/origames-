@@ -280,13 +280,13 @@ function ResourcesPanel({
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <Label>Hearts ❤️</Label>
+          <Label>{t("admin.playerActions.hearts")} ❤️</Label>
           <div className="flex gap-2">
             <Input
               type="number"
               value={hearts}
               onChange={(e) => setHearts(e.target.value)}
-              placeholder={setMode ? "Set to…" : "Add (negative to subtract)"}
+              placeholder={setMode ? t("admin.playerActions.setTo") : t("admin.playerActions.add")}
             />
             <Button
               onClick={() => {
@@ -294,7 +294,7 @@ function ResourcesPanel({
                 setHearts("");
               }}
             >
-              Apply
+              {t("admin.playerActions.apply")}
             </Button>
           </div>
           <div className="flex flex-wrap gap-1">
