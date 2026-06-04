@@ -239,6 +239,7 @@ function ResourcesPanel({
   adminEmail: string;
   onChanged: () => void;
 }) {
+  const { t } = useLanguage();
   const [hearts, setHearts] = useState("");
   const [money, setMoney] = useState("");
   const [setMode, setSetMode] = useState(false);
