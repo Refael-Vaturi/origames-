@@ -256,7 +256,7 @@ export default function AdminUsers() {
 
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">
-              Page {page + 1} / {totalPages}
+              {t("admin.users.page")} {page + 1} {t("admin.users.of")} {totalPages}
             </span>
             <div className="flex gap-2">
               <Button
@@ -265,7 +265,7 @@ export default function AdminUsers() {
                 disabled={page === 0}
                 onClick={() => setPage((p) => p - 1)}
               >
-                Previous
+                {t("admin.users.previous")}
               </Button>
               <Button
                 size="sm"
@@ -273,7 +273,7 @@ export default function AdminUsers() {
                 disabled={page + 1 >= totalPages}
                 onClick={() => setPage((p) => p + 1)}
               >
-                Next
+                {t("admin.users.next")}
               </Button>
             </div>
           </div>
