@@ -116,7 +116,7 @@ export default function AdminPlayerActions() {
         <CardContent>
           <div className="relative">
             <Input
-              placeholder='Type username or "me"'
+              placeholder={t("admin.playerActions.typeMe")}
               value={query}
               onChange={(e) => {
                 setQuery(e.target.value);
