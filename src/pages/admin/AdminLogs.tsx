@@ -97,16 +97,16 @@ export default function AdminLogs() {
         <CardContent className="pt-4 space-y-3">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             <Input
-              placeholder="Filter by admin email"
+              placeholder={t("admin.logs.filterAdmin")}
               value={adminFilter}
               onChange={(e) => setAdminFilter(e.target.value)}
             />
             <Select value={actionFilter} onValueChange={setActionFilter}>
               <SelectTrigger>
-                <SelectValue placeholder="Action type" />
+                <SelectValue placeholder={t("admin.logs.filterAction")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All actions</SelectItem>
+                <SelectItem value="all">{t("admin.logs.allActions")}</SelectItem>
                 {actionTypes.map((a) => (
                   <SelectItem key={a} value={a}>
                     {a}
