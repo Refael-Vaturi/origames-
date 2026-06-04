@@ -33,6 +33,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { logAdminAction } from "@/lib/adminLog";
 import { Heart, Coins, Download } from "lucide-react";
 
