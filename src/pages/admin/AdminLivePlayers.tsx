@@ -8,6 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useOnlinePresence } from "@/hooks/useOnlinePresence";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Radio } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
@@ -17,6 +18,7 @@ const flagFor = (cc?: string | null) =>
     : "🌐";
 
 export default function AdminLivePlayers() {
+  const { t } = useLanguage();
   const { onlineUsers } = useOnlinePresence({ track: false });
 
   return (
