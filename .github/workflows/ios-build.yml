@@ -1,66 +1,48 @@
 name: Build iOS IPA
 
 on:
-  workflow_dispatch:
   push:
-    branches: [main]
-    paths:
-      - "src/**"
-      - "package.json"
-      - "capacitor.config.json"
-      - ".github/workflows/ios-build.yml"
+    branches: [ main, master ]
+  workflow_dispatch:
 
 jobs:
   build-ios:
-    runs-on: macos-14
+    runs-on: macos-latest
+
     steps:
-      - uses: actions/checkout@v4
+    - name: Checkout Source Code
+      uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
 
-      - name: Install dependencies
-        run: npm ci || npm install
+    - name: Install Dependencies (Force Mode)
+      run: npm install --force
 
-      - name: Build web bundle
-        run: npm run build
+    - name: Build Web Project
+      run: npm run build --if-present
 
-      - name: Add iOS platform (if missing)
-        run: |
-          if [ ! -d "ios" ]; then
-            npx cap add ios
-          fi
+    - name: Install Capacitor iOS
+      run: |
+        npm install @capacitor/ios --force
+        npx cap sync ios
 
-      - name: Sync Capacitor
-        run: npx cap sync ios
+    - name: Build Xcode Project (Unsigned)
+      run: |
+        if [ -d "ios/App" ]; then
+          cd ios/App
+          xcodebuild -workspace App.xcworkspace -scheme App -sdk iphoneos -configuration Release CODE_SIGNING_ALLOWED=NO -archivePath $PWD/build/App.xcarchive archive
+          mkdir -p $GITHUB_WORKSPACE/build
+          xcrun xcodebuild -exportArchive -archivePath $PWD/build/App.xcarchive -exportPath $GITHUB_WORKSPACE/build -exportOptionsPlst <(echo '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict><key>method</key><string>ad-hoc</string><key>compileBitcode</key><false/></dict></plist>')
+        else
+          echo "Error: ios/App directory not found! Check if Lovable generated the iOS folder."
+          exit 1
+        fi
 
-      - name: Install CocoaPods
-        working-directory: ios/App
-        run: pod install --repo-update
-
-      - name: Build unsigned IPA archive
-        working-directory: ios/App
-        run: |
-          xcodebuild -workspace App.xcworkspace \
-            -scheme App \
-            -configuration Release \
-            -sdk iphoneos \
-            -archivePath $PWD/build/App.xcarchive \
-            archive \
-            CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGNING_REQUIRED=NO
-
-      - name: Package unsigned .ipa
-        working-directory: ios/App
-        run: |
-          mkdir -p build/Payload
-          cp -r build/App.xcarchive/Products/Applications/App.app build/Payload/
-          cd build && zip -qr OriGames-unsigned.ipa Payload
-
-      - name: Upload IPA artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: OriGames-unsigned-ipa
-          path: ios/App/build/OriGames-unsigned.ipa
+    - name: Upload Finished IPA
+      uses: actions/upload-artifact@v4
+      with:
+        name: ios-app-ipa
+        path: build/*.ipa
