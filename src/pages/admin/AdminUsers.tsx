@@ -292,7 +292,7 @@ function BulkAction({
   field: "hearts" | "money";
   onConfirm: (field: "hearts" | "money", amount: number) => void;
 }) {
-  const { t } = useLanguage();
+  const { t, tf } = useLanguage();
   const [val, setVal] = useState("");
   return (
     <div className="flex items-center gap-2">
