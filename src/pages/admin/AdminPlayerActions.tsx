@@ -111,7 +111,7 @@ export default function AdminPlayerActions() {
       {/* Selector */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Select Player</CardTitle>
+          <CardTitle className="text-base">{t("admin.playerActions.selectPlayer")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="relative">
