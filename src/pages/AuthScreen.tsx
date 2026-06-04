@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { toast } from "@/hooks/use-toast";
 import { playClick, playSuccess, playWhoosh } from "@/hooks/useSound";
-import { isAndroidWebView, isInWebView } from "@/lib/webview";
+import { isAndroidWebView, isInWebView, openOAuth } from "@/lib/webview";
 
 type AuthMethod = "username" | "email";
 
