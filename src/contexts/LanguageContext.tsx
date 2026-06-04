@@ -370,6 +370,8 @@ const translations: Translations = {
   "cityFind.whereIsIt": { en: "Where is it?", he: "איפה זה?", ar: "أين هو؟", es: "¿Dónde está?", fr: "Où est-ce ?", de: "Wo ist es?", pt: "Onde é?", ru: "Где это?", zh: "这是哪里？", ja: "ここはどこ？", ko: "이곳은 어디인가?", hi: "यह कहाँ है?", tr: "Nerede?", it: "Dov'è?", pl: "Gdzie to jest?", nl: "Waar is het?", sv: "Var är det?", th: "ที่นี่คือที่ไหน?", vi: "Đây là đâu?", uk: "Де це?" },
 
   // Admin
+  // Admin
+  "admin.accessDenied": { en: "Access Denied — Admins Only", he: "גישה נדחתה — רק למנהלים" },
   "admin.dashboard.title": { en: "Dashboard", he: "לוח בקרה" },
   "admin.dashboard.overview": { en: "Overview of your game", he: "סקירה כללית של המשחק" },
   "admin.dashboard.totalUsers": { en: "Total Users", he: "סך משתמשים" },
