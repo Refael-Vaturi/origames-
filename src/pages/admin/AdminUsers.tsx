@@ -58,7 +58,7 @@ const PAGE_SIZE = 50;
 export default function AdminUsers() {
   const qc = useQueryClient();
   const { user } = useAuth();
-  const { t } = useLanguage();
+  const { t, tf } = useLanguage();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
   const [sort, setSort] = useState<{ key: keyof AdminProfile; asc: boolean }>({
