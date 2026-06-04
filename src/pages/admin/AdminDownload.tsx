@@ -59,12 +59,12 @@ export default function AdminDownload() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Smartphone className="h-4 w-4" /> Build native APK / IPA
+            <Smartphone className="h-4 w-4" /> {t("admin.download.native.title")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3 text-sm">
           <p className="text-muted-foreground">
-            Generating native binaries requires Capacitor and a local toolchain. Follow the steps:
+            {t("admin.download.native.desc")}
           </p>
           <ol className="list-decimal list-inside space-y-1">
             <li>Export to GitHub (button in the top-right of Lovable)</li>
@@ -109,15 +109,15 @@ export default function AdminDownload() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Release Notes</CardTitle>
+          <CardTitle>{t("admin.download.release.title")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="space-y-1">
-            <Label>Version</Label>
+            <Label>{t("admin.download.release.version")}</Label>
             <Input value={version} onChange={(e) => setVersion(e.target.value)} />
           </div>
           <div className="space-y-1">
-            <Label>Changelog</Label>
+            <Label>{t("admin.download.release.changelog")}</Label>
             <Textarea
               rows={6}
               placeholder="What's new in this release…"
@@ -128,10 +128,10 @@ export default function AdminDownload() {
           <Button
             onClick={() => {
               navigator.clipboard.writeText(`v${version}\n\n${changelog}`);
-              toast.success("Release notes copied");
+              toast.success(t("admin.download.release.copy"));
             }}
           >
-            Copy Release Notes
+            {t("admin.download.release.copy")}
           </Button>
         </CardContent>
       </Card>
