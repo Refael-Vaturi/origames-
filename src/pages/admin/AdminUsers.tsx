@@ -313,7 +313,7 @@ function BulkAction({
           <AlertDialogHeader>
             <AlertDialogTitle>{t("admin.users.confirmBulkTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              {t("admin.users.confirmBulkDesc", { val, field })}
+              {tf("admin.users.confirmBulkDesc", { val, field })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
