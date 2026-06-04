@@ -13,15 +13,15 @@ export default function AdminGuard() {
 
   useEffect(() => {
     if (!loading && user && !isAdmin) {
-      toast.error("Access Denied — Admins Only");
+      toast.error(t("admin.accessDenied") || "Access Denied — Admins Only");
       navigate("/", { replace: true });
     }
-  }, [loading, user, isAdmin, navigate]);
+  }, [loading, user, isAdmin, navigate, t]);
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-muted-foreground">Loading…</div>
+        <div className="text-muted-foreground">{t("admin.common.loading")}</div>
       </div>
     );
   }
