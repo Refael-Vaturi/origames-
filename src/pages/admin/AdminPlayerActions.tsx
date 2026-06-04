@@ -197,6 +197,7 @@ function SelectedCard({
   isMe: boolean;
   onClear: () => void;
 }) {
+  const { t } = useLanguage();
   return (
     <Card>
       <CardContent className="pt-6 flex items-start gap-4">
