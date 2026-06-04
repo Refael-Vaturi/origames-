@@ -83,13 +83,13 @@ export default function AdminLogs() {
     <div className="space-y-4">
       <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Admin Logs</h1>
+          <h1 className="text-2xl font-bold">{t("admin.logs.title")}</h1>
           <p className="text-sm text-muted-foreground">
-            All admin actions (latest 500 with current filters)
+            {t("admin.logs.subtitle")}
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={exportCsv}>
-          <Download className="h-4 w-4 mr-1" /> Export CSV
+          <Download className="h-4 w-4 mr-1" /> {t("admin.users.exportCsv")}
         </Button>
       </div>
 
