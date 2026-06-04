@@ -10,16 +10,17 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const links = [
-  { to: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true },
-  { to: "/admin/users", label: "Users", icon: Users },
-  { to: "/admin/live", label: "Live Players", icon: Radio },
-  { to: "/admin/player-actions", label: "Player Actions", icon: Crosshair },
-  { to: "/admin/download", label: "Download App", icon: Download },
-  { to: "/admin/logs", label: "Logs", icon: ScrollText },
+  { to: "/admin", label: "admin.dashboard.title", icon: LayoutDashboard, end: true },
+  { to: "/admin/users", label: "admin.users.title", icon: Users },
+  { to: "/admin/live", label: "admin.live.title", icon: Radio },
+  { to: "/admin/player-actions", label: "admin.playerActions.title", icon: Crosshair },
+  { to: "/admin/download", label: "admin.download.title", icon: Download },
+  { to: "/admin/logs", label: "admin.logs.title", icon: ScrollText },
 ];
 
 export default function AdminLayout() {
