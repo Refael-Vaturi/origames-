@@ -292,6 +292,7 @@ function BulkAction({
   field: "hearts" | "money";
   onConfirm: (field: "hearts" | "money", amount: number) => void;
 }) {
+  const { t } = useLanguage();
   const [val, setVal] = useState("");
   return (
     <div className="flex items-center gap-2">
@@ -305,25 +306,25 @@ function BulkAction({
       <AlertDialog>
         <AlertDialogTrigger asChild>
           <Button size="sm" disabled={!val}>
-            Apply
+            {t("admin.common.apply")}
           </Button>
         </AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirm Bulk Action</AlertDialogTitle>
+            <AlertDialogTitle>{t("admin.users.confirmBulkTitle")}</AlertDialogTitle>
             <AlertDialogDescription>
-              Give {val} {field} to ALL registered users? This cannot be undone.
+              {t("admin.users.confirmBulkDesc", { val, field })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t("admin.common.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 onConfirm(field, parseInt(val, 10));
                 setVal("");
               }}
             >
-              Confirm
+              {t("admin.common.confirm")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
