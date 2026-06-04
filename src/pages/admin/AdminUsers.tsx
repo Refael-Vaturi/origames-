@@ -364,8 +364,8 @@ function RowActions({
               <span>
                 <Coins className="inline h-3 w-3" /> {p.money}
               </span>
-              <span>Lvl {p.current_level}</span>
-              <span>Max {p.admin_max_level}</span>
+              <span>{t("admin.users.level")} {p.current_level}</span>
+              <span>{t("admin.users.max")} {p.admin_max_level}</span>
             </div>
             <div className="flex flex-wrap gap-1 mt-2 max-h-32 overflow-y-auto">
               {(p.unlocked_levels ?? []).slice(0, 50).map((lv) => (
