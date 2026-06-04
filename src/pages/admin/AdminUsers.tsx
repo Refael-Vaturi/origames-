@@ -214,15 +214,15 @@ export default function AdminUsers() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>{sortableHeader("Username", "username")}</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>{sortableHeader("Hearts", "hearts")}</TableHead>
-                  <TableHead>{sortableHeader("Money", "money")}</TableHead>
-                  <TableHead>{sortableHeader("Level", "current_level")}</TableHead>
-                  <TableHead>{sortableHeader("Max", "admin_max_level")}</TableHead>
-                  <TableHead>{sortableHeader("Created", "created_at")}</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead>{sortableHeader(t("admin.users.username"), "username")}</TableHead>
+                  <TableHead>{t("admin.users.name")}</TableHead>
+                  <TableHead>{t("admin.users.email")}</TableHead>
+                  <TableHead>{sortableHeader(t("admin.users.hearts"), "hearts")}</TableHead>
+                  <TableHead>{sortableHeader(t("admin.users.money"), "money")}</TableHead>
+                  <TableHead>{sortableHeader(t("admin.users.level"), "current_level")}</TableHead>
+                  <TableHead>{sortableHeader(t("admin.users.max"), "admin_max_level")}</TableHead>
+                  <TableHead>{sortableHeader(t("admin.users.created"), "created_at")}</TableHead>
+                  <TableHead>{t("admin.users.actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
