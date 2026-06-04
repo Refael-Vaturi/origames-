@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { Smartphone, Apple, Download } from "lucide-react";
 
 export default function AdminDownload() {
+  const { t } = useLanguage();
   const [version, setVersion] = useState("1.0.0");
   const [changelog, setChangelog] = useState("");
   const [installPrompt, setInstallPrompt] = useState<Event | null>(null);
