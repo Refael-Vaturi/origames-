@@ -41,18 +41,18 @@ export default function AdminLivePlayers() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Username</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Country</TableHead>
-                  <TableHead>Level</TableHead>
-                  <TableHead>Connected</TableHead>
+                  <TableHead>{t("admin.live.username")}</TableHead>
+                  <TableHead>{t("admin.live.email")}</TableHead>
+                  <TableHead>{t("admin.live.country")}</TableHead>
+                  <TableHead>{t("admin.live.level")}</TableHead>
+                  <TableHead>{t("admin.live.connected")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {!onlineUsers.length && (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                      No players online right now.
+                      {t("admin.live.noPlayers")}
                     </TableCell>
                   </TableRow>
                 )}
