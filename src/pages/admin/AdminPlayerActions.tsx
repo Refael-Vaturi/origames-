@@ -146,7 +146,7 @@ export default function AdminPlayerActions() {
                           {r.username ?? r.display_name}{" "}
                           {me && (
                             <Badge variant="secondary" className="ml-1 text-[10px]">
-                              You
+                              {t("admin.playerActions.you")}
                             </Badge>
                           )}
                         </div>
