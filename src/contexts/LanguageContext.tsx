@@ -401,6 +401,8 @@ const translations: Translations = {
   "admin.users.next": { en: "Next", he: "הבא" },
   "admin.users.page": { en: "Page", he: "עמוד" },
   "admin.users.of": { en: "of", he: "מתוך" },
+  "admin.users.confirmBulkTitle": { en: "Confirm Bulk Action", he: "אשר פעולה גורפת" },
+  "admin.users.confirmBulkDesc": { en: "Give {val} {field} to ALL registered users? This cannot be undone.", he: "לתת {val} {field} לכל המשתמשים הרשומים? לא ניתן לבטל." },
 
   "admin.playerActions.title": { en: "Player Actions", he: "פעולות שחקן" },
   "admin.playerActions.subtitle": { en: "Target a specific player to give resources or unlock levels.", he: "בחר שחקן ספציפי כדי לתת משאבים או לפתוח רמות." },
