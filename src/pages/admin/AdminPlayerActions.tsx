@@ -438,7 +438,7 @@ function LevelsPanel({
       </CardHeader>
       <CardContent className="space-y-5">
         <div className="space-y-2">
-          <Label>Target Level (1 - {TOTAL_LEVELS})</Label>
+          <Label>{t("admin.playerActions.targetLevel")} (1 - {TOTAL_LEVELS})</Label>
           <Input
             type="number"
             min={1}
