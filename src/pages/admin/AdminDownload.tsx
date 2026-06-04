@@ -45,14 +45,14 @@ export default function AdminDownload() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Download className="h-4 w-4" /> Install as PWA
+            <Download className="h-4 w-4" /> {t("admin.download.pwa.title")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
           <p className="text-sm text-muted-foreground">
-            The fastest way to get the game onto a phone — no app store, no build pipeline.
+            {t("admin.download.pwa.desc")}
           </p>
-          <Button onClick={promptInstall}>Install on this device</Button>
+          <Button onClick={promptInstall}>{t("admin.download.pwa.install")}</Button>
         </CardContent>
       </Card>
 
