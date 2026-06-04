@@ -52,7 +52,7 @@ export default function AdminLayout() {
               }
             >
               <l.icon className="h-4 w-4" />
-              {l.label}
+              {t(l.label)}
             </NavLink>
           ))}
         </nav>
@@ -63,7 +63,7 @@ export default function AdminLayout() {
             className="w-full justify-start"
             onClick={() => navigate("/")}
           >
-            <ArrowLeft className="h-4 w-4 mr-2" /> Back to Game
+            <ArrowLeft className="h-4 w-4 mr-2" /> {t("admin.layout.backToGame")}
           </Button>
         </div>
       </aside>
@@ -75,7 +75,7 @@ export default function AdminLayout() {
             <Button variant="ghost" size="sm" onClick={() => navigate("/")}>
               <ArrowLeft className="h-4 w-4" />
             </Button>
-            <span className="font-semibold">🛡️ Admin</span>
+            <span className="font-semibold">🛡️ {t("admin.layout.adminPanel")}</span>
           </div>
           <div className="flex items-center gap-3 ml-auto">
             <span className="text-sm text-muted-foreground hidden sm:inline">
@@ -89,7 +89,7 @@ export default function AdminLayout() {
                 navigate("/auth");
               }}
             >
-              <LogOut className="h-4 w-4 mr-1" /> Logout
+              <LogOut className="h-4 w-4 mr-1" /> {t("admin.layout.logout")}
             </Button>
           </div>
         </header>
@@ -112,7 +112,7 @@ export default function AdminLayout() {
                 }
               >
                 <l.icon className="h-3.5 w-3.5" />
-                {l.label}
+                {t(l.label)}
               </NavLink>
             ))}
           </div>
