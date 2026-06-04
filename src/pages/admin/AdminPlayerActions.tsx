@@ -40,6 +40,7 @@ type PlayerRow = {
 
 export default function AdminPlayerActions() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<PlayerRow[]>([]);
   const [selected, setSelected] = useState<PlayerRow | null>(null);
