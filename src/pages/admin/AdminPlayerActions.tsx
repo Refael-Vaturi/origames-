@@ -307,13 +307,13 @@ function ResourcesPanel({
         </div>
 
         <div className="space-y-2">
-          <Label>Money 💰</Label>
+          <Label>{t("admin.playerActions.money")} 💰</Label>
           <div className="flex gap-2">
             <Input
               type="number"
               value={money}
               onChange={(e) => setMoney(e.target.value)}
-              placeholder={setMode ? "Set to…" : "Add (negative to subtract)"}
+              placeholder={setMode ? t("admin.playerActions.setTo") : t("admin.playerActions.add")}
             />
             <Button
               onClick={() => {
@@ -321,7 +321,7 @@ function ResourcesPanel({
                 setMoney("");
               }}
             >
-              Apply
+              {t("admin.playerActions.apply")}
             </Button>
           </div>
           <div className="flex flex-wrap gap-1">
