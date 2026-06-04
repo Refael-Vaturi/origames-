@@ -23,6 +23,7 @@ import {
 import { Download } from "lucide-react";
 
 export default function AdminLogs() {
+  const { t } = useLanguage();
   const [adminFilter, setAdminFilter] = useState("");
   const [actionFilter, setActionFilter] = useState("all");
   const [from, setFrom] = useState("");
