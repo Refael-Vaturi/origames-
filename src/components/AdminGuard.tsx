@@ -1,12 +1,14 @@
 import { useEffect } from "react";
 import { Navigate, Outlet, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function AdminGuard() {
   const { user, loading } = useAuth();
   const { isAdmin } = useIsAdmin();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   useEffect(() => {
