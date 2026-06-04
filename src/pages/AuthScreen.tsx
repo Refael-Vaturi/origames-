@@ -58,23 +58,25 @@ const AuthScreen = () => {
   const androidWebView = isAndroidWebView();
 
   const handleGoogleSignIn = async () => {
-    // Plain Android WebViews are blocked by Google with "disallowed_useragent".
-    // Warn the user instead of triggering a confusing error page.
-    if (androidWebView) {
-      toast({
-        title: t("auth.googleBlockedInApp") || "Google sign-in needs an app update",
-        description:
-          t("auth.inAppNotice"),
-        variant: "destructive",
-      });
-      return;
-    }
     setLoading(true);
     try {
       const result = await lovable.auth.signInWithOAuth("google", {
         redirect_uri: window.location.origin + redirectPath,
       });
-      if (result.error) handleAuthError(result.error);
+      if (result.error) {
+        handleAuthError(result.error);
+        return;
+      }
+      // In a WebView we MUST use a system browser (Chrome Custom Tabs / SFSafariViewController)
+      // because plain WebViews are blocked by Google with "disallowed_useragent".
+      if (result.data?.url) {
+        if (isInWebView()) {
+          await openOAuth(result.data.url);
+        } else {
+          // Normal browser — in-place redirect works fine.
+          window.location.assign(result.data.url);
+        }
+      }
     } catch (e) {
       handleAuthError(e);
     } finally {
