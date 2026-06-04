@@ -70,11 +70,11 @@ export default function AdminDashboard() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Recent Admin Actions</CardTitle>
+          <CardTitle>{t("admin.dashboard.recentActions")}</CardTitle>
         </CardHeader>
         <CardContent>
           {!recent?.length && (
-            <p className="text-sm text-muted-foreground">No actions yet.</p>
+            <p className="text-sm text-muted-foreground">{t("admin.dashboard.noActions")}</p>
           )}
           <div className="space-y-2">
             {recent?.map((a) => (
