@@ -6,6 +6,7 @@ import { useOnlinePresence } from "@/hooks/useOnlinePresence";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function AdminDashboard() {
+  const { t } = useLanguage();
   const { onlineUsers } = useOnlinePresence({ track: false });
 
   const { data: stats } = useQuery({
