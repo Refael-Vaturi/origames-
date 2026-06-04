@@ -434,7 +434,7 @@ function LevelsPanel({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Levels</CardTitle>
+        <CardTitle className="text-base">{t("admin.playerActions.levels")}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-5">
         <div className="space-y-2">
