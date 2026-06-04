@@ -120,24 +120,24 @@ export default function AdminLogs() {
 
           <div className="overflow-x-auto">
             <Table>
-              <TableHeader>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{t("admin.logs.when")}</TableHead>
+                <TableHead>{t("admin.logs.admin")}</TableHead>
+                <TableHead>{t("admin.logs.action")}</TableHead>
+                <TableHead>{t("admin.logs.target")}</TableHead>
+                <TableHead>{t("admin.logs.amount")}</TableHead>
+                <TableHead>{t("admin.logs.level")}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isLoading && (
                 <TableRow>
-                  <TableHead>When</TableHead>
-                  <TableHead>Admin</TableHead>
-                  <TableHead>Action</TableHead>
-                  <TableHead>Target</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Level</TableHead>
+                  <TableCell colSpan={6} className="text-center text-muted-foreground">
+                    {t("admin.common.loading")}
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoading && (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center text-muted-foreground">
-                      Loading…
-                    </TableCell>
-                  </TableRow>
-                )}
+              )}
                 {data?.map((r) => (
                   <TableRow key={r.id}>
                     <TableCell className="text-xs whitespace-nowrap">
