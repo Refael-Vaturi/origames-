@@ -36,9 +36,9 @@ export default function AdminDownload() {
   return (
     <div className="space-y-4 max-w-3xl">
       <div>
-        <h1 className="text-2xl font-bold">Download App</h1>
+        <h1 className="text-2xl font-bold">{t("admin.download.title")}</h1>
         <p className="text-sm text-muted-foreground">
-          Distribute Iron Dome as APK, IPA, or PWA
+          {t("admin.download.subtitle")}
         </p>
       </div>
 
