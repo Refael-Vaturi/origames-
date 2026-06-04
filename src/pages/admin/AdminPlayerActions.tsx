@@ -102,9 +102,9 @@ export default function AdminPlayerActions() {
   return (
     <div className="space-y-6 max-w-4xl">
       <div>
-        <h1 className="text-2xl font-bold">Player Actions</h1>
+        <h1 className="text-2xl font-bold">{t("admin.playerActions.title")}</h1>
         <p className="text-sm text-muted-foreground">
-          Target a specific player to give resources or unlock levels.
+          {t("admin.playerActions.subtitle")}
         </p>
       </div>
 
