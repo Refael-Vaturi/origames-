@@ -414,6 +414,8 @@ const translations: Translations = {
   "admin.playerActions.hearts": { en: "Hearts", he: "לבבות" },
   "admin.playerActions.money": { en: "Money", he: "כסף" },
   "admin.playerActions.give": { en: "Give", he: "תן" },
+  "admin.playerActions.setTo": { en: "Set to…", he: "קבע ל…" },
+  "admin.playerActions.add": { en: "Add (negative to subtract)", he: "הוסף (שלילי כדי להוריד)" },
   "admin.playerActions.apply": { en: "Apply", he: "החל" },
   "admin.playerActions.levels": { en: "Levels", he: "רמות" },
   "admin.playerActions.targetLevel": { en: "Target Level", he: "רמת יעד" },
