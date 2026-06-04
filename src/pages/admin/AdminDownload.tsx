@@ -25,7 +25,7 @@ export default function AdminDownload() {
 
   const promptInstall = async () => {
     if (!installPrompt) {
-      toast.info("PWA install not available in this browser. Use 'Add to Home Screen' from the browser menu.");
+      toast.info(t("admin.download.pwa.notAvailable"));
       return;
     }
     // @ts-expect-error - prompt() exists at runtime
