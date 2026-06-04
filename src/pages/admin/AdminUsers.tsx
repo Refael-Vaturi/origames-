@@ -132,7 +132,7 @@ export default function AdminUsers() {
       amount,
       details: { affected: ok },
     });
-    toast.success(`Gave ${amount} ${field} to ${ok} users`);
+    toast.success(tf("admin.users.bulkSuccess", { amount: String(amount), field, count: String(ok) }));
     refresh();
   };
 
