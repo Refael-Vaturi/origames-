@@ -413,6 +413,7 @@ const translations: Translations = {
   "admin.playerActions.setExact": { en: "Set exact", he: "קבע ערך מדויק" },
   "admin.playerActions.hearts": { en: "Hearts", he: "לבבות" },
   "admin.playerActions.money": { en: "Money", he: "כסף" },
+  "admin.playerActions.give": { en: "Give", he: "תן" },
   "admin.playerActions.apply": { en: "Apply", he: "החל" },
   "admin.playerActions.levels": { en: "Levels", he: "רמות" },
   "admin.playerActions.targetLevel": { en: "Target Level", he: "רמת יעד" },
