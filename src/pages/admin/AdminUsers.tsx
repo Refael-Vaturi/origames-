@@ -191,11 +191,11 @@ export default function AdminUsers() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Bulk Actions</CardTitle>
+          <CardTitle>{t("admin.users.bulkActions")}</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-wrap gap-3">
-          <BulkAction label="Give Hearts to ALL" field="hearts" onConfirm={bulkGive} />
-          <BulkAction label="Give Money to ALL" field="money" onConfirm={bulkGive} />
+          <BulkAction label={t("admin.users.giveHeartsAll")} field="hearts" onConfirm={bulkGive} />
+          <BulkAction label={t("admin.users.giveMoneyAll")} field="money" onConfirm={bulkGive} />
         </CardContent>
       </Card>
 
