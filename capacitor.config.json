@@ -1,0 +1,10 @@
+{
+  "appId": "com.ori.origamesnew",
+  "appName": "Ori Games",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": {
+    "url": "https://f5fd31dc-b549-40c9-9c11-80a941d74373.lovableproject.com?forceHideBadge=true",
+    "cleartext": true
+  }
+}
