@@ -60,23 +60,31 @@ const AuthScreen = () => {
   const handleGoogleSignIn = async () => {
     setLoading(true);
     try {
+      // In a WebView we MUST use a system browser (Chrome Custom Tabs / SFSafariViewController)
+      // because plain WebViews are blocked by Google with "disallowed_useragent".
+      if (isInWebView()) {
+        const { data, error } = await supabase.auth.signInWithOAuth({
+          provider: "google",
+          options: {
+            redirectTo: window.location.origin + redirectPath,
+            skipBrowserRedirect: true,
+          },
+        });
+        if (error) {
+          handleAuthError(error);
+          return;
+        }
+        if (data?.url) {
+          await openOAuth(data.url);
+        }
+        return;
+      }
+
+      // Normal browser — lovable handles the redirect automatically.
       const result = await lovable.auth.signInWithOAuth("google", {
         redirect_uri: window.location.origin + redirectPath,
       });
-      if (result.error) {
-        handleAuthError(result.error);
-        return;
-      }
-      // In a WebView we MUST use a system browser (Chrome Custom Tabs / SFSafariViewController)
-      // because plain WebViews are blocked by Google with "disallowed_useragent".
-      if (result.data?.url) {
-        if (isInWebView()) {
-          await openOAuth(result.data.url);
-        } else {
-          // Normal browser — in-place redirect works fine.
-          window.location.assign(result.data.url);
-        }
-      }
+      if (result.error) handleAuthError(result.error);
     } catch (e) {
       handleAuthError(e);
     } finally {
