@@ -407,7 +407,7 @@ function RowActions({
             <div className="flex gap-2">
               <Input
                 type="number"
-                placeholder="Money"
+                placeholder={t("admin.playerActions.money")}
                 value={money}
                 onChange={(e) => setMoney(e.target.value)}
               />
@@ -418,7 +418,7 @@ function RowActions({
                   setMoney("");
                 }}
               >
-                Give
+                {t("admin.playerActions.give")}
               </Button>
             </div>
             <div className="flex gap-2 flex-wrap">
