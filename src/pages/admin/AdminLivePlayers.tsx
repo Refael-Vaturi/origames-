@@ -30,11 +30,11 @@ export default function AdminLivePlayers() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Radio className="h-5 w-5 text-green-500 animate-pulse" />
-            <span className="text-3xl">{onlineUsers.length}</span>
-            <span className="text-sm text-muted-foreground">players online right now</span>
-          </CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Radio className="h-5 w-5 text-green-500 animate-pulse" />
+              <span className="text-3xl">{onlineUsers.length}</span>
+              <span className="text-sm text-muted-foreground">{t("admin.live.playersOnline")}</span>
+            </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
