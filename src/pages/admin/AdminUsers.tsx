@@ -110,7 +110,7 @@ export default function AdminUsers() {
       targetUsername: p.username,
       amount,
     });
-    toast.success(`+${amount} ${field} → ${p.username ?? p.display_name}`);
+    toast.success(tf("admin.playerActions.giveToUser", { field, amount: String(amount), user: p.username ?? p.display_name }));
     refresh();
   };
 
