@@ -340,13 +340,14 @@ function RowActions({
   p: AdminProfile;
   onGive: (p: AdminProfile, field: "hearts" | "money", amount: number) => void;
 }) {
+  const { t } = useLanguage();
   const [hearts, setHearts] = useState("");
   const [money, setMoney] = useState("");
   return (
     <Dialog>
       <DialogTrigger asChild>
         <Button size="sm" variant="outline">
-          Manage
+          {t("admin.users.manage")}
         </Button>
       </DialogTrigger>
       <DialogContent>
