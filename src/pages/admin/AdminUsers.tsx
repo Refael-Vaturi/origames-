@@ -229,7 +229,7 @@ export default function AdminUsers() {
                 {isLoading && (
                   <TableRow>
                     <TableCell colSpan={9} className="text-center text-muted-foreground">
-                      Loading…
+                      {t("admin.users.loading")}
                     </TableCell>
                   </TableRow>
                 )}
