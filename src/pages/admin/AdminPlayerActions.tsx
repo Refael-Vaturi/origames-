@@ -346,6 +346,7 @@ function LevelsPanel({
   adminEmail: string;
   onChanged: () => void;
 }) {
+  const { t } = useLanguage();
   const [level, setLevel] = useState("1");
   const [currentLv, setCurrentLv] = useState(String(p.current_level));
   useEffect(() => setCurrentLv(String(p.current_level)), [p.current_level]);
