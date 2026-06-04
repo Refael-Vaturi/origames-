@@ -41,10 +41,10 @@ export default function AdminDashboard() {
   });
 
   const cards = [
-    { label: "Total Users", value: stats?.users ?? "—", icon: Users },
-    { label: "Online Now", value: onlineUsers.length, icon: Radio },
-    { label: "New (24h)", value: stats?.new24h ?? "—", icon: TrendingUp },
-    { label: "Admin Actions", value: stats?.actions ?? "—", icon: ScrollText },
+    { labelKey: "admin.dashboard.totalUsers", value: stats?.users ?? "—", icon: Users },
+    { labelKey: "admin.dashboard.onlineNow", value: onlineUsers.length, icon: Radio },
+    { labelKey: "admin.dashboard.new24h", value: stats?.new24h ?? "—", icon: TrendingUp },
+    { labelKey: "admin.dashboard.adminActions", value: stats?.actions ?? "—", icon: ScrollText },
   ];
 
   return (
