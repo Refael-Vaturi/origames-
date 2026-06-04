@@ -468,6 +468,7 @@ const translations: Translations = {
 
   "admin.common.confirm": { en: "Confirm", he: "אשר" },
   "admin.common.cancel": { en: "Cancel", he: "בטל" },
+  "admin.common.apply": { en: "Apply", he: "החל" },
   "admin.common.loading": { en: "Loading…", he: "טוען…" },
   "admin.common.noData": { en: "No data", he: "אין נתונים" },
 };
