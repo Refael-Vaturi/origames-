@@ -179,13 +179,13 @@ export default function AdminUsers() {
     <div className="space-y-4">
       <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Users</h1>
+          <h1 className="text-2xl font-bold">{t("admin.users.title")}</h1>
           <p className="text-sm text-muted-foreground">
-            {data?.count ?? 0} total registered players
+            {data?.count ?? 0} {t("admin.users.totalPlayers")}
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={exportCsv}>
-          <Download className="h-4 w-4 mr-1" /> Export CSV
+          <Download className="h-4 w-4 mr-1" /> {t("admin.users.exportCsv")}
         </Button>
       </div>
 
