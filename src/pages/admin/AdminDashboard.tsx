@@ -56,9 +56,9 @@ export default function AdminDashboard() {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {cards.map((c) => (
-          <Card key={c.label}>
+          <Card key={c.labelKey}>
             <CardHeader className="pb-2 flex flex-row items-center justify-between">
-              <CardTitle className="text-sm text-muted-foreground">{c.label}</CardTitle>
+              <CardTitle className="text-sm text-muted-foreground">{t(c.labelKey)}</CardTitle>
               <c.icon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
