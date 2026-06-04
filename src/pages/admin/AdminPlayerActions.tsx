@@ -272,9 +272,9 @@ function ResourcesPanel({
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-base">Give Resources</CardTitle>
+        <CardTitle className="text-base">{t("admin.playerActions.giveResources")}</CardTitle>
         <div className="flex items-center gap-2 text-xs">
-          <Label htmlFor="setmode">Set exact</Label>
+          <Label htmlFor="setmode">{t("admin.playerActions.setExact")}</Label>
           <Switch id="setmode" checked={setMode} onCheckedChange={setSetMode} />
         </div>
       </CardHeader>
