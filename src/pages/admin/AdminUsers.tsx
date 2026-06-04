@@ -202,7 +202,7 @@ export default function AdminUsers() {
       <Card>
         <CardContent className="pt-4 space-y-3">
           <Input
-            placeholder="Search username, name, or email…"
+            placeholder={t("admin.users.search")}
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
