@@ -210,15 +210,15 @@ function SelectedCard({
         <div className="flex-1 min-w-0">
           <div className="font-bold text-lg flex items-center gap-2">
             {p.username ?? p.display_name}
-            {isMe && <Badge variant="secondary">You</Badge>}
+            {isMe && <Badge variant="secondary">{t("admin.playerActions.you")}</Badge>}
           </div>
           <div className="text-sm text-muted-foreground truncate">{p.email}</div>
           <div className="flex flex-wrap gap-3 mt-2 text-sm">
             <span>❤️ {p.hearts}</span>
             <span>💰 {p.money}</span>
-            <span>🎯 Level {p.current_level}</span>
-            <span>🏆 Max {p.admin_max_level}</span>
-            <span>🔓 {p.unlocked_levels?.length ?? 0} unlocked</span>
+            <span>🎯 {t("admin.users.level")} {p.current_level}</span>
+            <span>🏆 {t("admin.users.max")} {p.admin_max_level}</span>
+            <span>🔓 {p.unlocked_levels?.length ?? 0} {t("admin.playerActions.unlocked")}</span>
           </div>
         </div>
         <Button variant="ghost" size="sm" onClick={onClear}>
