@@ -7,6 +7,7 @@ import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { useOnlinePresence } from "@/hooks/useOnlinePresence";
 import LanguageSelector from "@/components/LanguageSelector";
 import BottomNav from "@/components/BottomNav";
+import AnnouncementBanner from "@/components/AnnouncementBanner";
 import fakeItFastCard from "@/assets/fake-it-fast-card.png";
 import ironDomeCard from "@/assets/iron-dome-card.png";
 import logoImage from "@/assets/ori-games-logo.png";
@@ -162,6 +163,8 @@ const PortalScreen = () => {
           Ori Games
         </h1>
       </motion.div>
+
+      <AnnouncementBanner />
 
       {/* Search-like pill (decorative trigger) */}
       <button
