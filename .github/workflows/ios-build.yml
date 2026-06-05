@@ -35,13 +35,21 @@ jobs:
     - name: Build Xcode Project (Unsigned)
       run: |
         cd ios/App
-        xcodebuild -project App.xcodeproj -scheme App -sdk iphoneos -configuration Release CODE_SIGNING_ALLOWED=NO -archivePath $PWD/build/App.xcarchive archive
-        mkdir -p $GITHUB_WORKSPACE/build
-        # כאן תוקנה הטעות ל-exportOptionsPlist
-        xcrun xcodebuild -exportArchive -archivePath $PWD/build/App.xcarchive -exportPath $GITHUB_WORKSPACE/build -exportOptionsPlist <(echo '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict><key>method</key><string>ad-hoc</string><key>compileBitcode</key><false/></dict></plist>')
+        # בנייה ישירה של ה-App בלי להיגרר לבעיות חתימה של ה-Archive
+        xcodebuild -project App.xcodeproj -scheme App -sdk iphoneos -configuration Release CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO Clean Build
+        
+        # יצירת מבנה התיקיות הרשמי של קובץ IPA (תיקיית Payload)
+        mkdir -p $GITHUB_WORKSPACE/build/Payload
+        
+        # העתקת ה-App המוכן לתוך תיקיית ה-Payload
+        cp -r build/Release-iphoneos/App.app $GITHUB_WORKSPACE/build/Payload/ || cp -r /Users/runner/Library/Developer/Xcode/DerivedData/*/Build/Products/Release-iphoneos/App.app $GITHUB_WORKSPACE/build/Payload/
+        
+        # כיווץ התיקייה לקובץ IPA רגיל לכל דבר
+        cd $GITHUB_WORKSPACE/build
+        zip -r ios-app.ipa Payload
 
     - name: Upload Finished IPA
       uses: actions/upload-artifact@v4
       with:
         name: ios-app-ipa
-        path: build/*.ipa
+        path: build/ios-app.ipa
