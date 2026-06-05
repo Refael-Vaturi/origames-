@@ -18,15 +18,17 @@ jobs:
       with:
         node-version: 20
 
-    - name: Install Dependencies (Force Mode)
+    - name: Install Dependencies
       run: npm install --force
 
     - name: Build Web Project
       run: npm run build --if-present
 
-    - name: Install Capacitor iOS
+    - name: Initialize Capacitor iOS From Scratch
       run: |
-        npm install @capacitor/ios --force
+        npm install @capacitor/core @capacitor/cli @capacitor/ios --force
+        npx cap init "Ori Games" "com.ori.origamesnew" --web-dir dist --create-requirements
+        npx cap add ios
         npx cap sync ios
 
     - name: Build Xcode Project (Unsigned)
@@ -37,7 +39,7 @@ jobs:
           mkdir -p $GITHUB_WORKSPACE/build
           xcrun xcodebuild -exportArchive -archivePath $PWD/build/App.xcarchive -exportPath $GITHUB_WORKSPACE/build -exportOptionsPlst <(echo '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict><key>method</key><string>ad-hoc</string><key>compileBitcode</key><false/></dict></plist>')
         else
-          echo "Error: ios/App directory not found! Check if Lovable generated the iOS folder."
+          echo "Error: ios/App directory was not created successfully!"
           exit 1
         fi
 
