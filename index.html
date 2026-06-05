@@ -48,20 +48,42 @@
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "WebApplication",
-      "name": "Ori Games",
-      "url": "https://origames.lovable.app",
-      "description": "Free portal of online multiplayer browser games including Fake It Fast, Iron Dome, and CityFind with Google Street View. Play solo or with friends in 20 languages.",
-      "applicationCategory": "GameApplication",
-      "operatingSystem": "Any",
-      "browserRequirements": "Requires JavaScript",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD"
-      },
-      "genre": ["Party Game", "Social Deduction", "Arcade", "Geography Game"],
-      "inLanguage": ["en", "he", "ar", "es", "fr", "de", "pt", "ru", "zh", "ja", "ko", "hi", "tr", "it", "pl", "nl", "sv", "th", "vi", "uk"]
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://origames.lovable.app/#organization",
+          "name": "Ori Games",
+          "alternateName": ["OriGames", "Ori Games Portal"],
+          "url": "https://origames.lovable.app",
+          "logo": "https://origames.lovable.app/iron-dome-icon-512.png"
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://origames.lovable.app/#website",
+          "url": "https://origames.lovable.app",
+          "name": "Ori Games",
+          "description": "Free portal of online multiplayer browser games including Fake It Fast, Iron Dome, and CityFind.",
+          "publisher": { "@id": "https://origames.lovable.app/#organization" },
+          "inLanguage": ["en", "he", "ar", "es", "fr", "de", "pt", "ru", "zh", "ja", "ko", "hi", "tr", "it", "pl", "nl", "sv", "th", "vi", "uk"],
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://origames.lovable.app/?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
+        },
+        {
+          "@type": "WebApplication",
+          "name": "Ori Games",
+          "url": "https://origames.lovable.app",
+          "description": "Free portal of online multiplayer browser games including Fake It Fast, Iron Dome, and CityFind with Google Street View. Play solo or with friends in 20 languages.",
+          "applicationCategory": "GameApplication",
+          "operatingSystem": "Any",
+          "browserRequirements": "Requires JavaScript",
+          "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+          "genre": ["Party Game", "Social Deduction", "Arcade", "Geography Game"],
+          "publisher": { "@id": "https://origames.lovable.app/#organization" }
+        }
+      ]
     }
     </script>
 
