@@ -35,8 +35,8 @@ jobs:
     - name: Build Xcode Project (Unsigned)
       run: |
         cd ios/App
-        ls -la # מדפיס את רשימת הקבצים כדי לוודא שהכל נוצר
-        xcodebuild -workspace App.xcworkspace -scheme App -sdk iphoneos -configuration Release CODE_SIGNING_ALLOWED=NO -archivePath $PWD/build/App.xcarchive archive
+        # משתמשים ב-project במקום ב-workspace עבור הגרסאות החדשות של קפסיטור
+        xcodebuild -project App.xcodeproj -scheme App -sdk iphoneos -configuration Release CODE_SIGNING_ALLOWED=NO -archivePath $PWD/build/App.xcarchive archive
         mkdir -p $GITHUB_WORKSPACE/build
         xcrun xcodebuild -exportArchive -archivePath $PWD/build/App.xcarchive -exportPath $GITHUB_WORKSPACE/build -exportOptionsPlst <(echo '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict><key>method</key><string>ad-hoc</string><key>compileBitcode</key><false/></dict></plist>')
 
