@@ -29,19 +29,16 @@ jobs:
         npm install @capacitor/core @capacitor/cli @capacitor/ios --force
         npx cap init "Ori Games" "com.ori.origamesnew" --web-dir dist
         npx cap add ios
+        npx cap update ios
         npx cap sync ios
 
     - name: Build Xcode Project (Unsigned)
       run: |
-        if [ -d "ios/App" ]; then
-          cd ios/App
-          xcodebuild -workspace App.xcworkspace -scheme App -sdk iphoneos -configuration Release CODE_SIGNING_ALLOWED=NO -archivePath $PWD/build/App.xcarchive archive
-          mkdir -p $GITHUB_WORKSPACE/build
-          xcrun xcodebuild -exportArchive -archivePath $PWD/build/App.xcarchive -exportPath $GITHUB_WORKSPACE/build -exportOptionsPlst <(echo '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict><key>method</key><string>ad-hoc</string><key>compileBitcode</key><false/></dict></plist>')
-        else
-          echo "Error: ios/App directory was not created successfully!"
-          exit 1
-        fi
+        cd ios/App
+        ls -la # מדפיס את רשימת הקבצים כדי לוודא שהכל נוצר
+        xcodebuild -workspace App.xcworkspace -scheme App -sdk iphoneos -configuration Release CODE_SIGNING_ALLOWED=NO -archivePath $PWD/build/App.xcarchive archive
+        mkdir -p $GITHUB_WORKSPACE/build
+        xcrun xcodebuild -exportArchive -archivePath $PWD/build/App.xcarchive -exportPath $GITHUB_WORKSPACE/build -exportOptionsPlst <(echo '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict><key>method</key><string>ad-hoc</string><key>compileBitcode</key><false/></dict></plist>')
 
     - name: Upload Finished IPA
       uses: actions/upload-artifact@v4
