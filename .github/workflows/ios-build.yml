@@ -27,7 +27,7 @@ jobs:
     - name: Initialize Capacitor iOS From Scratch
       run: |
         npm install @capacitor/core @capacitor/cli @capacitor/ios --force
-        npx cap init "Ori Games" "com.ori.origamesnew" --web-dir dist --create-requirements
+        npx cap init "Ori Games" "com.ori.origamesnew" --web-dir dist
         npx cap add ios
         npx cap sync ios
 
