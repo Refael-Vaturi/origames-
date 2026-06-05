@@ -8,6 +8,8 @@ import {
   ScrollText,
   LogOut,
   ArrowLeft,
+  Megaphone,
+  DoorOpen,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -18,7 +20,9 @@ const links = [
   { to: "/admin", label: "admin.dashboard.title", icon: LayoutDashboard, end: true },
   { to: "/admin/users", label: "admin.users.title", icon: Users },
   { to: "/admin/live", label: "admin.live.title", icon: Radio },
+  { to: "/admin/rooms", label: "Live Rooms", icon: DoorOpen },
   { to: "/admin/player-actions", label: "admin.playerActions.title", icon: Crosshair },
+  { to: "/admin/announcements", label: "Announcements", icon: Megaphone },
   { to: "/admin/download", label: "admin.download.title", icon: Download },
   { to: "/admin/logs", label: "admin.logs.title", icon: ScrollText },
 ];
@@ -52,7 +56,7 @@ export default function AdminLayout() {
               }
             >
               <l.icon className="h-4 w-4" />
-              {t(l.label)}
+              {l.label.includes(".") ? t(l.label) : l.label}
             </NavLink>
           ))}
         </nav>
@@ -112,7 +116,7 @@ export default function AdminLayout() {
                 }
               >
                 <l.icon className="h-3.5 w-3.5" />
-                {t(l.label)}
+                {l.label.includes(".") ? t(l.label) : l.label}
               </NavLink>
             ))}
           </div>
