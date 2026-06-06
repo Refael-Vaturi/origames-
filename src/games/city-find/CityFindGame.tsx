@@ -463,46 +463,26 @@ const StreetViewOrMap = ({ city }: { city: CityData }) => {
   );
 };
 
-// Mystery Street View: rotates heading automatically, hides labels/addresses, falls back to image.
+// Mystery view: cycles through curated city images (Street View disabled - API key referrer-restricted)
 const MysteryStreetView = ({ city }: { city: CityData }) => {
-  const coords = CITY_COORDS[city.id];
-  const [heading, setHeading] = useState(() => Math.floor(Math.random() * 360));
-  const [failed, setFailed] = useState(false);
+  const [idx, setIdx] = useState(0);
 
   useEffect(() => {
-    setHeading(Math.floor(Math.random() * 360));
-    setFailed(false);
+    setIdx(0);
   }, [city.id]);
 
   useEffect(() => {
-    if (!coords || failed) return;
-    const id = setInterval(() => setHeading((h) => (h + 6) % 360), 1500);
+    if (!city.images || city.images.length <= 1) return;
+    const id = setInterval(() => setIdx((i) => (i + 1) % city.images.length), 3000);
     return () => clearInterval(id);
-  }, [coords, failed]);
-
-  if (!coords || failed) {
-    return (
-      <img
-        src={city.images[0]}
-        alt="Mystery location"
-        className="w-full h-full object-cover"
-        onError={() => setFailed(true)}
-      />
-    );
-  }
-
-  const src = `https://www.google.com/maps/embed/v1/streetview?key=${GOOGLE_MAPS_API_KEY}&location=${coords.lat},${coords.lng}&heading=${heading}&pitch=0&fov=85`;
+  }, [city.id, city.images]);
 
   return (
-    <iframe
-      key={`mystery-${city.id}-${Math.floor(heading / 30)}`}
-      title="Mystery location"
-      width="100%"
-      height="100%"
-      style={{ border: 0 }}
-      loading="lazy"
-      referrerPolicy="no-referrer-when-downgrade"
-      src={src}
+    <img
+      key={`${city.id}-${idx}`}
+      src={city.images[idx] || city.images[0]}
+      alt="Mystery location"
+      className="w-full h-full object-cover animate-fade-in"
     />
   );
 };
