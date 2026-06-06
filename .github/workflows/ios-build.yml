@@ -21,25 +21,56 @@ jobs:
     - name: Install Dependencies
       run: npm install --force
 
-    - name: Build Web Project
-      run: npm run build --if-present
+    - name: Install Capacitor
+      run: npm install @capacitor/core @capacitor/cli @capacitor/ios --force
 
-    - name: Initialize Capacitor iOS From Scratch
+    - name: Build Web Project (produces dist/)
+      run: npm run build
+
+    - name: Verify dist folder exists
       run: |
-        npm install @capacitor/core @capacitor/cli @capacitor/ios --force
-        npx cap init "Ori Games" "com.ori.origamesnew" --web-dir dist
-        npx cap add ios
+        if [ ! -d "dist" ] || [ -z "$(ls -A dist)" ]; then
+          echo "❌ dist folder missing or empty after build!"
+          exit 1
+        fi
+        echo "✅ dist folder OK ($(ls dist | wc -l) entries)"
+
+    - name: Ensure capacitor.config.json points to dist
+      run: |
+        if [ ! -f "capacitor.config.json" ]; then
+          echo "capacitor.config.json missing — creating default"
+          cat > capacitor.config.json <<'EOF'
+        {
+          "appId": "com.ori.origamesnew",
+          "appName": "Ori Games",
+          "webDir": "dist",
+          "bundledWebRuntime": false
+        }
+        EOF
+        fi
+        # Force webDir=dist for CI builds (strip dev hot-reload server config)
+        node -e "const fs=require('fs');const c=JSON.parse(fs.readFileSync('capacitor.config.json','utf8'));c.webDir='dist';delete c.server;fs.writeFileSync('capacitor.config.json',JSON.stringify(c,null,2));console.log(c);"
+
+    - name: Add iOS platform
+      run: |
+        if [ ! -d "ios" ]; then
+          npx cap add ios
+        fi
         npx cap update ios
         npx cap sync ios
 
     - name: Build Xcode Project (Unsigned)
       run: |
         cd ios/App
-        # כאן שינינו ל-clean build באותיות קטנות
         xcodebuild -project App.xcodeproj -scheme App -sdk iphoneos -configuration Release CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO clean build
-        
+
         mkdir -p $GITHUB_WORKSPACE/build/Payload
-        cp -r build/Release-iphoneos/App.app $GITHUB_WORKSPACE/build/Payload/ || cp -r /Users/runner/Library/Developer/Xcode/DerivedData/*/Build/Products/Release-iphoneos/App.app $GITHUB_WORKSPACE/build/Payload/
+        APP_PATH=$(find /Users/runner/Library/Developer/Xcode/DerivedData -name "App.app" -path "*/Release-iphoneos/*" | head -n 1)
+        if [ -z "$APP_PATH" ]; then
+          echo "❌ App.app not found"
+          exit 1
+        fi
+        cp -r "$APP_PATH" $GITHUB_WORKSPACE/build/Payload/
         cd $GITHUB_WORKSPACE/build
         zip -r ios-app.ipa Payload
 
