@@ -417,49 +417,22 @@ const CityFindGame = () => {
 };
 
 const StreetViewOrMap = ({ city }: { city: CityData }) => {
-  const [mode, setMode] = useState<"street" | "map">("street");
-  const { t } = useLanguage();
   const coords = CITY_COORDS[city.id];
-  const placeQ = encodeURIComponent(`${city.name_en}, ${city.country_en}`);
-
-  const streetSrc = coords
-    ? `https://www.google.com/maps/embed/v1/streetview?key=${GOOGLE_MAPS_API_KEY}&location=${coords.lat},${coords.lng}&heading=0&pitch=0&fov=90`
-    : null;
-
-  const mapSrc = `https://www.google.com/maps/embed/v1/place?key=${GOOGLE_MAPS_API_KEY}&q=${placeQ}&zoom=12`;
-
-  const showStreet = mode === "street" && streetSrc;
+  const mapsUrl = coords
+    ? `https://www.google.com/maps/@${coords.lat},${coords.lng},15z`
+    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${city.name_en}, ${city.country_en}`)}`;
 
   return (
-    <>
-      <iframe
-        key={mode}
-        title={`${mode === "street" ? "Street View" : "Map"} of ${city.name_en}`}
-        width="100%"
-        height="100%"
-        style={{ border: 0 }}
-        loading="lazy"
-        allowFullScreen
-        referrerPolicy="no-referrer-when-downgrade"
-        src={showStreet ? streetSrc! : mapSrc}
+    <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="block relative w-full h-full group">
+      <img
+        src={city.images[0]}
+        alt={`${city.name_en}, ${city.country_en}`}
+        className="w-full h-full object-cover"
       />
-      {streetSrc && (
-        <div className="absolute top-2 right-2 bg-card/90 backdrop-blur rounded-lg p-0.5 flex gap-0.5 shadow-card text-xs">
-          <button
-            onClick={() => setMode("street")}
-            className={`px-2 py-1 rounded-md font-semibold transition-colors ${mode === "street" ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-muted"}`}
-          >
-            🚶 {t("cityFind.street")}
-          </button>
-          <button
-            onClick={() => setMode("map")}
-            className={`px-2 py-1 rounded-md font-semibold transition-colors ${mode === "map" ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-muted"}`}
-          >
-            🗺️ {t("cityFind.map")}
-          </button>
-        </div>
-      )}
-    </>
+      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+        <span className="bg-card/90 px-3 py-1.5 rounded-lg text-xs font-semibold">🗺️ View on Google Maps</span>
+      </div>
+    </a>
   );
 };
 
