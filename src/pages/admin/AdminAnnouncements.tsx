@@ -44,12 +44,11 @@ export default function AdminAnnouncements() {
   const { data: items, isLoading } = useQuery({
     queryKey: ["admin-announcements"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("announcements")
+      const { data, error } = await (supabase.from as any)("announcements")
         .select("*")
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return (data ?? []) as Announcement[];
+      return ((data ?? []) as unknown) as Announcement[];
     },
   });
 
