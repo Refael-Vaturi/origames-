@@ -24,13 +24,12 @@ export default function AnnouncementBanner() {
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase
-        .from("announcements")
+      const { data } = await (supabase.from as any)("announcements")
         .select("id,title,body,type,is_active,image_url,link_url")
         .eq("is_active", true)
         .order("created_at", { ascending: false })
         .limit(5);
-      setItems((data ?? []) as Announcement[]);
+      setItems(((data ?? []) as unknown) as Announcement[]);
     })();
   }, []);
 
