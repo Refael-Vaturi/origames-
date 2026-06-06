@@ -37,6 +37,7 @@ import AdminLogs from "./pages/admin/AdminLogs";
 import AdminDownload from "./pages/admin/AdminDownload";
 import AdminAnnouncements from "./pages/admin/AdminAnnouncements";
 import AdminLiveRooms from "./pages/admin/AdminLiveRooms";
+import AdminGameRecordings from "./pages/admin/AdminGameRecordings";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import ContactUs from "./pages/ContactUs";
 import About from "./pages/About";
