@@ -924,6 +924,12 @@ const IronDomeGame: React.FC = () => {
         return prev;
       });
     }
+
+    // World Mode: mark capital as defended if surviving the wave
+    if (worldDefending && stateRef.current.cities.filter(c => c.alive).length > 0) {
+      markCapitalDefended(user?.id ?? null, worldDefending.country, stateRef.current.score);
+    }
+
     
     stateRef.current = nextWave(stateRef.current, w, h, playerSkill);
     setPhase(stateRef.current.phase);
