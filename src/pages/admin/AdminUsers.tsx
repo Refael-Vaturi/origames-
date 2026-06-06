@@ -35,7 +35,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { logAdminAction } from "@/lib/adminLog";
-import { Heart, Coins, Download } from "lucide-react";
+import { Heart, Coins, Download, Shield, Zap, RotateCcw } from "lucide-react";
 
 type AdminProfile = {
   id: string;
