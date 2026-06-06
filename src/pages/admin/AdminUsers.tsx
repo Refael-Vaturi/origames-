@@ -35,7 +35,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { logAdminAction } from "@/lib/adminLog";
-import { Heart, Coins, Download } from "lucide-react";
+import { Heart, Coins, Download, Shield, Zap, RotateCcw } from "lucide-react";
 
 type AdminProfile = {
   id: string;
@@ -429,8 +429,91 @@ function RowActions({
               ))}
             </div>
           </div>
+
+          <IronDomeAdminControls p={p} />
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function IronDomeAdminControls({ p }: { p: AdminProfile }) {
+  const [level, setLevel] = useState("");
+  const [credits, setCredits] = useState("");
+  const [creditsDelta, setCreditsDelta] = useState("");
+  const { user } = useAuth();
+  const { t } = useLanguage();
+
+  const setIronLevel = async (lvl: number) => {
+    if (!lvl || lvl < 1) return;
+    const { error } = await (supabase.rpc as any)("admin_set_iron_dome_level", {
+      p_user_id: p.user_id, p_max_level: lvl,
+    });
+    if (error) return toast.error(error.message);
+    await logAdminAction({ adminEmail: user!.email!, actionType: "set_iron_dome_level", targetUserId: p.user_id, targetUsername: p.username, amount: lvl });
+    toast.success(`Iron Dome unlocked up to level ${lvl}`);
+  };
+  const resetIron = async () => {
+    if (!confirm("Reset Iron Dome progress (levels, stars, best wave)?")) return;
+    const { error } = await (supabase.rpc as any)("admin_reset_iron_dome", { p_user_id: p.user_id });
+    if (error) return toast.error(error.message);
+    await logAdminAction({ adminEmail: user!.email!, actionType: "reset_iron_dome", targetUserId: p.user_id, targetUsername: p.username });
+    toast.success("Iron Dome reset");
+  };
+  const setIronCredits = async (n: number) => {
+    const { error } = await (supabase.rpc as any)("admin_set_player_credits", { p_user_id: p.user_id, p_credits: n });
+    if (error) return toast.error(error.message);
+    await logAdminAction({ adminEmail: user!.email!, actionType: "set_credits", targetUserId: p.user_id, targetUsername: p.username, amount: n });
+    toast.success(`Credits set to ${n}`);
+  };
+  const addIronCredits = async (n: number) => {
+    if (!n) return;
+    const { error } = await (supabase.rpc as any)("admin_add_player_credits", { p_user_id: p.user_id, p_delta: n });
+    if (error) return toast.error(error.message);
+    await logAdminAction({ adminEmail: user!.email!, actionType: "add_credits", targetUserId: p.user_id, targetUsername: p.username, amount: n });
+    toast.success(`${n >= 0 ? "+" : ""}${n} credits`);
+  };
+
+  return (
+    <div className="space-y-2 border-t pt-3">
+      <div className="flex items-center gap-2 text-sm font-semibold">
+        <Shield className="w-4 h-4" /> Iron Dome
+      </div>
+
+      <div className="flex gap-2">
+        <Input type="number" placeholder="Unlock up to level…" value={level}
+          onChange={(e) => setLevel(e.target.value)} />
+        <Button size="sm" onClick={() => setIronLevel(parseInt(level, 10) || 0)}>Unlock</Button>
+      </div>
+      <div className="flex gap-2 flex-wrap">
+        {[10, 25, 50, 100].map((lv) => (
+          <Button key={lv} size="sm" variant="outline" onClick={() => setIronLevel(lv)}>Level {lv}</Button>
+        ))}
+        <Button size="sm" variant="destructive" onClick={resetIron}>
+          <RotateCcw className="w-3 h-3 mr-1" /> Reset
+        </Button>
+      </div>
+
+      <div className="flex items-center gap-2 text-sm font-semibold mt-2">
+        <Zap className="w-4 h-4" /> Credits
+      </div>
+      <div className="flex gap-2">
+        <Input type="number" placeholder="Set credits…" value={credits}
+          onChange={(e) => setCredits(e.target.value)} />
+        <Button size="sm" onClick={() => setIronCredits(parseInt(credits, 10) || 0)}>Set</Button>
+      </div>
+      <div className="flex gap-2">
+        <Input type="number" placeholder="Add/remove (±)" value={creditsDelta}
+          onChange={(e) => setCreditsDelta(e.target.value)} />
+        <Button size="sm" onClick={() => addIronCredits(parseInt(creditsDelta, 10) || 0)}>Apply</Button>
+      </div>
+      <div className="flex gap-2 flex-wrap">
+        {[100, 500, 1000, -100].map((n) => (
+          <Button key={n} size="sm" variant="outline" onClick={() => addIronCredits(n)}>
+            {n > 0 ? `+${n}` : n} ⚡
+          </Button>
+        ))}
+      </div>
+    </div>
   );
 }

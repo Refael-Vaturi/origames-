@@ -1,93 +1,103 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { Info, AlertTriangle, Megaphone, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { X, Megaphone, AlertTriangle, Sparkles, ExternalLink } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Announcement {
   id: string;
   title: string;
   body: string | null;
   type: string;
+  is_active: boolean;
+  image_url: string | null;
+  link_url: string | null;
 }
 
-const ICONS: Record<string, typeof Info> = {
-  info: Info,
-  warning: AlertTriangle,
-  promo: Megaphone,
-};
-
-const STYLES: Record<string, string> = {
-  info: "bg-primary/10 border-primary/30 text-foreground",
-  warning: "bg-amber-500/10 border-amber-500/40 text-foreground",
-  promo: "bg-gradient-to-r from-[hsl(var(--game-pink)/0.15)] to-primary/15 border-primary/40 text-foreground",
-};
+const DISMISS_KEY = "ori-dismissed-announcements";
 
 export default function AnnouncementBanner() {
   const [items, setItems] = useState<Announcement[]>([]);
-  const [dismissed, setDismissed] = useState<Set<string>>(() => {
-    try {
-      return new Set(JSON.parse(localStorage.getItem("dismissed-announcements") || "[]"));
-    } catch {
-      return new Set();
-    }
+  const [dismissed, setDismissed] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem(DISMISS_KEY) || "[]"); }
+    catch { return []; }
   });
 
   useEffect(() => {
-    let active = true;
     (async () => {
-      const { data } = await supabase
-        .from("announcements")
-        .select("id,title,body,type")
+      const { data } = await (supabase.from as any)("announcements")
+        .select("id,title,body,type,is_active,image_url,link_url")
+        .eq("is_active", true)
         .order("created_at", { ascending: false })
         .limit(5);
-      if (active && data) setItems(data as Announcement[]);
+      setItems(((data ?? []) as unknown) as Announcement[]);
     })();
-    return () => {
-      active = false;
-    };
   }, []);
 
   const dismiss = (id: string) => {
-    const next = new Set(dismissed);
-    next.add(id);
+    const next = [...dismissed, id];
     setDismissed(next);
-    localStorage.setItem("dismissed-announcements", JSON.stringify([...next]));
+    localStorage.setItem(DISMISS_KEY, JSON.stringify(next));
   };
 
-  const visible = items.filter((a) => !dismissed.has(a.id));
+  const visible = items.filter((i) => !dismissed.includes(i.id));
   if (!visible.length) return null;
 
+  const a = visible[0];
+  const Icon =
+    a.type === "warning" ? AlertTriangle :
+    a.type === "promo" ? Sparkles :
+    Megaphone;
+  const tone =
+    a.type === "warning" ? "from-amber-500/20 to-amber-600/10 border-amber-500/40 text-amber-100" :
+    a.type === "promo"   ? "from-fuchsia-500/20 to-purple-600/10 border-fuchsia-500/40 text-fuchsia-100" :
+                           "from-sky-500/20 to-blue-600/10 border-sky-500/40 text-sky-100";
+
+  // Wrap content in a link if link_url provided
+  const Wrapper: React.FC<{ children: React.ReactNode }> = ({ children }) =>
+    a.link_url ? (
+      <a href={a.link_url} target="_blank" rel="noopener noreferrer" className="block hover:opacity-95">
+        {children}
+      </a>
+    ) : <>{children}</>;
+
   return (
-    <div className="relative z-10 px-4 pt-3 space-y-2">
-      <AnimatePresence>
-        {visible.map((a) => {
-          const Icon = ICONS[a.type] ?? Info;
-          return (
-            <motion.div
-              key={a.id}
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              className={`rounded-2xl border px-3 py-2.5 flex items-start gap-2 ${STYLES[a.type] ?? STYLES.info}`}
-            >
-              <Icon className="w-4 h-4 mt-0.5 shrink-0 text-primary" />
-              <div className="flex-1 min-w-0">
-                <p className="font-display font-semibold text-sm truncate">{a.title}</p>
-                {a.body && (
-                  <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{a.body}</p>
-                )}
+    <AnimatePresence>
+      <motion.div
+        key={a.id}
+        initial={{ y: -40, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: -40, opacity: 0 }}
+        className={`relative w-full bg-gradient-to-r ${tone} border-b backdrop-blur`}
+      >
+        <button
+          aria-label="Dismiss"
+          onClick={() => dismiss(a.id)}
+          className="absolute top-2 right-2 z-10 p-1 rounded hover:bg-white/10"
+        >
+          <X className="w-4 h-4" />
+        </button>
+        <Wrapper>
+          <div className="flex items-start gap-3 px-4 py-3 pr-10">
+            {a.image_url ? (
+              <img
+                src={a.image_url}
+                alt=""
+                className="w-12 h-12 rounded object-cover flex-shrink-0"
+                loading="lazy"
+              />
+            ) : (
+              <Icon className="w-5 h-5 mt-0.5 flex-shrink-0" />
+            )}
+            <div className="min-w-0 flex-1">
+              <div className="font-semibold text-sm flex items-center gap-1">
+                {a.title}
+                {a.link_url && <ExternalLink className="w-3 h-3 opacity-70" />}
               </div>
-              <button
-                onClick={() => dismiss(a.id)}
-                aria-label="Dismiss"
-                className="p-1 rounded-md hover:bg-foreground/10 transition"
-              >
-                <X className="w-3.5 h-3.5 text-muted-foreground" />
-              </button>
-            </motion.div>
-          );
-        })}
-      </AnimatePresence>
-    </div>
+              {a.body && <div className="text-xs opacity-90 mt-0.5 line-clamp-2">{a.body}</div>}
+            </div>
+          </div>
+        </Wrapper>
+      </motion.div>
+    </AnimatePresence>
   );
 }

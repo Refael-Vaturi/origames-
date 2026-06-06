@@ -10,6 +10,7 @@ import {
   ArrowLeft,
   Megaphone,
   DoorOpen,
+  Film,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -21,6 +22,7 @@ const links = [
   { to: "/admin/users", label: "admin.users.title", icon: Users },
   { to: "/admin/live", label: "admin.live.title", icon: Radio },
   { to: "/admin/rooms", label: "Live Rooms", icon: DoorOpen },
+  { to: "/admin/recordings", label: "Recordings", icon: Film },
   { to: "/admin/player-actions", label: "admin.playerActions.title", icon: Crosshair },
   { to: "/admin/announcements", label: "Announcements", icon: Megaphone },
   { to: "/admin/download", label: "admin.download.title", icon: Download },

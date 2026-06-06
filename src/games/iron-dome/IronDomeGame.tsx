@@ -14,6 +14,8 @@ import LanguageSelector from '@/components/LanguageSelector';
 import { supabase } from '@/integrations/supabase/client';
 import LevelSelectScreen from './LevelSelectScreen';
 import FireworksEffect from './FireworksEffect';
+import WorldModeScreen, { markCapitalDefended } from './WorldModeScreen';
+import type { Capital } from './worldCapitals';
 import { lovable } from '@/integrations/lovable';
 import { GameMusic } from './music';
 import { toast } from '@/hooks/use-toast';
@@ -64,6 +66,8 @@ const IronDomeGame: React.FC = () => {
   });
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
+  const [worldOpen, setWorldOpen] = useState(false);
+  const [worldDefending, setWorldDefending] = useState<Capital | null>(null);
   const [campaignMaxLevel, setCampaignMaxLevel] = useState<number>(() => {
     try { return parseInt(localStorage.getItem('ironDomeCampaignLevel') || '1'); } catch { return 1; }
   });
@@ -920,6 +924,12 @@ const IronDomeGame: React.FC = () => {
         return prev;
       });
     }
+
+    // World Mode: mark capital as defended if surviving the wave
+    if (worldDefending && stateRef.current.cities.filter(c => c.alive).length > 0) {
+      markCapitalDefended(user?.id ?? null, worldDefending.country, stateRef.current.score);
+    }
+
     
     stateRef.current = nextWave(stateRef.current, w, h, playerSkill);
     setPhase(stateRef.current.phase);
@@ -1061,6 +1071,7 @@ const IronDomeGame: React.FC = () => {
                   }
                 }} color="cyan" />
                 <MenuButton icon={<InfinityIcon className="w-5 h-5" />} label={T('survival')} sub={T('howLong')} onClick={() => startGame('survival')} color="blue" />
+                <MenuButton icon={<span className="text-lg">🌍</span>} label="World" sub="Defend 195 capitals" onClick={() => setWorldOpen(true)} color="cyan" />
 
                 <div className="flex gap-3 mt-2">
                   <MenuButtonSmall icon="📖" label={T('rules')} onClick={() => {
@@ -1822,6 +1833,30 @@ const IronDomeGame: React.FC = () => {
           />
         )}
       </AnimatePresence>
+
+      {/* World Mode */}
+      {worldOpen && (
+        <WorldModeScreen
+          onBack={() => setWorldOpen(false)}
+          onStartDefense={(cap) => {
+            setWorldDefending(cap);
+            setWorldOpen(false);
+            // Pick a level based on how many capitals already done for variety
+            const seed = Math.max(1, Math.min(50, cap.country.length));
+            startGame('campaign', seed);
+          }}
+        />
+      )}
+
+      {/* Overlay capital name while defending */}
+      {worldDefending && phase === 'playing' && (
+        <div className="absolute top-3 left-3 z-30 px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur border border-cyan-500/40 text-white text-sm flex items-center gap-2 pointer-events-none">
+          <span className="text-xl">{worldDefending.flag}</span>
+          <span className="font-bold">{worldDefending.capital}</span>
+          <span className="text-xs text-cyan-300">{worldDefending.country}</span>
+        </div>
+      )}
+
 
       {phase === 'playing' && gameState && gameState.mode === 'survival' && (
         <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
