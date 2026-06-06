@@ -1828,6 +1828,30 @@ const IronDomeGame: React.FC = () => {
         )}
       </AnimatePresence>
 
+      {/* World Mode */}
+      {worldOpen && (
+        <WorldModeScreen
+          onBack={() => setWorldOpen(false)}
+          onStartDefense={(cap) => {
+            setWorldDefending(cap);
+            setWorldOpen(false);
+            // Pick a level based on how many capitals already done for variety
+            const seed = Math.max(1, Math.min(50, cap.country.length));
+            startGame('campaign', seed);
+          }}
+        />
+      )}
+
+      {/* Overlay capital name while defending */}
+      {worldDefending && phase === 'playing' && (
+        <div className="absolute top-3 left-3 z-30 px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur border border-cyan-500/40 text-white text-sm flex items-center gap-2 pointer-events-none">
+          <span className="text-xl">{worldDefending.flag}</span>
+          <span className="font-bold">{worldDefending.capital}</span>
+          <span className="text-xs text-cyan-300">{worldDefending.country}</span>
+        </div>
+      )}
+
+
       {phase === 'playing' && gameState && gameState.mode === 'survival' && (
         <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
           <motion.div
