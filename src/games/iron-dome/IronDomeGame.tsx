@@ -1061,6 +1061,7 @@ const IronDomeGame: React.FC = () => {
                   }
                 }} color="cyan" />
                 <MenuButton icon={<InfinityIcon className="w-5 h-5" />} label={T('survival')} sub={T('howLong')} onClick={() => startGame('survival')} color="blue" />
+                <MenuButton icon={<span className="text-lg">🌍</span>} label="World" sub="Defend 195 capitals" onClick={() => setWorldOpen(true)} color="cyan" />
 
                 <div className="flex gap-3 mt-2">
                   <MenuButtonSmall icon="📖" label={T('rules')} onClick={() => {
