@@ -113,6 +113,7 @@ const App = () => (
                   <Route path="download" element={<AdminDownload />} />
                   <Route path="announcements" element={<AdminAnnouncements />} />
                   <Route path="rooms" element={<AdminLiveRooms />} />
+                  <Route path="recordings" element={<AdminGameRecordings />} />
                 </Route>
               </Route>
 
