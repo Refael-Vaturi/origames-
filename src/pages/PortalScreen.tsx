@@ -8,9 +8,12 @@ import { useOnlinePresence } from "@/hooks/useOnlinePresence";
 import LanguageSelector from "@/components/LanguageSelector";
 import BottomNav from "@/components/BottomNav";
 import AnnouncementBanner from "@/components/AnnouncementBanner";
-import fakeItFastCard from "@/assets/fake-it-fast-card.png";
-import ironDomeCard from "@/assets/iron-dome-card.png";
 import logoImage from "@/assets/ori-games-logo.png";
+import fakeItFastCard from "@/assets/logo-fake-it-fast.png";
+import ironDomeCard from "@/assets/logo-iron-dome.png";
+import clickerCard from "@/assets/logo-clicker.png";
+import colorIdentifyCard from "@/assets/logo-color-identify.png";
+import cityFindCard from "@/assets/logo-city-find.png";
 import { useEffect, useState } from "react";
 
 interface GameCard {
