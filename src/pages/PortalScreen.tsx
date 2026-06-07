@@ -61,6 +61,7 @@ const PortalScreen = () => {
     {
       id: "clicker",
       name: "Clicker",
+      image: clickerCard,
       emoji: "👆",
       route: "/clicker",
       description: "Tap fast, buy upgrades, climb.",
@@ -71,6 +72,7 @@ const PortalScreen = () => {
     {
       id: "color-identify",
       name: "Identify the Color",
+      image: colorIdentifyCard,
       emoji: "🎨",
       route: "/color-identify",
       description: "Spot the odd tile.",
@@ -81,6 +83,7 @@ const PortalScreen = () => {
     {
       id: "city-find",
       name: "CityFind",
+      image: cityFindCard,
       emoji: "🌍",
       route: "/city-find",
       description: "Guess cities from Street View.",
