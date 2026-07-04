@@ -326,7 +326,7 @@ const PortalScreen = () => {
         </section>
 
         {/* Footer */}
-        <footer className="pt-8 pb-2 flex items-center justify-center gap-4 flex-wrap text-xs text-muted-foreground">
+        <footer className="pt-8 pb-2 flex items-center justify-center gap-3 flex-wrap text-xs text-muted-foreground">
           <button onClick={() => navigate("/about")} className="hover:text-foreground">About</button>
           <span className="opacity-30">·</span>
           <button onClick={() => navigate("/contact")} className="hover:text-foreground">Contact</button>
@@ -334,6 +334,8 @@ const PortalScreen = () => {
           <button onClick={() => navigate("/privacy-policy")} className="hover:text-foreground">
             {t("portal.privacyPolicy") || "Privacy"}
           </button>
+          <span className="opacity-30">·</span>
+          <button onClick={() => navigate("/terms")} className="hover:text-foreground">Terms</button>
         </footer>
       </main>
 

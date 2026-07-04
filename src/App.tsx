@@ -41,6 +41,7 @@ import AdminGameRecordings from "./pages/admin/AdminGameRecordings";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import ContactUs from "./pages/ContactUs";
 import About from "./pages/About";
+import TermsOfService from "./pages/TermsOfService";
 
 const queryClient = new QueryClient();
 
@@ -90,6 +91,8 @@ const App = () => (
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/contact" element={<ContactUs />} />
               <Route path="/about" element={<About />} />
+              <Route path="/terms" element={<TermsOfService />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
 
               {/* Legacy redirects */}
               <Route path="/welcome" element={<WelcomeScreen />} />
