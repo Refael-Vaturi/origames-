@@ -57,7 +57,9 @@ export type Database = {
           created_by: string | null
           ends_at: string | null
           id: string
+          image_url: string | null
           is_active: boolean
+          link_url: string | null
           starts_at: string
           title: string
           type: string
@@ -69,7 +71,9 @@ export type Database = {
           created_by?: string | null
           ends_at?: string | null
           id?: string
+          image_url?: string | null
           is_active?: boolean
+          link_url?: string | null
           starts_at?: string
           title: string
           type?: string
@@ -81,7 +85,9 @@ export type Database = {
           created_by?: string | null
           ends_at?: string | null
           id?: string
+          image_url?: string | null
           is_active?: boolean
+          link_url?: string | null
           starts_at?: string
           title?: string
           type?: string
@@ -718,6 +724,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_add_player_credits: {
+        Args: { p_delta: number; p_user_id: string }
+        Returns: undefined
+      }
+      admin_delete_room: { Args: { p_room_id: string }; Returns: undefined }
+      admin_reset_iron_dome: { Args: { p_user_id: string }; Returns: undefined }
+      admin_set_iron_dome_level: {
+        Args: { p_max_level: number; p_user_id: string }
+        Returns: undefined
+      }
+      admin_set_player_credits: {
+        Args: { p_credits: number; p_user_id: string }
+        Returns: undefined
+      }
       increment_profile_stat: {
         Args: { p_amount: number; p_field: string; p_user_id: string }
         Returns: undefined
