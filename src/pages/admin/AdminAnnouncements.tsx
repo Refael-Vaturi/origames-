@@ -64,9 +64,13 @@ export default function AdminAnnouncements() {
         contentType: file.type,
       });
       if (error) throw error;
-      const { data: { publicUrl } } = supabase.storage.from("announcements").getPublicUrl(path);
-      setImageUrl(publicUrl);
-      toast.success("Image uploaded");
+      // Bucket is private → use a long-lived signed URL (10 years)
+      const { data: signed, error: sErr } = await supabase.storage
+        .from("announcements")
+        .createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
+      if (sErr) throw sErr;
+      setImageUrl(signed.signedUrl);
+      toast.success("התמונה הועלתה");
     } catch (e) {
       toast.error((e as Error).message);
     } finally {
