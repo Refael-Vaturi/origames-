@@ -34,7 +34,11 @@ serve(async (req) => {
     const pack = CREDIT_PACKS[packId];
     if (!pack) throw new Error("Invalid pack");
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+    if (!stripeKey) {
+      throw new Error("STRIPE_SECRET_KEY is not configured. Add your Stripe secret key in project secrets.");
+    }
+    const stripe = new Stripe(stripeKey, {
       apiVersion: "2025-08-27.basil",
     });
 
