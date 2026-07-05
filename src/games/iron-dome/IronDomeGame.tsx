@@ -16,6 +16,7 @@ import LevelSelectScreen from './LevelSelectScreen';
 import FireworksEffect from './FireworksEffect';
 import WorldModeScreen, { markCapitalDefended } from './WorldModeScreen';
 import type { Capital } from './worldCapitals';
+import { applyWorldSkin } from './worldLandmarks';
 import { lovable } from '@/integrations/lovable';
 import { GameMusic } from './music';
 import { toast } from '@/hooks/use-toast';
@@ -1844,6 +1845,10 @@ const IronDomeGame: React.FC = () => {
             // Pick a level based on how many capitals already done for variety
             const seed = Math.max(1, Math.min(50, cap.country.length));
             startGame('campaign', seed);
+            if (stateRef.current) {
+              stateRef.current.cities = applyWorldSkin(stateRef.current.cities, cap);
+              setGameState({ ...stateRef.current });
+            }
           }}
         />
       )}

@@ -61,6 +61,8 @@ export interface City {
   width: number;
   alive: boolean;
   buildings: { x: number; w: number; h: number; color: string; windows: { x: number; y: number; lit: boolean }[] }[];
+  landmarkShape?: string;
+  landmarkGlow?: string;
 }
 
 export interface FloatingText {

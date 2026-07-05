@@ -245,3 +245,16 @@ export function capitalsByContinent(c: Continent): Capital[] {
 export function getCapitalById(country: string): Capital | undefined {
   return WORLD_CAPITALS.find((c) => c.country === country);
 }
+
+/** First not-yet-completed country in a continent's fixed order, or null if the whole continent is done. */
+export function getNextUnlocked(continent: Continent, completedCountries: string[]): Capital | null {
+  const all = capitalsByContinent(continent);
+  return all.find((c) => !completedCountries.includes(c.country)) ?? null;
+}
+
+/** Whether a given country is unlocked: already completed, or the next one in line. */
+export function isUnlocked(capital: Capital, completedCountries: string[]): boolean {
+  if (completedCountries.includes(capital.country)) return true;
+  const next = getNextUnlocked(capital.continent, completedCountries);
+  return next?.country === capital.country;
+}

@@ -285,7 +285,302 @@ function renderCities(ctx: CanvasRenderingContext2D, cities: City[], groundY: nu
       });
       ctx.globalAlpha = 1;
     });
+
+    if (city.landmarkShape) {
+      drawLandmark(ctx, city.landmarkShape, city.x + city.width / 2, groundY, time, city.landmarkGlow ?? '#FFDD88');
+    }
   });
+}
+
+function drawLandmark(ctx: CanvasRenderingContext2D, shape: string, cx: number, baseY: number, time: number, glow: string) {
+  ctx.save();
+  const blink = Math.sin(time * 0.004) > 0.6;
+
+  switch (shape) {
+    case 'eiffel': {
+      const h = 130, wBase = 46;
+      ctx.fillStyle = '#2e2b27';
+      ctx.beginPath();
+      ctx.moveTo(cx - wBase / 2, baseY);
+      ctx.lineTo(cx - wBase / 4, baseY - h * 0.45);
+      ctx.lineTo(cx - 5, baseY - h * 0.85);
+      ctx.lineTo(cx - 3, baseY - h);
+      ctx.lineTo(cx + 3, baseY - h);
+      ctx.lineTo(cx + 5, baseY - h * 0.85);
+      ctx.lineTo(cx + wBase / 4, baseY - h * 0.45);
+      ctx.lineTo(cx + wBase / 2, baseY);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255,220,150,0.25)';
+      ctx.lineWidth = 1;
+      for (let i = 1; i <= 3; i++) {
+        const yy = baseY - (h * 0.28) * i;
+        const ww = wBase / 2 * (1 - i * 0.28);
+        ctx.beginPath();
+        ctx.moveTo(cx - ww, yy);
+        ctx.lineTo(cx + ww, yy);
+        ctx.stroke();
+      }
+      if (blink) {
+        ctx.fillStyle = '#FF4444';
+        ctx.beginPath();
+        ctx.arc(cx, baseY - h - 2, 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      break;
+    }
+    case 'bigben': {
+      const h = 110, w = 30;
+      ctx.fillStyle = '#8a7550';
+      ctx.fillRect(cx - w / 2, baseY - h, w, h);
+      ctx.fillStyle = '#6a5a3c';
+      ctx.beginPath();
+      ctx.moveTo(cx - w / 2 - 2, baseY - h);
+      ctx.lineTo(cx, baseY - h - 22);
+      ctx.lineTo(cx + w / 2 + 2, baseY - h);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = '#f2e8cc';
+      ctx.beginPath();
+      ctx.arc(cx, baseY - h + 20, 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#3a2a1a';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(cx - 8, baseY - h + 20);
+      ctx.lineTo(cx + 8, baseY - h + 20);
+      ctx.moveTo(cx, baseY - h + 12);
+      ctx.lineTo(cx, baseY - h + 28);
+      ctx.stroke();
+      break;
+    }
+    case 'pyramid': {
+      ctx.fillStyle = '#8a6a3a';
+      ctx.beginPath();
+      ctx.moveTo(cx + 24, baseY);
+      ctx.lineTo(cx + 6, baseY - 55);
+      ctx.lineTo(cx - 14, baseY);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = '#c2a05a';
+      ctx.beginPath();
+      ctx.moveTo(cx - 32, baseY);
+      ctx.lineTo(cx - 8, baseY - 78);
+      ctx.lineTo(cx + 16, baseY);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(cx - 8, baseY - 78);
+      ctx.lineTo(cx - 8, baseY);
+      ctx.stroke();
+      break;
+    }
+    case 'colosseum': {
+      const w = 90, h = 46;
+      ctx.fillStyle = '#c9b48c';
+      ctx.beginPath();
+      ctx.ellipse(cx, baseY - h * 0.4, w / 2, h * 0.55, 0, Math.PI, 0);
+      ctx.fill();
+      ctx.fillRect(cx - w / 2, baseY - h * 0.4, w, h * 0.4);
+      ctx.fillStyle = 'rgba(60,45,25,0.5)';
+      for (let i = -3; i <= 3; i++) {
+        ctx.beginPath();
+        ctx.arc(cx + i * 11, baseY - h * 0.62, 4.5, Math.PI, 0);
+        ctx.fill();
+      }
+      break;
+    }
+    case 'kremlin': {
+      const w = 100, h = 40;
+      ctx.fillStyle = '#7a2a2a';
+      ctx.fillRect(cx - w / 2, baseY - h, w, h);
+      ctx.fillStyle = '#5a1e1e';
+      for (let i = -1; i <= 1; i++) {
+        ctx.fillRect(cx + i * 32 - 3, baseY - h - 4, 6, 4);
+      }
+      const domeXs = [-34, 0, 34];
+      domeXs.forEach(dx => {
+        ctx.fillStyle = '#d4af37';
+        ctx.beginPath();
+        ctx.arc(cx + dx, baseY - h - 14, 9, Math.PI, 0);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(cx + dx - 3, baseY - h - 20);
+        ctx.lineTo(cx + dx, baseY - h - 32);
+        ctx.lineTo(cx + dx + 3, baseY - h - 20);
+        ctx.closePath();
+        ctx.fill();
+      });
+      break;
+    }
+    case 'tokyoTower': {
+      const h = 120, wBase = 40;
+      ctx.fillStyle = '#CC4433';
+      ctx.beginPath();
+      ctx.moveTo(cx - wBase / 2, baseY);
+      ctx.lineTo(cx - 4, baseY - h * 0.9);
+      ctx.lineTo(cx - 2, baseY - h);
+      ctx.lineTo(cx + 2, baseY - h);
+      ctx.lineTo(cx + 4, baseY - h * 0.9);
+      ctx.lineTo(cx + wBase / 2, baseY);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.55)';
+      for (let i = 1; i <= 2; i++) {
+        const yy = baseY - (h * 0.3) * i;
+        const ww = (wBase / 2) * (1 - i * 0.32);
+        ctx.fillRect(cx - ww, yy - 3, ww * 2, 3);
+      }
+      break;
+    }
+    case 'capitol': {
+      const w = 90, h = 34;
+      ctx.fillStyle = '#d8d8ce';
+      ctx.fillRect(cx - w / 2, baseY - h, w, h);
+      for (let i = -3; i <= 3; i++) {
+        ctx.fillRect(cx + i * 11 - 2, baseY - h, 3, h);
+      }
+      ctx.beginPath();
+      ctx.arc(cx, baseY - h, 20, Math.PI, 0);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(cx - 3, baseY - h - 20);
+      ctx.lineTo(cx, baseY - h - 34);
+      ctx.lineTo(cx + 3, baseY - h - 20);
+      ctx.closePath();
+      ctx.fill();
+      break;
+    }
+    case 'brandenburg': {
+      const h = 44, w = 84;
+      ctx.fillStyle = '#a49a80';
+      for (let i = 0; i < 6; i++) {
+        ctx.fillRect(cx - w / 2 + i * (w / 6) + 4, baseY - h, 6, h);
+      }
+      ctx.fillRect(cx - w / 2, baseY - h - 8, w, 8);
+      ctx.fillStyle = '#2a2a2a';
+      ctx.fillRect(cx - 12, baseY - h - 18, 24, 10);
+      break;
+    }
+    case 'operahouse': {
+      ctx.fillStyle = '#e8e4d8';
+      [[-30, 34, 0.55], [-8, 44, 0.62], [16, 38, 0.5]].forEach(([dx, hh, sc]) => {
+        ctx.beginPath();
+        ctx.moveTo(cx + (dx as number) - 16, baseY);
+        ctx.quadraticCurveTo(cx + (dx as number), baseY - (hh as number), cx + (dx as number) + 18 * (sc as number), baseY - (hh as number) * 0.3);
+        ctx.quadraticCurveTo(cx + (dx as number) + 6, baseY - (hh as number) * 0.15, cx + (dx as number) - 16, baseY);
+        ctx.closePath();
+        ctx.fill();
+      });
+      break;
+    }
+    case 'forbiddencity': {
+      const w = 100, h = 26;
+      ctx.fillStyle = '#8a2222';
+      ctx.fillRect(cx - w / 2, baseY - h, w, h);
+      ctx.fillStyle = '#d4af37';
+      ctx.beginPath();
+      ctx.moveTo(cx - w / 2 - 10, baseY - h);
+      ctx.quadraticCurveTo(cx - w / 2 + 10, baseY - h - 22, cx, baseY - h - 16);
+      ctx.quadraticCurveTo(cx + w / 2 - 10, baseY - h - 22, cx + w / 2 + 10, baseY - h);
+      ctx.closePath();
+      ctx.fill();
+      break;
+    }
+    case 'acropolis': {
+      const w = 90, h = 32;
+      ctx.fillStyle = '#ddd4c0';
+      ctx.fillRect(cx - w / 2, baseY - 8, w, 8);
+      ctx.fillRect(cx - w / 2 + 4, baseY - 16, w - 8, 8);
+      for (let i = 0; i < 7; i++) {
+        ctx.fillRect(cx - w / 2 + 8 + i * ((w - 16) / 6) - 2, baseY - h - 16, 3.5, h);
+      }
+      ctx.fillRect(cx - w / 2 + 4, baseY - h - 16, w - 8, 5);
+      ctx.beginPath();
+      ctx.moveTo(cx - w / 2 + 4, baseY - h - 16);
+      ctx.lineTo(cx, baseY - h - 32);
+      ctx.lineTo(cx + w / 2 - 4, baseY - h - 16);
+      ctx.closePath();
+      ctx.fill();
+      break;
+    }
+    case 'redfort': {
+      const w = 96, h = 36;
+      ctx.fillStyle = '#a5453a';
+      ctx.fillRect(cx - w / 2, baseY - h, w, h);
+      ctx.fillStyle = '#8a3a30';
+      for (let i = 0; i < 8; i++) {
+        ctx.fillRect(cx - w / 2 + i * (w / 8), baseY - h - 5, w / 16, 5);
+      }
+      [-28, 28].forEach(dx => {
+        ctx.fillStyle = '#d4af37';
+        ctx.beginPath();
+        ctx.arc(cx + dx, baseY - h - 10, 7, Math.PI, 0);
+        ctx.fill();
+      });
+      break;
+    }
+    case 'christredeemer': {
+      ctx.fillStyle = 'rgba(90,110,90,0.4)';
+      ctx.beginPath();
+      ctx.arc(cx, baseY + 10, 44, Math.PI, 0);
+      ctx.fill();
+      ctx.fillStyle = '#cfcfc0';
+      ctx.fillRect(cx - 4, baseY - 60, 8, 60);
+      ctx.fillRect(cx - 30, baseY - 55, 60, 6);
+      ctx.beginPath();
+      ctx.arc(cx, baseY - 66, 6, 0, Math.PI * 2);
+      ctx.fill();
+      break;
+    }
+    case 'burjkhalifa': {
+      const h = 155;
+      const segs = 5;
+      ctx.fillStyle = '#bcd4e6';
+      for (let i = 0; i < segs; i++) {
+        const segH = h / segs;
+        const yTop = baseY - h + i * segH;
+        const ww = 24 * (1 - i * 0.16);
+        ctx.fillRect(cx - ww / 2, yTop, ww, segH + 1);
+      }
+      ctx.strokeStyle = '#eaf6ff';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(cx, baseY - h);
+      ctx.lineTo(cx, baseY - h - 14);
+      ctx.stroke();
+      break;
+    }
+    case 'domeofrock': {
+      const w = 70, h = 26;
+      ctx.fillStyle = '#e8dcc0';
+      ctx.fillRect(cx - w / 2, baseY - h, w, h);
+      ctx.fillStyle = '#d4af37';
+      ctx.beginPath();
+      ctx.arc(cx, baseY - h - 2, 16, Math.PI, 0);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(cx - 2, baseY - h - 18);
+      ctx.lineTo(cx, baseY - h - 26);
+      ctx.lineTo(cx + 2, baseY - h - 18);
+      ctx.closePath();
+      ctx.fill();
+      break;
+    }
+  }
+
+  // Faint colored glow behind every landmark so it reads distinctly from generic buildings
+  ctx.globalCompositeOperation = 'destination-over';
+  const g = ctx.createRadialGradient(cx, baseY - 60, 5, cx, baseY - 60, 90);
+  g.addColorStop(0, `${glow}22`);
+  g.addColorStop(1, 'transparent');
+  ctx.fillStyle = g;
+  ctx.fillRect(cx - 100, baseY - 200, 200, 200);
+  ctx.globalCompositeOperation = 'source-over';
+
+  ctx.restore();
 }
 
 function renderLauncher(ctx: CanvasRenderingContext2D, w: number, groundY: number, time: number, state: GameState) {
