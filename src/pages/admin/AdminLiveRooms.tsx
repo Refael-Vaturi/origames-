@@ -58,8 +58,11 @@ export default function AdminLiveRooms() {
 
   const remove = async (r: Room) => {
     if (!confirm(`Delete room "${r.name}" (${r.code})?`)) return;
-    const { error } = await (supabase.rpc as any)("admin_delete_room", { p_room_id: r.id });
+    const { data, error } = await supabase.functions.invoke("admin-rpc", {
+      body: { fn: "admin_delete_room", args: { p_room_id: r.id } },
+    });
     if (error) return toast.error(error.message);
+    if (data?.error) return toast.error(data.error);
     await logAdminAction({ adminEmail: user!.email!, actionType: "delete_room", details: { code: r.code, name: r.name } });
     toast.success("Room deleted"); load();
   };

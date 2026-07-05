@@ -444,31 +444,35 @@ function IronDomeAdminControls({ p }: { p: AdminProfile }) {
   const { user } = useAuth();
   const { t } = useLanguage();
 
+  const invokeAdmin = async (fn: string, args: Record<string, unknown>) => {
+    const { data, error } = await supabase.functions.invoke("admin-rpc", { body: { fn, args } });
+    if (error) return { error };
+    if (data?.error) return { error: { message: data.error } };
+    return { error: null };
+  };
   const setIronLevel = async (lvl: number) => {
     if (!lvl || lvl < 1) return;
-    const { error } = await (supabase.rpc as any)("admin_set_iron_dome_level", {
-      p_user_id: p.user_id, p_max_level: lvl,
-    });
+    const { error } = await invokeAdmin("admin_set_iron_dome_level", { p_user_id: p.user_id, p_max_level: lvl });
     if (error) return toast.error(error.message);
     await logAdminAction({ adminEmail: user!.email!, actionType: "set_iron_dome_level", targetUserId: p.user_id, targetUsername: p.username, amount: lvl });
     toast.success(`Iron Dome unlocked up to level ${lvl}`);
   };
   const resetIron = async () => {
     if (!confirm("Reset Iron Dome progress (levels, stars, best wave)?")) return;
-    const { error } = await (supabase.rpc as any)("admin_reset_iron_dome", { p_user_id: p.user_id });
+    const { error } = await invokeAdmin("admin_reset_iron_dome", { p_user_id: p.user_id });
     if (error) return toast.error(error.message);
     await logAdminAction({ adminEmail: user!.email!, actionType: "reset_iron_dome", targetUserId: p.user_id, targetUsername: p.username });
     toast.success("Iron Dome reset");
   };
   const setIronCredits = async (n: number) => {
-    const { error } = await (supabase.rpc as any)("admin_set_player_credits", { p_user_id: p.user_id, p_credits: n });
+    const { error } = await invokeAdmin("admin_set_player_credits", { p_user_id: p.user_id, p_credits: n });
     if (error) return toast.error(error.message);
     await logAdminAction({ adminEmail: user!.email!, actionType: "set_credits", targetUserId: p.user_id, targetUsername: p.username, amount: n });
     toast.success(`Credits set to ${n}`);
   };
   const addIronCredits = async (n: number) => {
     if (!n) return;
-    const { error } = await (supabase.rpc as any)("admin_add_player_credits", { p_user_id: p.user_id, p_delta: n });
+    const { error } = await invokeAdmin("admin_add_player_credits", { p_user_id: p.user_id, p_delta: n });
     if (error) return toast.error(error.message);
     await logAdminAction({ adminEmail: user!.email!, actionType: "add_credits", targetUserId: p.user_id, targetUsername: p.username, amount: n });
     toast.success(`${n >= 0 ? "+" : ""}${n} credits`);
