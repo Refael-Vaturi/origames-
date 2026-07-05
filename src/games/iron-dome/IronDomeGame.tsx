@@ -2208,7 +2208,7 @@ const IronDomeGame: React.FC = () => {
             className="absolute bottom-4 left-4 right-4 z-50 bg-gradient-to-r from-cyan-900/95 to-blue-900/95 backdrop-blur-md border border-cyan-500/40 rounded-2xl p-4 shadow-[0_0_30px_rgba(0,200,255,0.2)]"
           >
             <div className="flex items-center gap-3">
-              <img src="/iron-dome-icon-512.png" alt="Iron Dome" className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl" />
+              <img src="/iron-dome-icon-512.png" alt="Iron Dome 1" className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl" />
               <div className="flex-1 min-w-0">
                 <p className="text-white font-bold text-xs sm:text-sm">{T('installApp')}</p>
                 {!isIOS && (

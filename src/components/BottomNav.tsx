@@ -18,7 +18,7 @@ const items: Item[] = [
 
 const gameOptions = [
   { id: "fake-it-fast", name: "Fake It Fast", emoji: "🕵️", route: "/fake-it-fast", color: "from-[hsl(267,84%,58%)] to-[hsl(340,82%,62%)]", image: fakeItFastCard, tag: "Multiplayer" },
-  { id: "iron-dome", name: "Iron Dome", emoji: "🛡️", route: "/iron-dome", color: "from-[hsl(190,80%,30%)] to-[hsl(210,80%,20%)]", image: ironDomeCard, tag: "Action" },
+  { id: "iron-dome", name: "Iron Dome 1", emoji: "🛡️", route: "/iron-dome", color: "from-[hsl(190,80%,30%)] to-[hsl(210,80%,20%)]", image: ironDomeCard, tag: "Action" },
   { id: "clicker", name: "Clicker", emoji: "👆", route: "/clicker", color: "from-[hsl(38,100%,55%)] to-[hsl(340,82%,62%)]", tag: "Arcade" },
   { id: "color-identify", name: "Identify Color", emoji: "🎨", route: "/color-identify", color: "from-[hsl(174,72%,45%)] to-[hsl(267,84%,58%)]", tag: "Puzzle" },
   { id: "city-find", name: "CityFind", emoji: "🌍", route: "/city-find", color: "from-[hsl(142,70%,40%)] to-[hsl(190,80%,30%)]", tag: "Geo" },

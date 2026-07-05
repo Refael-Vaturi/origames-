@@ -1,6 +1,6 @@
 {
-  "name": "Iron Dome",
-  "short_name": "Iron Dome",
+  "name": "Iron Dome 1",
+  "short_name": "Iron Dome 1",
   "description": "Defend cities from incoming missiles! A fast-paced missile defense game.",
   "start_url": "/iron-dome",
   "display": "standalone",

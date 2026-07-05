@@ -49,7 +49,7 @@ const PortalScreen = () => {
     },
     {
       id: "iron-dome",
-      name: "Iron Dome",
+      name: "Iron Dome 1",
       image: ironDomeCard,
       emoji: "🛡️",
       route: "/iron-dome",
