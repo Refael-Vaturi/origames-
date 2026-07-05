@@ -332,7 +332,7 @@ function renderLauncher(ctx: CanvasRenderingContext2D, w: number, groundY: numbe
   };
 
   // Always draw center launcher
-  drawSingleLauncher(w / 2, 'IRON DOME 1', 'rgba(68,255,136,0.15)');
+  drawSingleLauncher(w / 2, 'IRON DOME', 'rgba(68,255,136,0.15)');
 
   // Draw side launchers when green power-up is active
   if (state.tripleInterceptorTimer > 0) {
