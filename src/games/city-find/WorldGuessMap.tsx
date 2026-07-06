@@ -58,7 +58,7 @@ const WorldGuessMap = ({ mode, guess, actual, onPick }: Props) => {
   const actualPct = actual ? toPercent(actual) : null;
 
   return (
-    <div className="relative w-full aspect-[2/1] rounded-xl overflow-hidden border border-border bg-slate-900">
+    <div className="relative w-full h-[45vh] min-h-[320px] max-h-[560px] rounded-xl overflow-hidden border border-border bg-slate-900">
       <TransformWrapper minScale={1} maxScale={12} initialScale={1} centerOnInit doubleClick={{ disabled: true }}>
         <TransformComponent wrapperStyle={{ width: "100%", height: "100%" }} contentStyle={{ width: "100%", height: "100%" }}>
           <div

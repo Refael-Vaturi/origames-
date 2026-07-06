@@ -278,7 +278,7 @@ const CityFindGame = () => {
                   </div>
                 )}
 
-                <WorldGuessMap mode="input" guess={guessPos} onPick={setGuessPos} />
+                <SmartGuessMap mode="input" guess={guessPos} onPick={setGuessPos} />
 
                 <div className="flex gap-2 items-center">
                   <Button
@@ -333,7 +333,7 @@ const CityFindGame = () => {
                     : "No guess placed"}
                 </p>
 
-                <WorldGuessMap
+                <SmartGuessMap
                   mode="result"
                   guess={lastResult.guess}
                   actual={{ lat: lastResult.city.lat, lng: lastResult.city.lng }}
@@ -585,6 +585,159 @@ const CityView = ({ city }: { city: CityData }) => {
   const onUnavailable = useCallback(() => setFailed(true), []);
   if (failed) return <MysteryStreetView city={city} />;
   return <LiveStreetView city={city} onUnavailable={onUnavailable} />;
+};
+
+interface GuessMapProps {
+  mode: "input" | "result";
+  guess?: LatLng | null;
+  actual?: LatLng;
+  onPick?: (pos: LatLng) => void;
+}
+
+// Real, full Google Map for guessing: click anywhere to drop a pin; in
+// "result" mode it plots both the guess and the actual point with a
+// connecting line and fits the view to show both.
+const GoogleGuessMapInner = ({ mode, guess, actual, onPick, onAuthError }: GuessMapProps & { onAuthError: () => void }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const mapObjRef = useRef<google.maps.Map | null>(null);
+  const [mapReady, setMapReady] = useState(false);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const map = new google.maps.Map(containerRef.current, {
+      center: { lat: 15, lng: 10 },
+      zoom: 2,
+      minZoom: 2,
+      streetViewControl: false,
+      mapTypeControl: false,
+      fullscreenControl: false,
+      clickableIcons: false,
+      gestureHandling: "greedy",
+    });
+    mapObjRef.current = map;
+    setMapReady(true);
+
+    // Same silent-auth-failure case as Street View: the map "succeeds" from
+    // our code's perspective but Google renders its own error panel inside
+    // the container once it tries to fetch map tiles.
+    const container = containerRef.current;
+    const observer = new MutationObserver(() => {
+      if (container.textContent?.includes("Oops")) {
+        observer.disconnect();
+        onAuthError();
+      }
+    });
+    observer.observe(container, { childList: true, subtree: true, characterData: true });
+    const authCheckTimeout = setTimeout(() => {
+      if (container.textContent?.includes("Oops")) onAuthError();
+    }, 1200);
+
+    return () => {
+      observer.disconnect();
+      clearTimeout(authCheckTimeout);
+      mapObjRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const map = mapObjRef.current;
+    if (!map || mode !== "input" || !onPick) return;
+    const listener = map.addListener("click", (e: google.maps.MapMouseEvent) => {
+      if (e.latLng) onPick({ lat: e.latLng.lat(), lng: e.latLng.lng() });
+    });
+    return () => listener.remove();
+  }, [mapReady, mode, onPick]);
+
+  useEffect(() => {
+    const map = mapObjRef.current;
+    if (!map) return;
+    const markers: google.maps.Marker[] = [];
+    let line: google.maps.Polyline | null = null;
+
+    if (guess) {
+      markers.push(new google.maps.Marker({ position: guess, map, label: "📍" }));
+    }
+    if (actual && mode === "result") {
+      markers.push(
+        new google.maps.Marker({
+          position: actual,
+          map,
+          icon: {
+            path: google.maps.SymbolPath.CIRCLE,
+            scale: 8,
+            fillColor: "#10b981",
+            fillOpacity: 1,
+            strokeColor: "#ffffff",
+            strokeWeight: 2,
+          },
+        })
+      );
+    }
+    if (guess && actual && mode === "result") {
+      line = new google.maps.Polyline({ path: [guess, actual], strokeColor: "#facc15", strokeWeight: 3, map });
+      const bounds = new google.maps.LatLngBounds();
+      bounds.extend(guess);
+      bounds.extend(actual);
+      map.fitBounds(bounds, 60);
+    }
+
+    return () => {
+      markers.forEach((m) => m.setMap(null));
+      line?.setMap(null);
+    };
+  }, [mapReady, guess, actual, mode]);
+
+  return <div ref={containerRef} className="w-full h-full" />;
+};
+
+// Tries real Google Maps first; falls back to the offline Wikimedia-based
+// map (still zoomable/pannable) if the API key/referrer isn't working.
+const SmartGuessMap = (props: GuessMapProps) => {
+  const [status, setStatus] = useState<"loading" | "google" | "fallback">(mapsAuthFailed ? "fallback" : "loading");
+
+  useEffect(() => {
+    if (mapsAuthFailed) {
+      setStatus("fallback");
+      return;
+    }
+    let cancelled = false;
+    const authListener = () => {
+      if (!cancelled) setStatus("fallback");
+    };
+    authFailureListeners.add(authListener);
+
+    loadGoogleMaps(GOOGLE_MAPS_API_KEY)
+      .then(() => {
+        if (!cancelled) setStatus(mapsAuthFailed ? "fallback" : "google");
+      })
+      .catch(() => {
+        if (!cancelled) setStatus("fallback");
+      });
+
+    return () => {
+      cancelled = true;
+      authFailureListeners.delete(authListener);
+    };
+  }, []);
+
+  const sizeClass = "w-full h-[45vh] min-h-[320px] max-h-[560px] rounded-xl overflow-hidden border border-border";
+
+  if (status === "loading") {
+    return (
+      <div className={`${sizeClass} bg-muted flex items-center justify-center text-sm text-muted-foreground`}>
+        Loading map…
+      </div>
+    );
+  }
+  if (status === "google") {
+    return (
+      <div className={sizeClass}>
+        <GoogleGuessMapInner {...props} onAuthError={() => setStatus("fallback")} />
+      </div>
+    );
+  }
+  return <WorldGuessMap mode={props.mode} guess={props.guess} actual={props.actual} onPick={props.onPick} />;
 };
 
 const JoinRoomInput = ({ onJoin }: { onJoin: (code: string) => void }) => {
