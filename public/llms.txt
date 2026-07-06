@@ -15,6 +15,7 @@
 - [Cyber Shield](/cyber-shield): Tower-defense strategy game — place Firewall, Antivirus, and Encryption Decoy towers on a grid to stop waves of Trojans, Viruses, and Ransomware before they reach your database.
 - [Fruit Merge](/fruit-merge): Physics fruit-merging game — drag to aim, drop fruit, and merge matching pairs into bigger fruit before the basket overflows.
 - [Merge Tycoon](/merge-tycoon): Idle merge-tycoon game — buy stands, merge matching tiers into bigger businesses, and earn as much as you can before time runs out.
+- [Wobble Race](/wobble-race): Physics party obstacle course — tap to jump gaps and dodge spinning bars, racing to the finish line before time runs out.
 
 ## Info Pages
 

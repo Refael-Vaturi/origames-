@@ -17,6 +17,7 @@ import {
   MergeTycoonIcon,
   RhythmBladeIcon,
   VelocityDriftIcon,
+  WobbleRaceIcon,
 } from "@/components/game-icons";
 import type { ComponentType } from "react";
 
@@ -48,6 +49,7 @@ const gameOptions: {
   { id: "cyber-shield", name: "Cyber Shield", route: "/cyber-shield", accent: "#38bdf8", tag: "Strategy", icon: CyberShieldIcon },
   { id: "fruit-merge", name: "Fruit Merge", route: "/fruit-merge", accent: "#fb7185", tag: "Merge", icon: FruitMergeIcon },
   { id: "merge-tycoon", name: "Merge Tycoon", route: "/merge-tycoon", accent: "#fb923c", tag: "Idle", icon: MergeTycoonIcon },
+  { id: "wobble-race", name: "Wobble Race", route: "/wobble-race", accent: "#fde047", tag: "Party", icon: WobbleRaceIcon },
 ];
 
 const BottomNav = () => {

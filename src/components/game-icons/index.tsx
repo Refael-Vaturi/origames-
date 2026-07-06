@@ -208,6 +208,27 @@ export function MergeTycoonIcon({ className }: IconProps) {
   );
 }
 
+export function WobbleRaceIcon({ className }: IconProps) {
+  const id = useId();
+  return (
+    <svg viewBox="0 0 64 64" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id={`${id}-g`} x1="10" y1="10" x2="54" y2="54" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#fde047" />
+          <stop offset="100%" stopColor="#f59e0b" />
+        </linearGradient>
+      </defs>
+      <path d="M6 50 H58" stroke="rgba(255,255,255,0.35)" strokeWidth="3" strokeLinecap="round" />
+      <ellipse cx="30" cy="34" rx="20" ry="17" fill={`url(#${id}-g)`} stroke="rgba(120,53,15,0.4)" strokeWidth="1.5" />
+      <circle cx="24" cy="30" r="2.6" fill="#78350f" />
+      <circle cx="36" cy="30" r="2.6" fill="#78350f" />
+      <path d="M24 40 Q30 46 36 40" stroke="#78350f" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+      <path d="M44 14 L52 10 M46 20 L56 18" stroke="#78350f" strokeWidth="3" strokeLinecap="round" />
+      <circle cx="53" cy="9" r="4.5" fill="#ef4444" />
+    </svg>
+  );
+}
+
 export function CityFindIcon({ className }: IconProps) {
   const id = useId();
   return (

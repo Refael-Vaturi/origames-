@@ -24,6 +24,7 @@ import {
   MergeTycoonIcon,
   RhythmBladeIcon,
   VelocityDriftIcon,
+  WobbleRaceIcon,
 } from "@/components/game-icons";
 import { useEffect, useState, type ComponentType } from "react";
 
@@ -158,6 +159,16 @@ const PortalScreen = () => {
       description: "Merge matching stands into a bigger business, earn as much as you can.",
       players: "1",
       tag: "Idle",
+    },
+    {
+      id: "wobble-race",
+      name: "Wobble Race",
+      icon: WobbleRaceIcon,
+      accent: "#fde047",
+      route: "/wobble-race",
+      description: "Tap to jump over gaps and dodge spinners to the finish line.",
+      players: "1",
+      tag: "Party",
     },
   ];
 
