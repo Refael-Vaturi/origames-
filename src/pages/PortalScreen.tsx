@@ -12,6 +12,9 @@ import AnnouncementBanner from "@/components/AnnouncementBanner";
 import logoImage from "@/assets/ori-games-logo.png";
 import fakeItFastCard from "@/assets/logo-fake-it-fast.png";
 import ironDomeCard from "@/assets/logo-iron-dome.png";
+import clickerCard from "@/assets/logo-clicker.png";
+import colorIdentifyCard from "@/assets/logo-color-identify.png";
+import cityFindCard from "@/assets/logo-city-find.png";
 import {
   CityFindIcon,
   ClickerIcon,
@@ -74,6 +77,7 @@ const PortalScreen = () => {
     {
       id: "clicker",
       name: "Clicker",
+      image: clickerCard,
       icon: ClickerIcon,
       accent: "#fbbf24",
       route: "/clicker",
@@ -84,6 +88,7 @@ const PortalScreen = () => {
     {
       id: "color-identify",
       name: "Identify the Color",
+      image: colorIdentifyCard,
       icon: ColorIdentifyIcon,
       accent: "#2dd4bf",
       route: "/color-identify",
@@ -94,6 +99,7 @@ const PortalScreen = () => {
     {
       id: "city-find",
       name: "CityFind",
+      image: cityFindCard,
       icon: CityFindIcon,
       accent: "#4ade80",
       route: "/city-find",
@@ -343,8 +349,8 @@ const PortalScreen = () => {
                 className="relative shrink-0 w-32 h-40 rounded-xl overflow-hidden border border-border bg-card snap-start flex flex-col justify-between p-3 text-start"
               >
                 <div className="absolute top-0 left-0 right-0 h-[3px]" style={{ backgroundColor: g.accent }} />
-                <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center p-2">
-                  <g.icon className="w-full h-full" />
+                <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center p-1.5">
+                  {g.image ? <img src={g.image} alt="" className="w-full h-full object-contain" /> : <g.icon className="w-full h-full" />}
                 </div>
                 <div>
                   <p className="font-display font-semibold text-foreground text-sm leading-tight">
@@ -382,8 +388,8 @@ const PortalScreen = () => {
               >
                 <div className="absolute top-0 left-0 right-0 h-[3px]" style={{ backgroundColor: game.accent }} />
                 <div className="flex items-start justify-between">
-                  <div className="w-11 h-11 rounded-lg bg-muted flex items-center justify-center p-2">
-                    <game.icon className="w-full h-full" />
+                  <div className="w-11 h-11 rounded-lg bg-muted flex items-center justify-center p-1.5">
+                    {game.image ? <img src={game.image} alt="" className="w-full h-full object-contain" /> : <game.icon className="w-full h-full" />}
                   </div>
                   <span className="text-[9px] font-display font-semibold uppercase tracking-wide text-muted-foreground pt-1">
                     {game.tag}

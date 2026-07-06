@@ -5,6 +5,11 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { playClick, playPop } from "@/hooks/useSound";
+import fakeItFastCard from "@/assets/logo-fake-it-fast.png";
+import ironDomeCard from "@/assets/logo-iron-dome.png";
+import clickerCard from "@/assets/logo-clicker.png";
+import colorIdentifyCard from "@/assets/logo-color-identify.png";
+import cityFindCard from "@/assets/logo-city-find.png";
 import {
   CityFindIcon,
   ClickerIcon,
@@ -37,13 +42,14 @@ const gameOptions: {
   route: string;
   accent: string;
   icon: ComponentType<{ className?: string }>;
+  image?: string;
   tag: string;
 }[] = [
-  { id: "fake-it-fast", name: "Fake It Fast", route: "/fake-it-fast", accent: "#a855f7", tag: "Multiplayer", icon: FakeItFastIcon },
-  { id: "iron-dome", name: "Iron Dome", route: "/iron-dome", accent: "#22d3ee", tag: "Action", icon: IronDomeIcon },
-  { id: "clicker", name: "Clicker", route: "/clicker", accent: "#fbbf24", tag: "Arcade", icon: ClickerIcon },
-  { id: "color-identify", name: "Identify Color", route: "/color-identify", accent: "#2dd4bf", tag: "Puzzle", icon: ColorIdentifyIcon },
-  { id: "city-find", name: "CityFind", route: "/city-find", accent: "#4ade80", tag: "Geo", icon: CityFindIcon },
+  { id: "fake-it-fast", name: "Fake It Fast", route: "/fake-it-fast", accent: "#a855f7", tag: "Multiplayer", icon: FakeItFastIcon, image: fakeItFastCard },
+  { id: "iron-dome", name: "Iron Dome", route: "/iron-dome", accent: "#22d3ee", tag: "Action", icon: IronDomeIcon, image: ironDomeCard },
+  { id: "clicker", name: "Clicker", route: "/clicker", accent: "#fbbf24", tag: "Arcade", icon: ClickerIcon, image: clickerCard },
+  { id: "color-identify", name: "Identify Color", route: "/color-identify", accent: "#2dd4bf", tag: "Puzzle", icon: ColorIdentifyIcon, image: colorIdentifyCard },
+  { id: "city-find", name: "CityFind", route: "/city-find", accent: "#4ade80", tag: "Geo", icon: CityFindIcon, image: cityFindCard },
   { id: "gravity-flip", name: "Gravity Flip", route: "/gravity-flip", accent: "#22d3ee", tag: "Reflex", icon: GravityFlipIcon },
   { id: "rhythm-blade", name: "Rhythm Blade", route: "/rhythm-blade", accent: "#c084fc", tag: "Music", icon: RhythmBladeIcon },
   { id: "velocity-drift", name: "Velocity Drift", route: "/velocity-drift", accent: "#f43f5e", tag: "Racing", icon: VelocityDriftIcon },
@@ -148,8 +154,8 @@ const BottomNav = () => {
                   >
                     <div className="absolute top-0 left-0 right-0 h-[3px]" style={{ backgroundColor: g.accent }} />
                     <div className="flex items-start justify-between">
-                      <div className="w-11 h-11 rounded-lg bg-muted flex items-center justify-center p-2">
-                        <g.icon className="w-full h-full" />
+                      <div className="w-11 h-11 rounded-lg bg-muted flex items-center justify-center p-1.5">
+                        {g.image ? <img src={g.image} alt="" className="w-full h-full object-contain" /> : <g.icon className="w-full h-full" />}
                       </div>
                       <span className="text-[9px] font-display font-semibold uppercase tracking-wide text-muted-foreground pt-1">
                         {g.tag}
