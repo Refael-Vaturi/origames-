@@ -3,9 +3,9 @@ const THEME_KEY = "ori-theme";
 export function getStoredTheme(): "dark" | "light" {
   try {
     const stored = localStorage.getItem(THEME_KEY);
-    return stored === "light" ? "light" : "dark";
+    return stored === "dark" ? "dark" : "light";
   } catch {
-    return "dark";
+    return "light";
   }
 }
 

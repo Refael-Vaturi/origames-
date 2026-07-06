@@ -150,13 +150,12 @@ const PortalScreen = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col relative overflow-x-hidden">
-      {/* Soft background gradient + cyberpunk grid */}
-      <div className="absolute inset-0 pointer-events-none bg-cyber-grid opacity-60" />
+      {/* Soft background gradient */}
       <div
         className="absolute inset-0 pointer-events-none opacity-60"
         style={{
           background:
-            "radial-gradient(circle at 15% 0%, hsl(var(--primary) / 0.16), transparent 50%), radial-gradient(circle at 90% 10%, hsl(var(--game-pink) / 0.14), transparent 50%)",
+            "radial-gradient(circle at 15% 0%, hsl(267 84% 58% / 0.12), transparent 50%), radial-gradient(circle at 90% 10%, hsl(340 82% 62% / 0.10), transparent 50%)",
         }}
       />
 
@@ -212,8 +211,8 @@ const PortalScreen = () => {
         animate={{ opacity: 1, y: 0 }}
         className="relative z-10 flex items-center gap-2 px-4 pt-1"
       >
-        <img src={logoImage} alt="Ori Games" className="w-7 h-7 drop-shadow-[0_0_10px_hsl(var(--primary)/0.6)]" />
-        <h1 className="font-display text-2xl font-bold bg-gradient-to-r from-primary to-[hsl(var(--game-pink))] bg-clip-text text-transparent neon-text">
+        <img src={logoImage} alt="Ori Games" className="w-7 h-7" />
+        <h1 className="font-display text-2xl font-bold bg-gradient-to-r from-primary to-[hsl(var(--game-pink))] bg-clip-text text-transparent">
           Ori Games
         </h1>
       </motion.div>
