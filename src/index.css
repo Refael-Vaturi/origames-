@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Rubik:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,14 +6,14 @@
 
 @layer base {
   :root {
-    --background: 45 100% 97%;
-    --foreground: 250 30% 15%;
+    --background: 228 22% 96%;
+    --foreground: 228 28% 13%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 250 30% 15%;
+    --card: 228 22% 99%;
+    --card-foreground: 228 28% 13%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 250 30% 15%;
+    --popover: 228 22% 99%;
+    --popover-foreground: 228 28% 13%;
 
     --primary: 267 84% 58%;
     --primary-foreground: 0 0% 100%;
@@ -21,8 +21,8 @@
     --secondary: 174 72% 50%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 45 30% 92%;
-    --muted-foreground: 250 10% 45%;
+    --muted: 228 16% 91%;
+    --muted-foreground: 228 10% 42%;
 
     --accent: 38 100% 60%;
     --accent-foreground: 250 30% 15%;
@@ -30,11 +30,11 @@
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 250 15% 88%;
-    --input: 250 15% 88%;
+    --border: 228 15% 87%;
+    --input: 228 15% 87%;
     --ring: 267 84% 58%;
 
-    --radius: 1rem;
+    --radius: 0.85rem;
 
     /* Game-specific tokens */
     --game-pink: 340 82% 62%;
@@ -53,8 +53,8 @@
     --shadow-button: 0 6px 20px -6px hsl(267 84% 58% / 0.35);
     --shadow-glow: 0 0 40px hsl(267 84% 58% / 0.2);
 
-    --font-display: 'Fredoka', sans-serif;
-    --font-body: 'Rubik', sans-serif;
+    --font-display: 'Sora', sans-serif;
+    --font-body: 'Inter', sans-serif;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;

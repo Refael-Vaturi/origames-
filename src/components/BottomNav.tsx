@@ -5,9 +5,17 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { playClick, playPop } from "@/hooks/useSound";
-import fakeItFastCard from "@/assets/fake-it-fast-card.png";
-import ironDomeCard from "@/assets/iron-dome-card.png";
-import { CyberShieldIcon, GravityFlipIcon, RhythmBladeIcon, VelocityDriftIcon } from "@/components/game-icons";
+import {
+  CityFindIcon,
+  ClickerIcon,
+  ColorIdentifyIcon,
+  CyberShieldIcon,
+  FakeItFastIcon,
+  GravityFlipIcon,
+  IronDomeIcon,
+  RhythmBladeIcon,
+  VelocityDriftIcon,
+} from "@/components/game-icons";
 import type { ComponentType } from "react";
 
 type Item = { id: string; icon: typeof Home; label: string; route?: string };
@@ -22,22 +30,20 @@ const items: Item[] = [
 const gameOptions: {
   id: string;
   name: string;
-  emoji: string;
   route: string;
-  color: string;
-  image?: string;
-  icon?: ComponentType<{ className?: string }>;
+  accent: string;
+  icon: ComponentType<{ className?: string }>;
   tag: string;
 }[] = [
-  { id: "fake-it-fast", name: "Fake It Fast", emoji: "🕵️", route: "/fake-it-fast", color: "from-[hsl(267,84%,58%)] to-[hsl(340,82%,62%)]", image: fakeItFastCard, tag: "Multiplayer" },
-  { id: "iron-dome", name: "Iron Dome", emoji: "🛡️", route: "/iron-dome", color: "from-[hsl(190,80%,30%)] to-[hsl(210,80%,20%)]", image: ironDomeCard, tag: "Action" },
-  { id: "clicker", name: "Clicker", emoji: "👆", route: "/clicker", color: "from-[hsl(38,100%,55%)] to-[hsl(340,82%,62%)]", tag: "Arcade" },
-  { id: "color-identify", name: "Identify Color", emoji: "🎨", route: "/color-identify", color: "from-[hsl(174,72%,45%)] to-[hsl(267,84%,58%)]", tag: "Puzzle" },
-  { id: "city-find", name: "CityFind", emoji: "🌍", route: "/city-find", color: "from-[hsl(142,70%,40%)] to-[hsl(190,80%,30%)]", tag: "Geo" },
-  { id: "gravity-flip", name: "Gravity Flip", emoji: "🌀", route: "/gravity-flip", color: "from-[hsl(190,90%,50%)] to-[hsl(270,80%,60%)]", tag: "Reflex", icon: GravityFlipIcon },
-  { id: "rhythm-blade", name: "Rhythm Blade", emoji: "🎧", route: "/rhythm-blade", color: "from-[hsl(280,80%,55%)] to-[hsl(330,80%,60%)]", tag: "Music", icon: RhythmBladeIcon },
-  { id: "velocity-drift", name: "Velocity Drift", emoji: "🏎️", route: "/velocity-drift", color: "from-[hsl(350,80%,55%)] to-[hsl(190,90%,50%)]", tag: "Racing", icon: VelocityDriftIcon },
-  { id: "cyber-shield", name: "Cyber Shield", emoji: "🔰", route: "/cyber-shield", color: "from-[hsl(199,89%,55%)] to-[hsl(152,70%,45%)]", tag: "Strategy", icon: CyberShieldIcon },
+  { id: "fake-it-fast", name: "Fake It Fast", route: "/fake-it-fast", accent: "#a855f7", tag: "Multiplayer", icon: FakeItFastIcon },
+  { id: "iron-dome", name: "Iron Dome", route: "/iron-dome", accent: "#22d3ee", tag: "Action", icon: IronDomeIcon },
+  { id: "clicker", name: "Clicker", route: "/clicker", accent: "#fbbf24", tag: "Arcade", icon: ClickerIcon },
+  { id: "color-identify", name: "Identify Color", route: "/color-identify", accent: "#2dd4bf", tag: "Puzzle", icon: ColorIdentifyIcon },
+  { id: "city-find", name: "CityFind", route: "/city-find", accent: "#4ade80", tag: "Geo", icon: CityFindIcon },
+  { id: "gravity-flip", name: "Gravity Flip", route: "/gravity-flip", accent: "#22d3ee", tag: "Reflex", icon: GravityFlipIcon },
+  { id: "rhythm-blade", name: "Rhythm Blade", route: "/rhythm-blade", accent: "#c084fc", tag: "Music", icon: RhythmBladeIcon },
+  { id: "velocity-drift", name: "Velocity Drift", route: "/velocity-drift", accent: "#f43f5e", tag: "Racing", icon: VelocityDriftIcon },
+  { id: "cyber-shield", name: "Cyber Shield", route: "/cyber-shield", accent: "#38bdf8", tag: "Strategy", icon: CyberShieldIcon },
 ];
 
 const BottomNav = () => {
@@ -128,26 +134,20 @@ const BottomNav = () => {
                 {gameOptions.map((g) => (
                   <motion.button
                     key={g.id}
-                    whileTap={{ scale: 0.95 }}
+                    whileTap={{ scale: 0.96 }}
                     onClick={() => { playClick(); setPlayOpen(false); navigate(g.route); }}
-                    className="relative aspect-[4/5] rounded-2xl overflow-hidden shadow-card"
+                    className="relative aspect-[4/5] rounded-xl overflow-hidden border border-border bg-card flex flex-col justify-between p-3 text-start"
                   >
-                    <div className={`absolute inset-0 bg-gradient-to-br ${g.color}`} />
-                    {g.image && (
-                      <img src={g.image} alt={g.name} className="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-60" />
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                    <div className="absolute top-2 start-2 px-2 py-0.5 rounded-full bg-white/25 backdrop-blur-md text-primary-foreground text-[9px] font-display font-semibold">
-                      {g.tag}
-                    </div>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-2xl p-2">
-                        {g.icon ? <g.icon className="w-full h-full" /> : g.emoji}
+                    <div className="absolute top-0 left-0 right-0 h-[3px]" style={{ backgroundColor: g.accent }} />
+                    <div className="flex items-start justify-between">
+                      <div className="w-11 h-11 rounded-lg bg-muted flex items-center justify-center p-2">
+                        <g.icon className="w-full h-full" />
                       </div>
+                      <span className="text-[9px] font-display font-semibold uppercase tracking-wide text-muted-foreground pt-1">
+                        {g.tag}
+                      </span>
                     </div>
-                    <div className="absolute bottom-0 inset-x-0 p-2.5 text-start">
-                      <p className="font-display font-bold text-primary-foreground text-sm drop-shadow">{g.name}</p>
-                    </div>
+                    <p className="font-display font-bold text-foreground text-sm">{g.name}</p>
                   </motion.button>
                 ))}
               </div>

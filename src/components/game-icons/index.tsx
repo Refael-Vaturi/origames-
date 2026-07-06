@@ -90,3 +90,107 @@ export function GravityFlipIcon({ className }: IconProps) {
     </svg>
   );
 }
+
+export function FakeItFastIcon({ className }: IconProps) {
+  const id = useId();
+  return (
+    <svg viewBox="0 0 64 64" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id={`${id}-g`} x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#a855f7" />
+          <stop offset="100%" stopColor="#ec4899" />
+        </linearGradient>
+      </defs>
+      <circle cx="27" cy="27" r="16" fill={`url(#${id}-g)`} opacity="0.22" />
+      <circle cx="27" cy="27" r="16" stroke={`url(#${id}-g)`} strokeWidth="3.5" fill="none" />
+      <path d="M47 47 L58 58" stroke={`url(#${id}-g)`} strokeWidth="5" strokeLinecap="round" />
+      <path d="M20 24c1-3 4-4 7-3M27 32c2 1 5 0 6-2" stroke="rgba(255,255,255,0.85)" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+    </svg>
+  );
+}
+
+export function IronDomeIcon({ className }: IconProps) {
+  const id = useId();
+  return (
+    <svg viewBox="0 0 64 64" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id={`${id}-g`} x1="8" y1="4" x2="56" y2="60" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#22d3ee" />
+          <stop offset="100%" stopColor="#0e7490" />
+        </linearGradient>
+      </defs>
+      <path
+        d="M32 4 L54 12 V28 C54 44 45 54 32 60 C19 54 10 44 10 28 V12 Z"
+        fill={`url(#${id}-g)`}
+        stroke="rgba(255,255,255,0.35)"
+        strokeWidth="1.5"
+      />
+      <path d="M32 46 L26 24 L32 18 L38 24 Z" fill="rgba(255,255,255,0.9)" />
+      <path d="M20 30 Q32 22 44 30" stroke="rgba(255,255,255,0.55)" strokeWidth="2" strokeLinecap="round" fill="none" />
+    </svg>
+  );
+}
+
+export function ClickerIcon({ className }: IconProps) {
+  const id = useId();
+  return (
+    <svg viewBox="0 0 64 64" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id={`${id}-g`} x1="6" y1="6" x2="58" y2="58" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#fbbf24" />
+          <stop offset="100%" stopColor="#ec4899" />
+        </linearGradient>
+      </defs>
+      <circle cx="38" cy="26" r="16" fill={`url(#${id}-g)`} stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" />
+      <text x="38" y="31" textAnchor="middle" fontSize="14" fontWeight="700" fill="rgba(30,15,0,0.75)">+1</text>
+      <path
+        d="M18 30 L18 46 Q18 52 24 52 H30 Q34 52 34 47 V38 L28 40 L24 33 Q22 30 18 30 Z"
+        fill="#fef3c7"
+        stroke="rgba(120,70,0,0.5)"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function ColorIdentifyIcon({ className }: IconProps) {
+  const id = useId();
+  return (
+    <svg viewBox="0 0 64 64" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id={`${id}-g`} x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#2dd4bf" />
+          <stop offset="100%" stopColor="#a855f7" />
+        </linearGradient>
+      </defs>
+      <rect x="8" y="8" width="20" height="20" rx="4" fill="#2dd4bf" opacity="0.85" />
+      <rect x="36" y="8" width="20" height="20" rx="4" fill="#2dd4bf" opacity="0.85" />
+      <rect x="8" y="36" width="20" height="20" rx="4" fill="#2dd4bf" opacity="0.85" />
+      <rect x="36" y="36" width="20" height="20" rx="4" fill={`url(#${id}-g)`} stroke="#fff" strokeWidth="2.5" />
+    </svg>
+  );
+}
+
+export function CityFindIcon({ className }: IconProps) {
+  const id = useId();
+  return (
+    <svg viewBox="0 0 64 64" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id={`${id}-g`} x1="8" y1="4" x2="56" y2="56" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#4ade80" />
+          <stop offset="100%" stopColor="#0e7490" />
+        </linearGradient>
+      </defs>
+      <circle cx="32" cy="26" r="22" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" fill="none" />
+      <path d="M10 26h44M32 4c8 6 8 16 8 22s0 16-8 22c-8-6-8-16-8-22s0-16 8-22z" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" fill="none" />
+      <path
+        d="M32 14 C22 14 16 21 16 29 C16 40 32 54 32 54 C32 54 48 40 48 29 C48 21 42 14 32 14 Z"
+        fill={`url(#${id}-g)`}
+        stroke="rgba(255,255,255,0.4)"
+        strokeWidth="1.5"
+      />
+      <circle cx="32" cy="28" r="6.5" fill="rgba(255,255,255,0.9)" />
+    </svg>
+  );
+}

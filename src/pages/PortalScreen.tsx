@@ -12,21 +12,27 @@ import AnnouncementBanner from "@/components/AnnouncementBanner";
 import logoImage from "@/assets/ori-games-logo.png";
 import fakeItFastCard from "@/assets/logo-fake-it-fast.png";
 import ironDomeCard from "@/assets/logo-iron-dome.png";
-import clickerCard from "@/assets/logo-clicker.png";
-import colorIdentifyCard from "@/assets/logo-color-identify.png";
-import cityFindCard from "@/assets/logo-city-find.png";
-import { CyberShieldIcon, GravityFlipIcon, RhythmBladeIcon, VelocityDriftIcon } from "@/components/game-icons";
+import {
+  CityFindIcon,
+  ClickerIcon,
+  ColorIdentifyIcon,
+  CyberShieldIcon,
+  FakeItFastIcon,
+  GravityFlipIcon,
+  IronDomeIcon,
+  RhythmBladeIcon,
+  VelocityDriftIcon,
+} from "@/components/game-icons";
 import { useEffect, useState, type ComponentType } from "react";
 
 interface GameCard {
   id: string;
   name: string;
   image?: string;
-  emoji: string;
-  icon?: ComponentType<{ className?: string }>;
+  icon: ComponentType<{ className?: string }>;
+  accent: string;
   route: string;
   description: string;
-  color: string;
   players: string;
   tag?: string;
 }
@@ -43,10 +49,10 @@ const PortalScreen = () => {
       id: "fake-it-fast",
       name: "Fake It Fast",
       image: fakeItFastCard,
-      emoji: "🕵️",
+      icon: FakeItFastIcon,
+      accent: "#a855f7",
       route: "/fake-it-fast",
       description: t("portal.fakeItFastDesc"),
-      color: "from-[hsl(267,84%,58%)] to-[hsl(340,82%,62%)]",
       players: "3+",
       tag: "Multiplayer",
     },
@@ -54,87 +60,80 @@ const PortalScreen = () => {
       id: "iron-dome",
       name: "Iron Dome",
       image: ironDomeCard,
-      emoji: "🛡️",
+      icon: IronDomeIcon,
+      accent: "#22d3ee",
       route: "/iron-dome",
       description: t("portal.ironDomeDesc"),
-      color: "from-[hsl(190,80%,30%)] to-[hsl(210,80%,20%)]",
       players: "1",
       tag: "Action",
     },
     {
       id: "clicker",
       name: "Clicker",
-      image: clickerCard,
-      emoji: "👆",
+      icon: ClickerIcon,
+      accent: "#fbbf24",
       route: "/clicker",
       description: "Tap fast, buy upgrades, climb.",
-      color: "from-[hsl(38,100%,55%)] to-[hsl(340,82%,62%)]",
       players: "1",
       tag: "Arcade",
     },
     {
       id: "color-identify",
       name: "Identify the Color",
-      image: colorIdentifyCard,
-      emoji: "🎨",
+      icon: ColorIdentifyIcon,
+      accent: "#2dd4bf",
       route: "/color-identify",
       description: "Spot the odd tile.",
-      color: "from-[hsl(174,72%,45%)] to-[hsl(267,84%,58%)]",
       players: "1",
       tag: "Puzzle",
     },
     {
       id: "city-find",
       name: "CityFind",
-      image: cityFindCard,
-      emoji: "🌍",
+      icon: CityFindIcon,
+      accent: "#4ade80",
       route: "/city-find",
       description: "Guess cities from Street View.",
-      color: "from-[hsl(142,70%,40%)] to-[hsl(190,80%,30%)]",
       players: "1",
       tag: "Geo",
     },
     {
       id: "gravity-flip",
       name: "Gravity Flip",
-      emoji: "🌀",
       icon: GravityFlipIcon,
+      accent: "#22d3ee",
       route: "/gravity-flip",
       description: "Flip gravity, dodge spikes, rewind time.",
-      color: "from-[hsl(190,90%,50%)] to-[hsl(270,80%,60%)]",
       players: "1",
       tag: "Reflex",
     },
     {
       id: "rhythm-blade",
       name: "Rhythm Blade",
-      emoji: "🎧",
       icon: RhythmBladeIcon,
+      accent: "#c084fc",
       route: "/rhythm-blade",
       description: "Slice blocks on the beat, chain Hyper Drive combos.",
-      color: "from-[hsl(280,80%,55%)] to-[hsl(330,80%,60%)]",
       players: "1",
       tag: "Music",
     },
     {
       id: "velocity-drift",
       name: "Velocity Drift",
-      emoji: "🏎️",
       icon: VelocityDriftIcon,
+      accent: "#f43f5e",
       route: "/velocity-drift",
       description: "Drift through corners, chain combos, burn nitro.",
-      color: "from-[hsl(350,80%,55%)] to-[hsl(190,90%,50%)]",
       players: "1",
       tag: "Racing",
     },
     {
       id: "cyber-shield",
       name: "Cyber Shield",
-      emoji: "🔰",
       icon: CyberShieldIcon,
+      accent: "#38bdf8",
       route: "/cyber-shield",
       description: "Place towers, defend the database, survive every wave.",
-      color: "from-[hsl(199,89%,55%)] to-[hsl(152,70%,45%)]",
       players: "1",
       tag: "Strategy",
     },
@@ -150,12 +149,11 @@ const PortalScreen = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col relative overflow-x-hidden">
-      {/* Soft background gradient */}
+      {/* Faint accent wash */}
       <div
-        className="absolute inset-0 pointer-events-none opacity-60"
+        className="absolute inset-0 pointer-events-none"
         style={{
-          background:
-            "radial-gradient(circle at 15% 0%, hsl(267 84% 58% / 0.12), transparent 50%), radial-gradient(circle at 90% 10%, hsl(340 82% 62% / 0.10), transparent 50%)",
+          background: "radial-gradient(circle at 20% 0%, hsl(267 84% 58% / 0.05), transparent 45%)",
         }}
       />
 
@@ -252,29 +250,33 @@ const PortalScreen = () => {
             animate={{ opacity: 1, scale: 1 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => { playClick(); navigate(featured[heroIdx].route); }}
-            className="relative w-full h-44 rounded-3xl overflow-hidden shadow-card block"
+            className="relative w-full h-44 rounded-2xl overflow-hidden border border-border block"
+            style={{ background: `linear-gradient(135deg, ${featured[heroIdx].accent}26, transparent 60%), hsl(228 30% 11%)` }}
           >
-            <div className={`absolute inset-0 bg-gradient-to-br ${featured[heroIdx].color}`} />
             {featured[heroIdx].image && (
               <img
                 src={featured[heroIdx].image}
                 alt={featured[heroIdx].name}
-                className="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-70"
+                className="absolute inset-0 w-full h-full object-cover opacity-45"
+                style={{ filter: "grayscale(1) contrast(1.15)", mixBlendMode: "luminosity" }}
               />
             )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
             <div className="absolute inset-0 p-4 flex flex-col justify-between text-start">
-              <span className="self-start px-2.5 py-1 rounded-full bg-white/25 backdrop-blur-md text-primary-foreground text-[10px] font-display font-semibold">
+              <span
+                className="self-start px-2.5 py-1 rounded-md text-[10px] font-display font-semibold uppercase tracking-wide"
+                style={{ backgroundColor: `${featured[heroIdx].accent}30`, color: featured[heroIdx].accent }}
+              >
                 {featured[heroIdx].tag}
               </span>
               <div>
-                <p className="font-display font-bold text-primary-foreground text-2xl drop-shadow">
+                <p className="font-display font-bold text-white text-2xl">
                   {featured[heroIdx].name}
                 </p>
-                <p className="text-primary-foreground/85 text-xs font-body mt-1 max-w-[80%]">
+                <p className="text-white/75 text-xs font-body mt-1 max-w-[80%]">
                   {featured[heroIdx].description}
                 </p>
-                <span className="inline-flex items-center gap-1 mt-3 px-3 py-1.5 rounded-full bg-white text-foreground text-xs font-display font-semibold">
+                <span className="inline-flex items-center gap-1 mt-3 px-3 py-1.5 rounded-lg bg-white text-[#111] text-xs font-display font-semibold">
                   Play now <ChevronRight className="w-3.5 h-3.5" />
                 </span>
               </div>
@@ -292,25 +294,19 @@ const PortalScreen = () => {
             {games.filter((g) => g.players === "1").map((g) => (
               <motion.button
                 key={g.id}
-                whileTap={{ scale: 0.95 }}
+                whileTap={{ scale: 0.96 }}
                 onClick={() => { playClick(); navigate(g.route); }}
-                className="relative shrink-0 w-32 h-40 rounded-2xl overflow-hidden shadow-card snap-start"
+                className="relative shrink-0 w-32 h-40 rounded-xl overflow-hidden border border-border bg-card snap-start flex flex-col justify-between p-3 text-start"
               >
-                <div className={`absolute inset-0 bg-gradient-to-br ${g.color}`} />
-                {g.image && (
-                  <img src={g.image} alt={g.name} className="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-60" />
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/55 to-transparent" />
-                <div className="absolute inset-0 p-2.5 flex flex-col justify-between text-start">
-                  <div className="w-10 h-10 rounded-xl bg-white/25 backdrop-blur-md flex items-center justify-center text-xl p-1.5">
-                    {g.icon ? <g.icon className="w-full h-full" /> : g.emoji}
-                  </div>
-                  <div>
-                    <p className="font-display font-semibold text-primary-foreground text-sm leading-tight drop-shadow">
-                      {g.name}
-                    </p>
-                    <p className="text-primary-foreground/75 text-[10px] font-body">{g.tag}</p>
-                  </div>
+                <div className="absolute top-0 left-0 right-0 h-[3px]" style={{ backgroundColor: g.accent }} />
+                <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center p-2">
+                  <g.icon className="w-full h-full" />
+                </div>
+                <div>
+                  <p className="font-display font-semibold text-foreground text-sm leading-tight">
+                    {g.name}
+                  </p>
+                  <p className="text-muted-foreground text-[10px] font-body uppercase tracking-wide mt-0.5">{g.tag}</p>
                 </div>
               </motion.button>
             ))}
@@ -338,32 +334,22 @@ const PortalScreen = () => {
                 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={() => { playClick(); navigate(game.route); }}
-                className="relative rounded-2xl overflow-hidden shadow-card aspect-[4/5]"
+                className="relative rounded-xl overflow-hidden border border-border bg-card aspect-[4/5] flex flex-col justify-between p-3 text-start"
               >
-                <div className={`absolute inset-0 bg-gradient-to-br ${game.color}`} />
-                {game.image && (
-                  <img
-                    src={game.image}
-                    alt={game.name}
-                    className="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-60"
-                  />
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                <div className="absolute top-2.5 left-2.5">
-                  <span className="px-2 py-0.5 rounded-full bg-white/25 backdrop-blur-md text-primary-foreground text-[9px] font-display font-semibold">
+                <div className="absolute top-0 left-0 right-0 h-[3px]" style={{ backgroundColor: game.accent }} />
+                <div className="flex items-start justify-between">
+                  <div className="w-11 h-11 rounded-lg bg-muted flex items-center justify-center p-2">
+                    <game.icon className="w-full h-full" />
+                  </div>
+                  <span className="text-[9px] font-display font-semibold uppercase tracking-wide text-muted-foreground pt-1">
                     {game.tag}
                   </span>
                 </div>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-2xl p-2">
-                    {game.icon ? <game.icon className="w-full h-full" /> : game.emoji}
-                  </div>
-                </div>
-                <div className="absolute bottom-0 inset-x-0 p-3 text-start">
-                  <p className="font-display font-bold text-primary-foreground text-sm drop-shadow">
+                <div>
+                  <p className="font-display font-bold text-foreground text-sm">
                     {game.name}
                   </p>
-                  <p className="text-primary-foreground/75 text-[10px] font-body">
+                  <p className="text-muted-foreground text-[10px] font-body mt-0.5">
                     👥 {game.players}
                   </p>
                 </div>
