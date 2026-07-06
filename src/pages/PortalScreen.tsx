@@ -15,6 +15,12 @@ import ironDomeCard from "@/assets/logo-iron-dome.png";
 import clickerCard from "@/assets/logo-clicker.png";
 import colorIdentifyCard from "@/assets/logo-color-identify.png";
 import cityFindCard from "@/assets/logo-city-find.png";
+import velocityDriftCard from "@/assets/logo-velocity-drift.png";
+import cyberShieldCard from "@/assets/logo-cyber-shield.png";
+import fruitMergeCard from "@/assets/logo-fruit-merge.png";
+import mergeTycoonCard from "@/assets/logo-merge-tycoon.png";
+import wobbleRaceCard from "@/assets/logo-wobble-race.png";
+import ropeSwingCard from "@/assets/logo-rope-swing.png";
 import {
   CityFindIcon,
   ClickerIcon,
@@ -130,6 +136,7 @@ const PortalScreen = () => {
     {
       id: "velocity-drift",
       name: "Velocity Drift",
+      image: velocityDriftCard,
       icon: VelocityDriftIcon,
       accent: "#f43f5e",
       route: "/velocity-drift",
@@ -140,6 +147,7 @@ const PortalScreen = () => {
     {
       id: "cyber-shield",
       name: "Cyber Shield",
+      image: cyberShieldCard,
       icon: CyberShieldIcon,
       accent: "#38bdf8",
       route: "/cyber-shield",
@@ -150,6 +158,7 @@ const PortalScreen = () => {
     {
       id: "fruit-merge",
       name: "Fruit Merge",
+      image: fruitMergeCard,
       icon: FruitMergeIcon,
       accent: "#fb7185",
       route: "/fruit-merge",
@@ -160,6 +169,7 @@ const PortalScreen = () => {
     {
       id: "merge-tycoon",
       name: "Merge Tycoon",
+      image: mergeTycoonCard,
       icon: MergeTycoonIcon,
       accent: "#fb923c",
       route: "/merge-tycoon",
@@ -170,6 +180,7 @@ const PortalScreen = () => {
     {
       id: "wobble-race",
       name: "Wobble Race",
+      image: wobbleRaceCard,
       icon: WobbleRaceIcon,
       accent: "#fde047",
       route: "/wobble-race",
@@ -180,6 +191,7 @@ const PortalScreen = () => {
     {
       id: "rope-swing",
       name: "Rope Swing Tumble",
+      image: ropeSwingCard,
       icon: RopeSwingIcon,
       accent: "#38bdf8",
       route: "/rope-swing",

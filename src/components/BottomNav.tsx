@@ -10,6 +10,12 @@ import ironDomeCard from "@/assets/logo-iron-dome.png";
 import clickerCard from "@/assets/logo-clicker.png";
 import colorIdentifyCard from "@/assets/logo-color-identify.png";
 import cityFindCard from "@/assets/logo-city-find.png";
+import velocityDriftCard from "@/assets/logo-velocity-drift.png";
+import cyberShieldCard from "@/assets/logo-cyber-shield.png";
+import fruitMergeCard from "@/assets/logo-fruit-merge.png";
+import mergeTycoonCard from "@/assets/logo-merge-tycoon.png";
+import wobbleRaceCard from "@/assets/logo-wobble-race.png";
+import ropeSwingCard from "@/assets/logo-rope-swing.png";
 import {
   CityFindIcon,
   ClickerIcon,
@@ -52,12 +58,12 @@ const gameOptions: {
   { id: "city-find", name: "CityFind", route: "/city-find", accent: "#4ade80", tag: "Geo", icon: CityFindIcon, image: cityFindCard },
   { id: "gravity-flip", name: "Gravity Flip", route: "/gravity-flip", accent: "#22d3ee", tag: "Reflex", icon: GravityFlipIcon },
   { id: "rhythm-blade", name: "Rhythm Blade", route: "/rhythm-blade", accent: "#c084fc", tag: "Music", icon: RhythmBladeIcon },
-  { id: "velocity-drift", name: "Velocity Drift", route: "/velocity-drift", accent: "#f43f5e", tag: "Racing", icon: VelocityDriftIcon },
-  { id: "cyber-shield", name: "Cyber Shield", route: "/cyber-shield", accent: "#38bdf8", tag: "Strategy", icon: CyberShieldIcon },
-  { id: "fruit-merge", name: "Fruit Merge", route: "/fruit-merge", accent: "#fb7185", tag: "Merge", icon: FruitMergeIcon },
-  { id: "merge-tycoon", name: "Merge Tycoon", route: "/merge-tycoon", accent: "#fb923c", tag: "Idle", icon: MergeTycoonIcon },
-  { id: "wobble-race", name: "Wobble Race", route: "/wobble-race", accent: "#fde047", tag: "Party", icon: WobbleRaceIcon },
-  { id: "rope-swing", name: "Rope Swing Tumble", route: "/rope-swing", accent: "#38bdf8", tag: "Party", icon: RopeSwingIcon },
+  { id: "velocity-drift", name: "Velocity Drift", route: "/velocity-drift", accent: "#f43f5e", tag: "Racing", icon: VelocityDriftIcon, image: velocityDriftCard },
+  { id: "cyber-shield", name: "Cyber Shield", route: "/cyber-shield", accent: "#38bdf8", tag: "Strategy", icon: CyberShieldIcon, image: cyberShieldCard },
+  { id: "fruit-merge", name: "Fruit Merge", route: "/fruit-merge", accent: "#fb7185", tag: "Merge", icon: FruitMergeIcon, image: fruitMergeCard },
+  { id: "merge-tycoon", name: "Merge Tycoon", route: "/merge-tycoon", accent: "#fb923c", tag: "Idle", icon: MergeTycoonIcon, image: mergeTycoonCard },
+  { id: "wobble-race", name: "Wobble Race", route: "/wobble-race", accent: "#fde047", tag: "Party", icon: WobbleRaceIcon, image: wobbleRaceCard },
+  { id: "rope-swing", name: "Rope Swing Tumble", route: "/rope-swing", accent: "#38bdf8", tag: "Party", icon: RopeSwingIcon, image: ropeSwingCard },
 ];
 
 const BottomNav = () => {
