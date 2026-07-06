@@ -225,6 +225,51 @@ export type Database = {
           },
         ]
       }
+      game_recordings: {
+        Row: {
+          created_at: string
+          duration_ms: number
+          events: Json
+          game: string
+          id: string
+          level: number | null
+          metadata: Json
+          score: number
+          summary: Json
+          updated_at: string
+          user_id: string | null
+          username: string | null
+        }
+        Insert: {
+          created_at?: string
+          duration_ms?: number
+          events?: Json
+          game: string
+          id?: string
+          level?: number | null
+          metadata?: Json
+          score?: number
+          summary?: Json
+          updated_at?: string
+          user_id?: string | null
+          username?: string | null
+        }
+        Update: {
+          created_at?: string
+          duration_ms?: number
+          events?: Json
+          game?: string
+          id?: string
+          level?: number | null
+          metadata?: Json
+          score?: number
+          summary?: Json
+          updated_at?: string
+          user_id?: string | null
+          username?: string | null
+        }
+        Relationships: []
+      }
       game_rounds: {
         Row: {
           created_at: string
@@ -724,18 +769,27 @@ export type Database = {
       profiles_public: {
         Row: {
           avatar_url: string | null
-          current_level: number
-          display_name: string
-          fakes_caught: number
-          games_played: number
-          id: string
-          last_seen: string | null
-          level: number
-          survived: number
-          user_id: string
+          country: string | null
+          display_name: string | null
+          level: number | null
+          user_id: string | null
           username: string | null
-          wins: number
-          xp: number
+        }
+        Insert: {
+          avatar_url?: string | null
+          country?: string | null
+          display_name?: string | null
+          level?: number | null
+          user_id?: string | null
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          country?: string | null
+          display_name?: string | null
+          level?: number | null
+          user_id?: string | null
+          username?: string | null
         }
         Relationships: []
       }
