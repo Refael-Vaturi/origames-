@@ -18,6 +18,7 @@ import GravityFlipGame from "./games/gravity-flip/GravityFlipGame";
 import RhythmBladeGame from "./games/rhythm-blade/RhythmBladeGame";
 import VelocityDriftGame from "./games/velocity-drift/VelocityDriftGame";
 import CyberShieldGame from "./games/cyber-shield/CyberShieldGame";
+import FruitMergeGame from "./games/fruit-merge/FruitMergeGame";
 import WelcomeScreen from "./pages/WelcomeScreen";
 import HomeScreen from "./pages/HomeScreen";
 import JoinByCodeScreen from "./pages/JoinByCodeScreen";
@@ -85,6 +86,7 @@ const App = () => {
               <Route path="/rhythm-blade" element={<RhythmBladeGame />} />
               <Route path="/velocity-drift" element={<VelocityDriftGame />} />
               <Route path="/cyber-shield" element={<CyberShieldGame />} />
+              <Route path="/fruit-merge" element={<FruitMergeGame />} />
 
               {/* Fake It Fast game routes */}
               <Route path="/fake-it-fast" element={<HomeScreen />} />

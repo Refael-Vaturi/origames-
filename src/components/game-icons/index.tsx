@@ -172,6 +172,24 @@ export function ColorIdentifyIcon({ className }: IconProps) {
   );
 }
 
+export function FruitMergeIcon({ className }: IconProps) {
+  const id = useId();
+  return (
+    <svg viewBox="0 0 64 64" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id={`${id}-g`} x1="10" y1="10" x2="54" y2="54" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#fb7185" />
+          <stop offset="100%" stopColor="#84cc16" />
+        </linearGradient>
+      </defs>
+      <circle cx="24" cy="38" r="14" fill="#fb7185" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" />
+      <circle cx="42" cy="26" r="18" fill={`url(#${id}-g)`} stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" />
+      <path d="M40 10c1-3 3-4 5-4" stroke="#4d7c0f" strokeWidth="2.5" strokeLinecap="round" />
+      <circle cx="36" cy="20" r="4" fill="rgba(255,255,255,0.45)" />
+    </svg>
+  );
+}
+
 export function CityFindIcon({ className }: IconProps) {
   const id = useId();
   return (

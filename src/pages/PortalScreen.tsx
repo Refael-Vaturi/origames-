@@ -18,6 +18,7 @@ import {
   ColorIdentifyIcon,
   CyberShieldIcon,
   FakeItFastIcon,
+  FruitMergeIcon,
   GravityFlipIcon,
   IronDomeIcon,
   RhythmBladeIcon,
@@ -136,6 +137,16 @@ const PortalScreen = () => {
       description: "Place towers, defend the database, survive every wave.",
       players: "1",
       tag: "Strategy",
+    },
+    {
+      id: "fruit-merge",
+      name: "Fruit Merge",
+      icon: FruitMergeIcon,
+      accent: "#fb7185",
+      route: "/fruit-merge",
+      description: "Drop and merge matching fruit before the basket overflows.",
+      players: "1",
+      tag: "Merge",
     },
   ];
 

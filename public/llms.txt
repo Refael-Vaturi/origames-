@@ -13,6 +13,7 @@
 - [Rhythm Blade](/rhythm-blade): Music reflex game — slice colored blocks with arrow keys or swipes exactly on the beat, chain combos into a Hyper Drive score multiplier.
 - [Velocity Drift](/velocity-drift): Top-down arcade racer — drift through corners to build combo and nitro, burn nitro for speed bursts, avoid sliding off the road.
 - [Cyber Shield](/cyber-shield): Tower-defense strategy game — place Firewall, Antivirus, and Encryption Decoy towers on a grid to stop waves of Trojans, Viruses, and Ransomware before they reach your database.
+- [Fruit Merge](/fruit-merge): Physics fruit-merging game — drag to aim, drop fruit, and merge matching pairs into bigger fruit before the basket overflows.
 
 ## Info Pages
 
