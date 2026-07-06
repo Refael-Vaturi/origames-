@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
-type GameId = "clicker" | "color_identify" | "city_find";
+type GameId = "clicker" | "color_identify" | "city_find" | "gravity_flip";
 
 export const useArcadeScore = (gameId: GameId) => {
   const { user, profile } = useAuth();

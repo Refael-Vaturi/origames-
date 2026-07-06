@@ -22,6 +22,7 @@ const gameOptions = [
   { id: "clicker", name: "Clicker", emoji: "👆", route: "/clicker", color: "from-[hsl(38,100%,55%)] to-[hsl(340,82%,62%)]", tag: "Arcade" },
   { id: "color-identify", name: "Identify Color", emoji: "🎨", route: "/color-identify", color: "from-[hsl(174,72%,45%)] to-[hsl(267,84%,58%)]", tag: "Puzzle" },
   { id: "city-find", name: "CityFind", emoji: "🌍", route: "/city-find", color: "from-[hsl(142,70%,40%)] to-[hsl(190,80%,30%)]", tag: "Geo" },
+  { id: "gravity-flip", name: "Gravity Flip", emoji: "🌀", route: "/gravity-flip", color: "from-[hsl(190,90%,50%)] to-[hsl(270,80%,60%)]", tag: "Reflex" },
 ];
 
 const BottomNav = () => {

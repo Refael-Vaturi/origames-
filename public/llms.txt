@@ -9,6 +9,7 @@
 - [CityFind](/city-find): Guess your location from rotating Google Street View. Geography trivia with real-world imagery.
 - [Clicker](/clicker): Classic arcade clicker game.
 - [Color Identify](/color-identify): Fast color-matching arcade challenge.
+- [Gravity Flip](/gravity-flip): One-tap reflex platformer — flip gravity to dodge spikes and walls, collect Chronos Shards to rewind time after a fatal hit.
 
 ## Info Pages
 

@@ -91,6 +91,16 @@ const PortalScreen = () => {
       players: "1",
       tag: "Geo",
     },
+    {
+      id: "gravity-flip",
+      name: "Gravity Flip",
+      emoji: "🌀",
+      route: "/gravity-flip",
+      description: "Flip gravity, dodge spikes, rewind time.",
+      color: "from-[hsl(190,90%,50%)] to-[hsl(270,80%,60%)]",
+      players: "1",
+      tag: "Reflex",
+    },
   ];
 
   const featured = [games[0], games[1], games[4]];

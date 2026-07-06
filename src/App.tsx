@@ -12,6 +12,7 @@ import IronDomeGame from "./games/iron-dome/IronDomeGame";
 import ClickerGame from "./games/clicker/ClickerGame";
 import ColorIdentifyGame from "./games/color-identify/ColorIdentifyGame";
 import CityFindGame from "./games/city-find/CityFindGame";
+import GravityFlipGame from "./games/gravity-flip/GravityFlipGame";
 import WelcomeScreen from "./pages/WelcomeScreen";
 import HomeScreen from "./pages/HomeScreen";
 import JoinByCodeScreen from "./pages/JoinByCodeScreen";
@@ -70,6 +71,7 @@ const App = () => (
               <Route path="/clicker" element={<ClickerGame />} />
               <Route path="/color-identify" element={<ColorIdentifyGame />} />
               <Route path="/city-find" element={<CityFindGame />} />
+              <Route path="/gravity-flip" element={<GravityFlipGame />} />
 
               {/* Fake It Fast game routes */}
               <Route path="/fake-it-fast" element={<HomeScreen />} />
