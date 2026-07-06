@@ -12,7 +12,7 @@ function toScreen(x: number, y: number, cam: { scale: number; offsetX: number; o
   return { x: x * cam.scale + cam.offsetX, y: y * cam.scale + cam.offsetY };
 }
 
-export function render(ctx: CanvasRenderingContext2D, state: GameState, w: number, h: number, time: number) {
+export function render(ctx: CanvasRenderingContext2D, state: GameState, w: number, h: number, time: number, topInset = 0) {
   const cam = computeCamera(w, h);
 
   ctx.fillStyle = "#0d1512";
@@ -108,24 +108,25 @@ export function render(ctx: CanvasRenderingContext2D, state: GameState, w: numbe
   ctx.restore();
 
   // HUD
+  const hudTop = topInset + 40;
   ctx.textAlign = "center";
   ctx.font = "bold 24px monospace";
   ctx.fillStyle = "#f8fafc";
-  ctx.fillText(`${Math.floor(state.score)}`, w / 2, 40);
+  ctx.fillText(`${Math.floor(state.score)}`, w / 2, hudTop);
 
   ctx.font = "bold 13px monospace";
   ctx.fillStyle = state.combo > 1.05 ? "#facc15" : "rgba(248,250,252,0.5)";
-  ctx.fillText(`x${state.combo.toFixed(1)} combo`, w / 2, 60);
+  ctx.fillText(`x${state.combo.toFixed(1)} combo`, w / 2, hudTop + 20);
 
   ctx.textAlign = "right";
   ctx.font = "bold 18px monospace";
   ctx.fillStyle = "#e2e8f0";
-  ctx.fillText(`${Math.max(0, state.timeLeft).toFixed(0)}s`, w - 18, 34);
+  ctx.fillText(`${Math.max(0, state.timeLeft).toFixed(0)}s`, w - 18, hudTop - 6);
 
   // Nitro bar
   const barW = 90;
   const barX = w - 18 - barW;
-  const barY = 48;
+  const barY = hudTop + 8;
   ctx.textAlign = "left";
   ctx.fillStyle = "rgba(255,255,255,0.15)";
   ctx.fillRect(barX, barY, barW, 8);

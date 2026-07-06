@@ -979,7 +979,8 @@ const IronDomeGame: React.FC = () => {
       {phase !== 'playing' && phase !== 'paused' && (
         <button
           onClick={() => navigate('/')}
-          className="absolute top-3 left-3 flex items-center gap-1.5 px-3 py-2 bg-black/40 rounded-lg backdrop-blur-sm border border-white/10 text-white/70 hover:text-white z-30 transition-colors"
+          className="absolute left-3 flex items-center gap-1.5 px-3 py-2 bg-black/40 rounded-lg backdrop-blur-sm border border-white/10 text-white/70 hover:text-white z-30 transition-colors"
+          style={{ top: "calc(env(safe-area-inset-top) + 0.75rem)" }}
         >
           <ArrowLeft className="w-4 h-4" />
           <span className="text-xs font-semibold">{T('backToMenu')}</span>
@@ -987,7 +988,10 @@ const IronDomeGame: React.FC = () => {
       )}
 
       {/* Single settings button with rotation animation */}
-      <div className={`absolute z-30 ${phase === 'playing' ? 'bottom-14 right-3' : phase === 'level-select' ? 'hidden' : 'top-3 right-3'}`}>
+      <div
+        className={`absolute z-30 ${phase === 'playing' ? 'bottom-14 right-3' : phase === 'level-select' ? 'hidden' : 'right-3'}`}
+        style={phase !== 'playing' && phase !== 'level-select' ? { top: "calc(env(safe-area-inset-top) + 0.75rem)" } : undefined}
+      >
         <motion.button
           onClick={() => setShowInGameSettings(!showInGameSettings)}
           className="p-2 bg-black/40 rounded-lg backdrop-blur-sm border border-white/10 text-white/70 hover:text-white transition-colors"
@@ -1860,7 +1864,10 @@ const IronDomeGame: React.FC = () => {
 
       {/* Overlay capital name while defending */}
       {worldDefending && phase === 'playing' && (
-        <div className="absolute top-3 left-3 z-30 px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur border border-cyan-500/40 text-white text-sm flex items-center gap-2 pointer-events-none">
+        <div
+          className="absolute left-3 z-30 px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur border border-cyan-500/40 text-white text-sm flex items-center gap-2 pointer-events-none"
+          style={{ top: "calc(env(safe-area-inset-top) + 0.75rem)" }}
+        >
           <span className="text-xl">{worldDefending.flag}</span>
           <span className="font-bold">{worldDefending.capital}</span>
           <span className="text-xs text-cyan-300">{worldDefending.country}</span>
@@ -1869,7 +1876,10 @@ const IronDomeGame: React.FC = () => {
 
 
       {phase === 'playing' && gameState && gameState.mode === 'survival' && (
-        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
+        <div
+          className="absolute left-1/2 -translate-x-1/2 z-20 pointer-events-none"
+          style={{ top: "calc(env(safe-area-inset-top) + 0.75rem)" }}
+        >
           <motion.div
             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-black/50 backdrop-blur-sm border border-cyan-500/30"
             animate={{ borderColor: ['rgba(0,200,255,0.3)', 'rgba(0,200,255,0.6)', 'rgba(0,200,255,0.3)'] }}
@@ -1885,7 +1895,10 @@ const IronDomeGame: React.FC = () => {
 
       {/* Big Power-up Timers on right side */}
       {phase === 'playing' && gameState && (
-        <div className="absolute top-16 right-3 z-20 flex flex-col gap-2 pointer-events-none">
+        <div
+          className="absolute right-3 z-20 flex flex-col gap-2 pointer-events-none"
+          style={{ top: "calc(env(safe-area-inset-top) + 4rem)" }}
+        >
           <PowerUpTimer emoji="🟢" label="x3" timer={gameState.tripleInterceptorTimer} maxTimer={10000} color="#44FF44" glowColor="rgba(68,255,68,0.4)" />
           <PowerUpTimer emoji="🔵" label="AUTO" timer={gameState.autoFireTimer} maxTimer={5000} color="#4488FF" glowColor="rgba(68,136,255,0.4)" />
           <PowerUpTimer emoji="🟡" label="DOME" timer={gameState.autoDefenseTimer} maxTimer={10000} color="#FFFF44" glowColor="rgba(255,255,68,0.4)" />

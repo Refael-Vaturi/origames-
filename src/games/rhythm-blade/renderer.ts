@@ -15,7 +15,7 @@ const DIR_ARROW: Record<Direction, string> = {
   right: "▶",
 };
 
-export function render(ctx: CanvasRenderingContext2D, state: GameState, w: number, h: number, audioNow: number, time: number) {
+export function render(ctx: CanvasRenderingContext2D, state: GameState, w: number, h: number, audioNow: number, time: number, topInset = 0) {
   const bg = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, Math.max(w, h) * 0.7);
   bg.addColorStop(0, state.hyperDrive ? "#2a0845" : "#0f0620");
   bg.addColorStop(1, "#050208");
@@ -101,7 +101,7 @@ export function render(ctx: CanvasRenderingContext2D, state: GameState, w: numbe
   ctx.globalAlpha = 1;
 
   // HUD — centered top so it never collides with the Back button (top-left)
-  const hudTop = state.hyperDrive ? 56 : 40;
+  const hudTop = topInset + (state.hyperDrive ? 56 : 40);
   ctx.textAlign = "center";
   ctx.font = "bold 22px monospace";
   ctx.fillStyle = "#f5f3ff";
@@ -118,7 +118,7 @@ export function render(ctx: CanvasRenderingContext2D, state: GameState, w: numbe
     ctx.fillStyle = "#facc15";
     const bounce = 1 + Math.sin(time * 0.01) * 0.06;
     ctx.save();
-    ctx.translate(w / 2, 28);
+    ctx.translate(w / 2, topInset + 28);
     ctx.scale(bounce, bounce);
     ctx.fillText("⚡ HYPER DRIVE x3 ⚡", 0, 0);
     ctx.restore();
@@ -130,5 +130,5 @@ export function render(ctx: CanvasRenderingContext2D, state: GameState, w: numbe
   let heartsStr = "";
   for (let i = 0; i < state.maxLives; i++) heartsStr += i < state.lives ? "♥" : "♡";
   ctx.fillStyle = "#f43f5e";
-  ctx.fillText(heartsStr, w - 18, 34);
+  ctx.fillText(heartsStr, w - 18, topInset + 34);
 }

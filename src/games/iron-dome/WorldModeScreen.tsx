@@ -190,7 +190,10 @@ export default function WorldModeScreen({ onBack, onStartDefense }: Props) {
         onPointClick={handlePointClick}
       />
 
-      <div className="absolute top-0 left-0 right-0 z-10 backdrop-blur bg-slate-950/70 border-b border-slate-800 px-4 py-3 flex items-center justify-between pointer-events-auto">
+      <div
+        className="absolute top-0 left-0 right-0 z-10 backdrop-blur bg-slate-950/70 border-b border-slate-800 px-4 pb-3 flex items-center justify-between pointer-events-auto"
+        style={{ paddingTop: "calc(env(safe-area-inset-top) + 0.75rem)" }}
+      >
         <Button variant="ghost" size="sm" onClick={() => {
           if (view === "countries") { setView("continents"); setContinent(null); }
           else onBack();
@@ -206,7 +209,10 @@ export default function WorldModeScreen({ onBack, onStartDefense }: Props) {
         </div>
       </div>
 
-      <div className="absolute top-[52px] left-0 right-0 z-10 px-4 py-2 pointer-events-none">
+      <div
+        className="absolute left-0 right-0 z-10 px-4 py-2 pointer-events-none"
+        style={{ top: "calc(52px + env(safe-area-inset-top))" }}
+      >
         <Progress value={(totalDone / totalAll) * 100} className="h-2" />
       </div>
 

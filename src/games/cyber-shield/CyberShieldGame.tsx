@@ -13,6 +13,7 @@ import { createInitialState, placeTower, sellTower, startWave, update, upgradeTo
 import { computeGridMetrics, render, screenToGrid } from "./renderer";
 import { TOWER_STATS } from "./config";
 import { GameState, Phase, TowerType } from "./types";
+import { getSafeAreaInsetPx } from "@/lib/safeArea";
 
 const BEST_KEY = "cyberShieldBest";
 
@@ -35,6 +36,7 @@ const CyberShieldGame = () => {
   const prevPhaseRef = useRef<Phase>("menu");
   const hoverCellRef = useRef<{ row: number; col: number } | null>(null);
   const selectedTypeRef = useRef<TowerType | null>(null);
+  const safeAreaRef = useRef({ top: 0, bottom: 0 });
 
   const [phase, setPhase] = useState<Phase>("menu");
   const [finalScore, setFinalScore] = useState(0);
@@ -45,6 +47,7 @@ const CyberShieldGame = () => {
   const [selectedType, setSelectedType] = useState<TowerType | null>(null);
   const [selectedTowerId, setSelectedTowerId] = useState<number | null>(null);
   const [ui, setUi] = useState({ dataBits: 0, wave: 1, waveActive: false });
+  const [safeArea, setSafeArea] = useState({ top: 0, bottom: 0 });
 
   useEffect(() => {
     try {
@@ -84,6 +87,10 @@ const CyberShieldGame = () => {
       canvas.style.height = `${h}px`;
       const ctx = canvas.getContext("2d");
       if (ctx) ctx.scale(dpr, dpr);
+
+      const insets = { top: getSafeAreaInsetPx("top"), bottom: getSafeAreaInsetPx("bottom") };
+      safeAreaRef.current = insets;
+      setSafeArea(insets);
     };
     resize();
     window.addEventListener("resize", resize);
@@ -131,7 +138,7 @@ const CyberShieldGame = () => {
 
       const w = window.innerWidth;
       const h = window.innerHeight;
-      render(ctx, s, w, h, hoverCellRef.current, selectedTypeRef.current);
+      render(ctx, s, w, h, hoverCellRef.current, selectedTypeRef.current, safeAreaRef.current.top, safeAreaRef.current.bottom);
 
       animFrameRef.current = requestAnimationFrame(loop);
     };
@@ -146,7 +153,7 @@ const CyberShieldGame = () => {
     const rect = canvas.getBoundingClientRect();
     const x = clientX - rect.left;
     const y = clientY - rect.top;
-    const m = computeGridMetrics(window.innerWidth, window.innerHeight);
+    const m = computeGridMetrics(window.innerWidth, window.innerHeight, safeAreaRef.current.top, safeAreaRef.current.bottom);
     return screenToGrid(x, y, m);
   };
 
@@ -247,14 +254,14 @@ const CyberShieldGame = () => {
         onPointerLeave={() => (hoverCellRef.current = null)}
       />
 
-      <div className="absolute top-3 left-3 z-20">
+      <div className="absolute left-3 z-20" style={{ top: `calc(0.75rem + ${safeArea.top}px)` }}>
         <Button variant="ghost" size="sm" onClick={() => { playClick(); navigate("/"); }} className="text-white/80 hover:text-white">
           <ArrowLeft className="w-4 h-4 mr-1" /> Back
         </Button>
       </div>
 
       {phase === "playing" && !ui.waveActive && !selectedTower && (
-        <div className="absolute top-14 right-3 z-20">
+        <div className="absolute right-3 z-20" style={{ top: `calc(3.5rem + ${safeArea.top}px)` }}>
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <Button size="sm" className="bg-gradient-to-r from-sky-500 to-emerald-500 text-white font-bold" onClick={handleStartWave}>
               <Play className="w-4 h-4 mr-1" /> Start Wave {ui.wave}
@@ -264,7 +271,10 @@ const CyberShieldGame = () => {
       )}
 
       {phase === "playing" && (
-        <div className="absolute inset-x-0 bottom-0 z-20 flex flex-col items-center gap-2 p-3 pointer-events-none">
+        <div
+          className="absolute inset-x-0 bottom-0 z-20 flex flex-col items-center gap-2 p-3 pointer-events-none"
+          style={{ paddingBottom: `calc(0.75rem + ${safeArea.bottom}px)` }}
+        >
           {selectedTower && (
             <div className="pointer-events-auto bg-black/80 backdrop-blur rounded-2xl p-3 text-white text-sm w-full max-w-xs">
               <div className="flex items-center justify-between mb-2">

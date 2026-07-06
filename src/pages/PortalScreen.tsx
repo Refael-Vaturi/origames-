@@ -15,13 +15,15 @@ import ironDomeCard from "@/assets/logo-iron-dome.png";
 import clickerCard from "@/assets/logo-clicker.png";
 import colorIdentifyCard from "@/assets/logo-color-identify.png";
 import cityFindCard from "@/assets/logo-city-find.png";
-import { useEffect, useState } from "react";
+import { CyberShieldIcon, GravityFlipIcon, RhythmBladeIcon, VelocityDriftIcon } from "@/components/game-icons";
+import { useEffect, useState, type ComponentType } from "react";
 
 interface GameCard {
   id: string;
   name: string;
   image?: string;
   emoji: string;
+  icon?: ComponentType<{ className?: string }>;
   route: string;
   description: string;
   color: string;
@@ -96,6 +98,7 @@ const PortalScreen = () => {
       id: "gravity-flip",
       name: "Gravity Flip",
       emoji: "🌀",
+      icon: GravityFlipIcon,
       route: "/gravity-flip",
       description: "Flip gravity, dodge spikes, rewind time.",
       color: "from-[hsl(190,90%,50%)] to-[hsl(270,80%,60%)]",
@@ -106,6 +109,7 @@ const PortalScreen = () => {
       id: "rhythm-blade",
       name: "Rhythm Blade",
       emoji: "🎧",
+      icon: RhythmBladeIcon,
       route: "/rhythm-blade",
       description: "Slice blocks on the beat, chain Hyper Drive combos.",
       color: "from-[hsl(280,80%,55%)] to-[hsl(330,80%,60%)]",
@@ -116,6 +120,7 @@ const PortalScreen = () => {
       id: "velocity-drift",
       name: "Velocity Drift",
       emoji: "🏎️",
+      icon: VelocityDriftIcon,
       route: "/velocity-drift",
       description: "Drift through corners, chain combos, burn nitro.",
       color: "from-[hsl(350,80%,55%)] to-[hsl(190,90%,50%)]",
@@ -126,6 +131,7 @@ const PortalScreen = () => {
       id: "cyber-shield",
       name: "Cyber Shield",
       emoji: "🔰",
+      icon: CyberShieldIcon,
       route: "/cyber-shield",
       description: "Place towers, defend the database, survive every wave.",
       color: "from-[hsl(199,89%,55%)] to-[hsl(152,70%,45%)]",
@@ -144,12 +150,13 @@ const PortalScreen = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col relative overflow-x-hidden">
-      {/* Soft background gradient */}
+      {/* Soft background gradient + cyberpunk grid */}
+      <div className="absolute inset-0 pointer-events-none bg-cyber-grid opacity-60" />
       <div
         className="absolute inset-0 pointer-events-none opacity-60"
         style={{
           background:
-            "radial-gradient(circle at 15% 0%, hsl(267 84% 58% / 0.12), transparent 50%), radial-gradient(circle at 90% 10%, hsl(340 82% 62% / 0.10), transparent 50%)",
+            "radial-gradient(circle at 15% 0%, hsl(var(--primary) / 0.16), transparent 50%), radial-gradient(circle at 90% 10%, hsl(var(--game-pink) / 0.14), transparent 50%)",
         }}
       />
 
@@ -205,8 +212,8 @@ const PortalScreen = () => {
         animate={{ opacity: 1, y: 0 }}
         className="relative z-10 flex items-center gap-2 px-4 pt-1"
       >
-        <img src={logoImage} alt="Ori Games" className="w-7 h-7" />
-        <h1 className="font-display text-2xl font-bold bg-gradient-to-r from-primary to-[hsl(var(--game-pink))] bg-clip-text text-transparent">
+        <img src={logoImage} alt="Ori Games" className="w-7 h-7 drop-shadow-[0_0_10px_hsl(var(--primary)/0.6)]" />
+        <h1 className="font-display text-2xl font-bold bg-gradient-to-r from-primary to-[hsl(var(--game-pink))] bg-clip-text text-transparent neon-text">
           Ori Games
         </h1>
       </motion.div>
@@ -296,8 +303,8 @@ const PortalScreen = () => {
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/55 to-transparent" />
                 <div className="absolute inset-0 p-2.5 flex flex-col justify-between text-start">
-                  <div className="w-10 h-10 rounded-xl bg-white/25 backdrop-blur-md flex items-center justify-center text-xl">
-                    {g.emoji}
+                  <div className="w-10 h-10 rounded-xl bg-white/25 backdrop-blur-md flex items-center justify-center text-xl p-1.5">
+                    {g.icon ? <g.icon className="w-full h-full" /> : g.emoji}
                   </div>
                   <div>
                     <p className="font-display font-semibold text-primary-foreground text-sm leading-tight drop-shadow">
@@ -349,8 +356,8 @@ const PortalScreen = () => {
                   </span>
                 </div>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-2xl">
-                    {game.emoji}
+                  <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-2xl p-2">
+                    {game.icon ? <game.icon className="w-full h-full" /> : game.emoji}
                   </div>
                 </div>
                 <div className="absolute bottom-0 inset-x-0 p-3 text-start">

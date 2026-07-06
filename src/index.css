@@ -67,25 +67,44 @@
   }
 
   .dark {
-    --background: 250 30% 8%;
-    --foreground: 45 30% 95%;
-    --card: 250 25% 12%;
-    --card-foreground: 45 30% 95%;
-    --popover: 250 25% 12%;
-    --popover-foreground: 45 30% 95%;
-    --primary: 267 84% 65%;
+    --background: 248 45% 5%;
+    --foreground: 210 40% 96%;
+    --card: 248 35% 9%;
+    --card-foreground: 210 40% 96%;
+    --popover: 248 35% 9%;
+    --popover-foreground: 210 40% 96%;
+    --primary: 267 90% 68%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 174 72% 45%;
-    --secondary-foreground: 0 0% 100%;
-    --muted: 250 20% 18%;
-    --muted-foreground: 250 10% 60%;
-    --accent: 38 100% 60%;
-    --accent-foreground: 250 30% 15%;
-    --destructive: 0 62.8% 30.6%;
+    --secondary: 186 100% 55%;
+    --secondary-foreground: 248 45% 5%;
+    --muted: 250 25% 14%;
+    --muted-foreground: 250 15% 68%;
+    --accent: 320 90% 62%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 90% 62%;
     --destructive-foreground: 0 0% 100%;
-    --border: 250 20% 22%;
-    --input: 250 20% 22%;
-    --ring: 267 84% 65%;
+    --border: 260 45% 20%;
+    --input: 260 45% 20%;
+    --ring: 267 90% 68%;
+
+    /* Neon game-specific tokens */
+    --game-pink: 330 90% 65%;
+    --game-cyan: 186 100% 55%;
+    --game-yellow: 45 100% 60%;
+    --game-purple: 267 90% 68%;
+    --game-green: 150 85% 50%;
+    --game-red: 0 90% 62%;
+
+    --gradient-hero: linear-gradient(135deg, hsl(267 90% 68%), hsl(320 90% 62%));
+    --gradient-secondary: linear-gradient(135deg, hsl(186 100% 55%), hsl(150 85% 50%));
+    --gradient-accent: linear-gradient(135deg, hsl(45 100% 60%), hsl(320 90% 62%));
+    --gradient-card: linear-gradient(145deg, hsl(248 35% 11%), hsl(248 45% 6%));
+
+    --shadow-card: 0 8px 30px -6px hsl(267 90% 68% / 0.35);
+    --shadow-button: 0 0 24px -2px hsl(267 90% 68% / 0.6);
+    --shadow-glow: 0 0 40px hsl(267 90% 68% / 0.4);
+
+    --neon-grid-line: 267 90% 68%;
   }
 }
 
@@ -198,5 +217,17 @@
 
   .scrollbar-hide::-webkit-scrollbar { display: none; }
   .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* Cyberpunk grid backdrop — subtle in light mode, glowing in dark mode */
+  .bg-cyber-grid {
+    background-image:
+      linear-gradient(hsl(var(--neon-grid-line, var(--primary)) / 0.08) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--neon-grid-line, var(--primary)) / 0.08) 1px, transparent 1px);
+    background-size: 42px 42px;
+  }
+
+  .neon-text {
+    text-shadow: 0 0 12px hsl(var(--primary) / 0.6), 0 0 32px hsl(var(--primary) / 0.35);
+  }
 }
 

@@ -12,6 +12,7 @@ import { toast } from "@/hooks/use-toast";
 import { createInitialState, update } from "./engine";
 import { render } from "./renderer";
 import { GameState, InputState, Phase } from "./types";
+import { getSafeAreaInsetPx } from "@/lib/safeArea";
 
 const BEST_KEY = "velocityDriftBest";
 
@@ -27,11 +28,13 @@ const VelocityDriftGame = () => {
   const animFrameRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
   const prevPhaseRef = useRef<Phase>("menu");
+  const safeAreaRef = useRef({ top: 0, bottom: 0 });
 
   const [phase, setPhase] = useState<Phase>("menu");
   const [finalScore, setFinalScore] = useState(0);
   const [best, setBest] = useState(0);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [safeArea, setSafeArea] = useState({ top: 0, bottom: 0 });
 
   useEffect(() => {
     try {
@@ -98,6 +101,10 @@ const VelocityDriftGame = () => {
       canvas.style.height = `${h}px`;
       const ctx = canvas.getContext("2d");
       if (ctx) ctx.scale(dpr, dpr);
+
+      const insets = { top: getSafeAreaInsetPx("top"), bottom: getSafeAreaInsetPx("bottom") };
+      safeAreaRef.current = insets;
+      setSafeArea(insets);
     };
     resize();
     window.addEventListener("resize", resize);
@@ -141,7 +148,7 @@ const VelocityDriftGame = () => {
       if (s.shakeTimer > 0) {
         ctx.translate((Math.random() - 0.5) * 6 * s.shakeTimer * 4, (Math.random() - 0.5) * 6 * s.shakeTimer * 4);
       }
-      render(ctx, s, w, h, time);
+      render(ctx, s, w, h, time, safeAreaRef.current.top);
       ctx.restore();
 
       animFrameRef.current = requestAnimationFrame(loop);
@@ -181,14 +188,17 @@ const VelocityDriftGame = () => {
     <div className="fixed inset-0 bg-black overflow-hidden select-none touch-none">
       <canvas ref={canvasRef} className="absolute inset-0" />
 
-      <div className="absolute top-3 left-3 z-20">
+      <div className="absolute left-3 z-20" style={{ top: `calc(0.75rem + ${safeArea.top}px)` }}>
         <Button variant="ghost" size="sm" onClick={() => { playClick(); navigate("/"); }} className="text-white/80 hover:text-white">
           <ArrowLeft className="w-4 h-4 mr-1" /> Back
         </Button>
       </div>
 
       {phase === "playing" && (
-        <div className="absolute inset-x-0 bottom-0 z-20 flex items-end justify-between p-4 pointer-events-none">
+        <div
+          className="absolute inset-x-0 bottom-0 z-20 flex items-end justify-between p-4 pointer-events-none"
+          style={{ paddingBottom: `calc(1rem + ${safeArea.bottom}px)` }}
+        >
           <div className="flex gap-2 pointer-events-auto">
             <button
               onPointerDown={() => setSteer(-1)}

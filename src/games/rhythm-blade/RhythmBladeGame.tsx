@@ -13,6 +13,7 @@ import { RhythmAudio } from "./audioEngine";
 import { createInitialState, handleBeat, resolveInput, tick } from "./engine";
 import { render } from "./renderer";
 import { Direction, GameState, Phase } from "./types";
+import { getSafeAreaInsetPx } from "@/lib/safeArea";
 
 const BEST_KEY = "rhythmBladeBest";
 const SWIPE_MIN_PX = 24;
@@ -29,12 +30,14 @@ const RhythmBladeGame = () => {
   const animFrameRef = useRef<number>(0);
   const prevPhaseRef = useRef<Phase>("menu");
   const pointerStartRef = useRef<{ x: number; y: number } | null>(null);
+  const safeAreaRef = useRef({ top: 0, bottom: 0 });
 
   const [phase, setPhase] = useState<Phase>("menu");
   const [finalScore, setFinalScore] = useState(0);
   const [finalCombo, setFinalCombo] = useState(0);
   const [best, setBest] = useState(0);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [safeArea, setSafeArea] = useState({ top: 0, bottom: 0 });
 
   useEffect(() => {
     try {
@@ -120,6 +123,10 @@ const RhythmBladeGame = () => {
       canvas.style.height = `${h}px`;
       const ctx = canvas.getContext("2d");
       if (ctx) ctx.scale(dpr, dpr);
+
+      const insets = { top: getSafeAreaInsetPx("top"), bottom: getSafeAreaInsetPx("bottom") };
+      safeAreaRef.current = insets;
+      setSafeArea(insets);
     };
     resize();
     window.addEventListener("resize", resize);
@@ -162,7 +169,7 @@ const RhythmBladeGame = () => {
       const h = window.innerHeight;
       ctx.save();
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      render(ctx, s, w, h, audioNow, time);
+      render(ctx, s, w, h, audioNow, time, safeAreaRef.current.top);
       ctx.restore();
 
       animFrameRef.current = requestAnimationFrame(loop);
@@ -194,7 +201,7 @@ const RhythmBladeGame = () => {
     <div className="fixed inset-0 bg-black overflow-hidden select-none touch-none">
       <canvas ref={canvasRef} className="absolute inset-0" onPointerDown={onPointerDown} onPointerUp={onPointerUp} />
 
-      <div className="absolute top-3 left-3 z-20">
+      <div className="absolute left-3 z-20" style={{ top: `calc(0.75rem + ${safeArea.top}px)` }}>
         <Button variant="ghost" size="sm" onClick={() => { playClick(); navigate("/"); }} className="text-white/80 hover:text-white">
           <ArrowLeft className="w-4 h-4 mr-1" /> Back
         </Button>

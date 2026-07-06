@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Globe, Volume2, VolumeX, Moon, Sun, Vibrate, Info } from "lucide-react";
 import { useState, useEffect } from "react";
 import { playClick, setSoundEnabled, isSoundEnabled } from "@/hooks/useSound";
+import { getStoredTheme, setStoredTheme } from "@/lib/theme";
 
 const SettingsScreen = () => {
   const { user, signOut } = useAuth();
@@ -13,7 +14,7 @@ const SettingsScreen = () => {
   const { t, toggleLanguage, language } = useLanguage();
   const [sound, setSound] = useState(isSoundEnabled());
   const [vibration, setVibration] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(() => getStoredTheme() === "dark");
 
   const Toggle = ({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) => (
     <button
@@ -77,7 +78,7 @@ const SettingsScreen = () => {
                 value={darkMode}
                 onChange={(v) => {
                   setDarkMode(v);
-                  document.documentElement.classList.toggle("dark", v);
+                  setStoredTheme(v ? "dark" : "light");
                 }}
               />
             </SettingRow>

@@ -11,15 +11,18 @@ export interface GridMetrics {
 
 // Reserve space at the top (HUD) and bottom (tower toolbar) so the grid
 // fills the remaining area instead of being squeezed to a tiny box on
-// tall portrait phone screens.
+// tall portrait phone screens. topInset/bottomInset add the device's
+// safe-area insets (notch/status bar, home indicator) on top of that.
 export const TOP_MARGIN = 90;
 export const BOTTOM_MARGIN = 130;
 
-export function computeGridMetrics(w: number, h: number): GridMetrics {
-  const availH = Math.max(120, h - TOP_MARGIN - BOTTOM_MARGIN);
+export function computeGridMetrics(w: number, h: number, topInset = 0, bottomInset = 0): GridMetrics {
+  const topMargin = TOP_MARGIN + topInset;
+  const bottomMargin = BOTTOM_MARGIN + bottomInset;
+  const availH = Math.max(120, h - topMargin - bottomMargin);
   const cell = Math.min(w / GRID_COLS, availH / GRID_ROWS);
   const offsetX = (w - cell * GRID_COLS) / 2;
-  const offsetY = TOP_MARGIN + (availH - cell * GRID_ROWS) / 2;
+  const offsetY = topMargin + (availH - cell * GRID_ROWS) / 2;
   return { cell, offsetX, offsetY };
 }
 
@@ -41,8 +44,10 @@ export function render(
   h: number,
   hoverCell: { row: number; col: number } | null,
   selectedType: TowerType | null,
+  topInset = 0,
+  bottomInset = 0,
 ) {
-  const m = computeGridMetrics(w, h);
+  const m = computeGridMetrics(w, h, topInset, bottomInset);
 
   ctx.fillStyle = "#0a0f1a";
   ctx.fillRect(0, 0, w, h);
@@ -178,16 +183,17 @@ export function render(
   }
 
   // HUD
+  const hudY = topInset + 22;
   ctx.textAlign = "left";
   ctx.font = "bold 15px monospace";
   ctx.fillStyle = "#38bdf8";
-  ctx.fillText(`💾 ${state.databaseHp}/${state.maxDatabaseHp}`, 12, 22);
+  ctx.fillText(`💾 ${state.databaseHp}/${state.maxDatabaseHp}`, 12, hudY);
 
   ctx.textAlign = "right";
   ctx.fillStyle = "#facc15";
-  ctx.fillText(`⚡ ${state.dataBits}`, w - 12, 22);
+  ctx.fillText(`⚡ ${state.dataBits}`, w - 12, hudY);
 
   ctx.textAlign = "center";
   ctx.fillStyle = "#e2e8f0";
-  ctx.fillText(`Wave ${state.wave}`, w / 2, 22);
+  ctx.fillText(`Wave ${state.wave}`, w / 2, hudY);
 }

@@ -12,6 +12,7 @@ import { toast } from "@/hooks/use-toast";
 import { createInitialState, update, addTrailParticle, spawnBurst } from "./engine";
 import { render, corridorY, PLAYER_SCREEN_X_RATIO } from "./renderer";
 import { GameState, Phase } from "./types";
+import { getSafeAreaInsetPx } from "@/lib/safeArea";
 
 const BEST_KEY = "gravityFlipBest";
 
@@ -27,12 +28,14 @@ const GravityFlipGame = () => {
   const lastTimeRef = useRef<number>(0);
   const flipQueuedRef = useRef(false);
   const prevPhaseRef = useRef<Phase>("menu");
+  const safeAreaRef = useRef({ top: 0, bottom: 0 });
 
   const [phase, setPhase] = useState<Phase>("menu");
   const [finalScore, setFinalScore] = useState(0);
   const [best, setBest] = useState(0);
   const [rewindSaved, setRewindSaved] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [safeArea, setSafeArea] = useState({ top: 0, bottom: 0 });
 
   useEffect(() => {
     try {
@@ -88,6 +91,10 @@ const GravityFlipGame = () => {
       canvas.style.height = `${h}px`;
       const ctx = canvas.getContext("2d");
       if (ctx) ctx.scale(dpr, dpr);
+
+      const insets = { top: getSafeAreaInsetPx("top"), bottom: getSafeAreaInsetPx("bottom") };
+      safeAreaRef.current = insets;
+      setSafeArea(insets);
     };
     resize();
     window.addEventListener("resize", resize);
@@ -166,7 +173,7 @@ const GravityFlipGame = () => {
       if (s.shakeTimer > 0) {
         ctx.translate((Math.random() - 0.5) * 8 * s.shakeTimer * 5, (Math.random() - 0.5) * 8 * s.shakeTimer * 5);
       }
-      render(ctx, s, w, h, time);
+      render(ctx, s, w, h, time, safeAreaRef.current.top);
       ctx.restore();
 
       animFrameRef.current = requestAnimationFrame(loop);
@@ -201,7 +208,7 @@ const GravityFlipGame = () => {
         }}
       />
 
-      <div className="absolute top-3 left-3 z-20 pointer-events-auto">
+      <div className="absolute left-3 z-20 pointer-events-auto" style={{ top: `calc(0.75rem + ${safeArea.top}px)` }}>
         <Button variant="ghost" size="sm" onClick={() => { playClick(); navigate("/"); }} className="text-white/80 hover:text-white">
           <ArrowLeft className="w-4 h-4 mr-1" /> Back
         </Button>
