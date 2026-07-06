@@ -225,6 +225,51 @@ export type Database = {
           },
         ]
       }
+      game_recordings: {
+        Row: {
+          created_at: string
+          duration_ms: number
+          events: Json
+          game: string
+          id: string
+          level: number | null
+          metadata: Json
+          score: number
+          summary: Json
+          updated_at: string
+          user_id: string | null
+          username: string | null
+        }
+        Insert: {
+          created_at?: string
+          duration_ms?: number
+          events?: Json
+          game: string
+          id?: string
+          level?: number | null
+          metadata?: Json
+          score?: number
+          summary?: Json
+          updated_at?: string
+          user_id?: string | null
+          username?: string | null
+        }
+        Update: {
+          created_at?: string
+          duration_ms?: number
+          events?: Json
+          game?: string
+          id?: string
+          level?: number | null
+          metadata?: Json
+          score?: number
+          summary?: Json
+          updated_at?: string
+          user_id?: string | null
+          username?: string | null
+        }
+        Relationships: []
+      }
       game_rounds: {
         Row: {
           created_at: string
