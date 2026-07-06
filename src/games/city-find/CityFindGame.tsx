@@ -323,6 +323,10 @@ const CityFindGame = () => {
                   </span>
                 </motion.div>
 
+                <div className="text-4xl mb-1">{lastResult.city.flag}</div>
+                <h3 className="font-display text-xl font-bold">{lastResult.city.name_en}</h3>
+                <p className="text-muted-foreground text-sm mb-2">{lastResult.city.country_en}</p>
+
                 <p className="text-sm text-muted-foreground">
                   {lastResult.guess
                     ? `${Math.round(lastResult.distanceKm).toLocaleString()} km away`
@@ -413,8 +417,28 @@ const LiveStreetView = ({ city, onUnavailable }: { city: CityData; onUnavailable
 
   useEffect(() => {
     let cancelled = false;
+    let settled = false;
     setReady(false);
     const coords = { lat: city.lat, lng: city.lng };
+
+    // Google Maps can hang indefinitely (blocked request, bad API key/referrer
+    // restriction, slow network) without ever calling onload/onerror or the
+    // getPanorama callback. Without a timeout that leaves the player stuck on
+    // a permanent spinner, so fall back to the photo slideshow if nothing
+    // resolves in time.
+    const timeout = setTimeout(() => {
+      if (!settled && !cancelled) {
+        settled = true;
+        onUnavailable();
+      }
+    }, 8000);
+
+    const finish = (fn: () => void) => {
+      if (settled || cancelled) return;
+      settled = true;
+      clearTimeout(timeout);
+      fn();
+    };
 
     loadGoogleMaps(GOOGLE_MAPS_API_KEY)
       .then(() => {
@@ -427,35 +451,35 @@ const LiveStreetView = ({ city, onUnavailable }: { city: CityData; onUnavailable
             source: google.maps.StreetViewSource.OUTDOOR,
           },
           (data, status) => {
-            if (cancelled) return;
             if (status !== google.maps.StreetViewStatus.OK || !data?.location?.latLng || !containerRef.current) {
-              onUnavailable();
+              finish(onUnavailable);
               return;
             }
-            new google.maps.StreetViewPanorama(containerRef.current, {
-              position: data.location.latLng,
-              pov: { heading: Math.random() * 360, pitch: 0 },
-              zoom: 0,
-              addressControl: false,
-              showRoadLabels: false,
-              linksControl: true,
-              panControl: true,
-              zoomControl: true,
-              fullscreenControl: false,
-              motionTracking: false,
-              motionTrackingControl: false,
-              clickToGo: true,
+            finish(() => {
+              new google.maps.StreetViewPanorama(containerRef.current!, {
+                position: data.location.latLng,
+                pov: { heading: Math.random() * 360, pitch: 0 },
+                zoom: 0,
+                addressControl: false,
+                showRoadLabels: false,
+                linksControl: true,
+                panControl: true,
+                zoomControl: true,
+                fullscreenControl: false,
+                motionTracking: false,
+                motionTrackingControl: false,
+                clickToGo: true,
+              });
+              setReady(true);
             });
-            setReady(true);
           }
         );
       })
-      .catch(() => {
-        if (!cancelled) onUnavailable();
-      });
+      .catch(() => finish(onUnavailable));
 
     return () => {
       cancelled = true;
+      clearTimeout(timeout);
     };
   }, [city.id, onUnavailable]);
 
