@@ -45,12 +45,67 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { room_id, round_number } = await req.json();
+    const body = await req.json();
+    const { room_id, round_number } = body;
 
     const admin = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
+
+    // ─── Verify the caller is actually a member of this room ───
+    let callerId: string | null = null;
+
+    if (body.guest_player_id && body.guest_token) {
+      const { data: session } = await admin
+        .from("room_guest_sessions")
+        .select("room_player_id")
+        .eq("room_player_id", body.guest_player_id)
+        .eq("session_token", body.guest_token)
+        .single();
+      if (session) {
+        const { data: guestPlayer } = await admin
+          .from("room_players")
+          .select("id")
+          .eq("id", session.room_player_id)
+          .eq("room_id", room_id)
+          .single();
+        if (guestPlayer) callerId = guestPlayer.id;
+      }
+    }
+
+    if (!callerId) {
+      const authHeader = req.headers.get("authorization");
+      if (authHeader?.startsWith("Bearer ")) {
+        const token = authHeader.replace("Bearer ", "");
+        const { data: userData, error: userError } = await admin.auth.getUser(token);
+        if (!userError && userData?.user?.id) {
+          const { data: player } = await admin
+            .from("room_players")
+            .select("id")
+            .eq("room_id", room_id)
+            .eq("user_id", userData.user.id)
+            .single();
+          if (player) callerId = player.id;
+        }
+      }
+    }
+
+    if (!callerId) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // NOTE: fake_player_id is intentionally still returned to every room
+    // member here — GameScreen.tsx keeps the round only in local state (no
+    // later re-fetch/reveal endpoint) and needs it client-side, for every
+    // player, to render the post-vote reveal. Masking it per-caller would
+    // break the reveal screen for everyone except the fake player. The real
+    // fix (only disclosing it once voting closes) requires a separate
+    // reveal endpoint / client refactor, tracked as follow-up, not done here.
+    const sanitize = (r: Record<string, unknown>) => r;
 
     // Check if round already exists (idempotent)
     const { data: existing } = await admin
@@ -61,7 +116,7 @@ Deno.serve(async (req) => {
       .single();
 
     if (existing) {
-      return new Response(JSON.stringify(existing), {
+      return new Response(JSON.stringify(sanitize(existing)), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -120,7 +175,7 @@ Deno.serve(async (req) => {
           .eq("round_number", round_number)
           .single();
 
-        return new Response(JSON.stringify(raceExisting), {
+        return new Response(JSON.stringify(raceExisting ? sanitize(raceExisting) : raceExisting), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
@@ -131,7 +186,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    return new Response(JSON.stringify(round), {
+    return new Response(JSON.stringify(sanitize(round)), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {

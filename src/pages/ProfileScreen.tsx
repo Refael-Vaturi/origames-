@@ -48,7 +48,7 @@ const ProfileScreen = () => {
     // Check uniqueness
     if (username) {
       const { data: existing } = await supabase
-        .from("profiles")
+        .from("profiles_public")
         .select("user_id")
         .eq("username", username)
         .neq("user_id", user.id)

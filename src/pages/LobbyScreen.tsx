@@ -70,7 +70,7 @@ const LobbyScreen = () => {
 
     const authenticatedUserIds = rows.filter((p) => !p.is_guest).map((p) => p.user_id);
     const { data: profiles } = authenticatedUserIds.length
-      ? await supabase.from("profiles").select("user_id, display_name").in("user_id", authenticatedUserIds)
+      ? await supabase.from("profiles_public").select("user_id, display_name").in("user_id", authenticatedUserIds)
       : { data: [] as { user_id: string; display_name: string }[] };
 
     const enriched: RoomPlayer[] = rows.map((p) => ({
@@ -283,7 +283,11 @@ const LobbyScreen = () => {
     if (roomId) {
       // Use start-round edge function which sets status to "playing" with service role
       const { data, error } = await supabase.functions.invoke("start-round", {
-        body: { room_id: roomId, round_number: 1 },
+        body: {
+          room_id: roomId,
+          round_number: 1,
+          ...(guestSession ? { guest_player_id: guestSession.playerId, guest_token: guestSession.token } : {}),
+        },
       });
 
       if (error || data?.error) {

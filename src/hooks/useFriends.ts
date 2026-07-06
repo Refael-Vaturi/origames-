@@ -50,7 +50,7 @@ export function useFriends() {
     let profiles: FriendProfile[] = [];
     if (friendUserIds.length > 0) {
       const { data: profileData } = await supabase
-        .from("profiles")
+        .from("profiles_public")
         .select("id, user_id, display_name, avatar_url, level, last_seen")
         .in("user_id", friendUserIds);
       profiles = (profileData as any[]) || [];
@@ -96,7 +96,7 @@ export function useFriends() {
 
     // Find user by username or display_name
     const { data: profiles } = await supabase
-      .from("profiles")
+      .from("profiles_public")
       .select("user_id, display_name, username")
       .or(`username.ilike.${addresseeUsername},display_name.ilike.${addresseeUsername}`)
       .limit(1);

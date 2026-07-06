@@ -275,7 +275,7 @@ const IronDomeGame: React.FC = () => {
     let validIds = new Set<string>(ids);
     if (ids.length > 0) {
       const { data: profs } = await supabase
-        .from('profiles')
+        .from('profiles_public')
         .select('user_id')
         .in('user_id', ids);
       if (profs) validIds = new Set(profs.map((p: any) => p.user_id));
@@ -525,11 +525,16 @@ const IronDomeGame: React.FC = () => {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('purchase') === 'success' && user) {
-      const credits = parseInt(params.get('credits') || '0');
-      if (credits > 0) {
-        supabase.functions.invoke('confirm-credits', { body: { credits } }).then(() => {
-          setPersistentCredits(prev => prev + credits);
-          toast({ title: `✅ נוספו ${credits} קרדיטים!` });
+      const sessionId = params.get('session_id');
+      if (sessionId) {
+        supabase.functions.invoke('confirm-credits', { body: { session_id: sessionId } }).then(({ data, error }) => {
+          const added = !error && data?.creditsAdded ? data.creditsAdded : 0;
+          if (added > 0) {
+            setPersistentCredits(prev => prev + added);
+            toast({ title: `✅ נוספו ${added} קרדיטים!` });
+          } else if (error) {
+            toast({ title: 'לא הצלחנו לאמת את התשלום', variant: 'destructive' });
+          }
         });
         window.history.replaceState({}, '', '/iron-dome');
       }

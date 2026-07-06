@@ -163,7 +163,7 @@ const GameScreen = () => {
 
       const authIds = playersData.filter((p) => !p.is_guest).map((p) => p.user_id);
       const { data: profiles } = authIds.length
-        ? await supabase.from("profiles").select("user_id, display_name").in("user_id", authIds)
+        ? await supabase.from("profiles_public").select("user_id, display_name").in("user_id", authIds)
         : { data: [] as { user_id: string; display_name: string }[] };
 
       const enriched: Player[] = playersData.map((p) => ({
@@ -205,7 +205,11 @@ const GameScreen = () => {
       initialStartDoneRef.current = true;
       try {
         const { data, error } = await supabase.functions.invoke("start-round", {
-          body: { room_id: roomId, round_number: roundNumber },
+          body: {
+            room_id: roomId,
+            round_number: roundNumber,
+            ...(guestSession ? { guest_player_id: guestSession.playerId, guest_token: guestSession.token } : {}),
+          },
         });
         if (!error && data && !data.error) {
           setCurrentRound(data as GameRound);
@@ -494,7 +498,11 @@ const GameScreen = () => {
 
     try {
       const { data, error } = await supabase.functions.invoke("start-round", {
-        body: { room_id: roomId, round_number: next },
+        body: {
+          room_id: roomId,
+          round_number: next,
+          ...(guestSession ? { guest_player_id: guestSession.playerId, guest_token: guestSession.token } : {}),
+        },
       });
       if (data && !error && !data.error) {
         setCurrentRound(data as GameRound);

@@ -27,6 +27,22 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Round → room lookup, needed to scope both identity checks below to
+    // the room that actually owns this round (prevents a guest/user from
+    // acting on a round belonging to a different room).
+    const { data: actionRound } = await admin
+      .from("game_rounds")
+      .select("room_id")
+      .eq("id", round_id)
+      .single();
+
+    if (!actionRound) {
+      return new Response(JSON.stringify({ error: "Round not found" }), {
+        status: 404,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // ─── Determine player identity ───
     let playerId: string | null = null;
 
@@ -40,7 +56,15 @@ Deno.serve(async (req) => {
         .single();
 
       if (session) {
-        playerId = session.room_player_id;
+        // Confirm this guest's player row actually belongs to the round's room.
+        const { data: guestPlayer } = await admin
+          .from("room_players")
+          .select("id")
+          .eq("id", session.room_player_id)
+          .eq("room_id", actionRound.room_id)
+          .single();
+
+        if (guestPlayer) playerId = guestPlayer.id;
       }
     }
 
@@ -54,23 +78,14 @@ Deno.serve(async (req) => {
         if (!userError && userData?.user?.id) {
           const userId = userData.user.id;
 
-          // Find player by user_id → need round to get room
-          const { data: roundData } = await admin
-            .from("game_rounds")
-            .select("room_id")
-            .eq("id", round_id)
+          const { data: player } = await admin
+            .from("room_players")
+            .select("id")
+            .eq("room_id", actionRound.room_id)
+            .eq("user_id", userId)
             .single();
 
-          if (roundData) {
-            const { data: player } = await admin
-              .from("room_players")
-              .select("id")
-              .eq("room_id", roundData.room_id)
-              .eq("user_id", userId)
-              .single();
-
-            if (player) playerId = player.id;
-          }
+          if (player) playerId = player.id;
         }
       }
     }

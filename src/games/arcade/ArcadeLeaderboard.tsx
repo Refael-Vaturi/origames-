@@ -40,7 +40,7 @@ const ArcadeLeaderboard = ({ gameId, currentUserId, refreshKey = 0, limit = 10 }
       let validIds = new Set(userIds);
       if (userIds.length > 0) {
         const { data: profs } = await supabase
-          .from("profiles")
+          .from("profiles_public")
           .select("user_id")
           .in("user_id", userIds);
         if (profs) validIds = new Set(profs.map((p: any) => p.user_id));

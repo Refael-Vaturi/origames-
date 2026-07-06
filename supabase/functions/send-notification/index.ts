@@ -45,15 +45,47 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Only these two friend-flow notifications may be sent this way, and
+    // only when the underlying friendship row actually justifies them —
+    // otherwise any authenticated user could spam/spoof notifications to
+    // any other user with arbitrary title/body/data.
+    const ALLOWED_TYPES = new Set(["friend_request", "friend_accepted"]);
+    if (!ALLOWED_TYPES.has(type)) {
+      return new Response(
+        JSON.stringify({ error: "Unsupported notification type" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const expectedFriendship = type === "friend_request"
+      ? { requester_id: senderId, addressee_id: target_user_id, status: "pending" }
+      : { requester_id: target_user_id, addressee_id: senderId, status: "accepted" };
+
+    const { data: friendship } = await admin
+      .from("friendships")
+      .select("id")
+      .match(expectedFriendship)
+      .maybeSingle();
+
+    if (!friendship) {
+      return new Response(
+        JSON.stringify({ error: "No matching friendship for this notification" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const safeTitle = String(title).slice(0, 200);
+    const safeBody = notifBody ? String(notifBody).slice(0, 500) : null;
+
     // Create notification
     const { data: notification, error } = await admin
       .from("notifications")
       .insert({
         user_id: target_user_id,
         type,
-        title,
-        body: notifBody || null,
-        data: { ...data, sender_id: senderId },
+        title: safeTitle,
+        body: safeBody,
+        data: { sender_id: senderId },
       })
       .select()
       .single();
