@@ -11,6 +11,7 @@
 - [Color Identify](/color-identify): Fast color-matching arcade challenge.
 - [Gravity Flip](/gravity-flip): One-tap reflex platformer — flip gravity to dodge spikes and walls, collect Chronos Shards to rewind time after a fatal hit.
 - [Rhythm Blade](/rhythm-blade): Music reflex game — slice colored blocks with arrow keys or swipes exactly on the beat, chain combos into a Hyper Drive score multiplier.
+- [Velocity Drift](/velocity-drift): Top-down arcade racer — drift through corners to build combo and nitro, burn nitro for speed bursts, avoid sliding off the road.
 
 ## Info Pages
 

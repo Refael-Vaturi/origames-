@@ -112,6 +112,16 @@ const PortalScreen = () => {
       players: "1",
       tag: "Music",
     },
+    {
+      id: "velocity-drift",
+      name: "Velocity Drift",
+      emoji: "🏎️",
+      route: "/velocity-drift",
+      description: "Drift through corners, chain combos, burn nitro.",
+      color: "from-[hsl(350,80%,55%)] to-[hsl(190,90%,50%)]",
+      players: "1",
+      tag: "Racing",
+    },
   ];
 
   const featured = [games[0], games[1], games[4]];

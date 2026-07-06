@@ -25,6 +25,7 @@ const gameOptions = [
   { id: "city-find", name: "CityFind", emoji: "🌍", route: "/city-find", color: "from-[hsl(142,70%,40%)] to-[hsl(190,80%,30%)]", tag: "Geo" },
   { id: "gravity-flip", name: "Gravity Flip", emoji: "🌀", route: "/gravity-flip", color: "from-[hsl(190,90%,50%)] to-[hsl(270,80%,60%)]", tag: "Reflex" },
   { id: "rhythm-blade", name: "Rhythm Blade", emoji: "🎧", route: "/rhythm-blade", color: "from-[hsl(280,80%,55%)] to-[hsl(330,80%,60%)]", tag: "Music" },
+  { id: "velocity-drift", name: "Velocity Drift", emoji: "🏎️", route: "/velocity-drift", color: "from-[hsl(350,80%,55%)] to-[hsl(190,90%,50%)]", tag: "Racing" },
 ];
 
 const BottomNav = () => {

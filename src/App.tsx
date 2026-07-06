@@ -14,6 +14,7 @@ import ColorIdentifyGame from "./games/color-identify/ColorIdentifyGame";
 import CityFindGame from "./games/city-find/CityFindGame";
 import GravityFlipGame from "./games/gravity-flip/GravityFlipGame";
 import RhythmBladeGame from "./games/rhythm-blade/RhythmBladeGame";
+import VelocityDriftGame from "./games/velocity-drift/VelocityDriftGame";
 import WelcomeScreen from "./pages/WelcomeScreen";
 import HomeScreen from "./pages/HomeScreen";
 import JoinByCodeScreen from "./pages/JoinByCodeScreen";
@@ -74,6 +75,7 @@ const App = () => (
               <Route path="/city-find" element={<CityFindGame />} />
               <Route path="/gravity-flip" element={<GravityFlipGame />} />
               <Route path="/rhythm-blade" element={<RhythmBladeGame />} />
+              <Route path="/velocity-drift" element={<VelocityDriftGame />} />
 
               {/* Fake It Fast game routes */}
               <Route path="/fake-it-fast" element={<HomeScreen />} />
