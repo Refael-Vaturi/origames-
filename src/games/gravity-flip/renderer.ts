@@ -164,14 +164,14 @@ export function render(ctx: CanvasRenderingContext2D, state: GameState, w: numbe
     ctx.fillRect(0, 0, w, h);
   }
 
-  // HUD
-  ctx.textAlign = "left";
-  ctx.font = "bold 20px monospace";
+  // HUD — centered top so it never collides with the Back button (top-left)
+  ctx.textAlign = "center";
+  ctx.font = "bold 22px monospace";
   ctx.fillStyle = "#e9d5ff";
-  ctx.fillText(`${state.score}`, 18, 36);
+  ctx.fillText(`${state.score}`, w / 2, 40);
   ctx.font = "11px monospace";
   ctx.fillStyle = "rgba(233,213,255,0.6)";
-  ctx.fillText(`BEST ${state.best}`, 18, 54);
+  ctx.fillText(`BEST ${state.best}`, w / 2, 58);
 
   ctx.textAlign = "right";
   for (let i = 0; i < 3; i++) {

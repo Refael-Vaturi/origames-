@@ -100,25 +100,25 @@ export function render(ctx: CanvasRenderingContext2D, state: GameState, w: numbe
   }
   ctx.globalAlpha = 1;
 
-  // HUD
-  ctx.textAlign = "left";
+  // HUD — centered top so it never collides with the Back button (top-left)
+  const hudTop = state.hyperDrive ? 56 : 40;
+  ctx.textAlign = "center";
   ctx.font = "bold 22px monospace";
   ctx.fillStyle = "#f5f3ff";
-  ctx.fillText(`${state.score}`, 18, 38);
+  ctx.fillText(`${state.score}`, w / 2, hudTop);
 
   if (state.combo > 1) {
     ctx.font = "bold 14px monospace";
     ctx.fillStyle = state.hyperDrive ? "#facc15" : "#c4b5fd";
-    ctx.fillText(`x${state.combo} combo`, 18, 60);
+    ctx.fillText(`x${state.combo} combo`, w / 2, hudTop + 22);
   }
 
   if (state.hyperDrive) {
-    ctx.textAlign = "center";
     ctx.font = "bold 13px monospace";
     ctx.fillStyle = "#facc15";
     const bounce = 1 + Math.sin(time * 0.01) * 0.06;
     ctx.save();
-    ctx.translate(w / 2, 30);
+    ctx.translate(w / 2, 28);
     ctx.scale(bounce, bounce);
     ctx.fillText("⚡ HYPER DRIVE x3 ⚡", 0, 0);
     ctx.restore();

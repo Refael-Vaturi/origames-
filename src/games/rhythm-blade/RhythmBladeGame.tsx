@@ -206,7 +206,13 @@ const RhythmBladeGame = () => {
             className="absolute inset-0 z-30 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
           >
             <div className="max-w-sm w-full text-center text-white space-y-5">
-              <div className="text-6xl">🎧</div>
+              <motion.div
+                className="text-6xl"
+                animate={{ y: [0, -8, 0] }}
+                transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+              >
+                🎧
+              </motion.div>
               <h1 className="text-3xl font-display font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
                 Rhythm Blade
               </h1>
@@ -219,13 +225,15 @@ const RhythmBladeGame = () => {
               <div className="flex items-center justify-center gap-2 text-xs text-white/50">
                 <Trophy className="w-4 h-4 text-amber-400" /> Best: {best}
               </div>
-              <Button
-                size="lg"
-                className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:opacity-90 text-white font-bold"
-                onClick={startGame}
-              >
-                Start
-              </Button>
+              <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }}>
+                <Button
+                  size="lg"
+                  className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:opacity-90 text-white font-bold shadow-[0_0_30px_rgba(192,132,252,0.35)]"
+                  onClick={startGame}
+                >
+                  Start
+                </Button>
+              </motion.div>
               <div className="pt-2">
                 <ArcadeLeaderboard gameId="rhythm_blade" currentUserId={userId} refreshKey={refreshKey} />
               </div>
@@ -241,24 +249,39 @@ const RhythmBladeGame = () => {
             className="absolute inset-0 z-30 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4"
           >
             <div className="max-w-sm w-full text-center text-white space-y-4">
-              <div className="text-5xl">💔</div>
+              <motion.div
+                className="text-5xl"
+                initial={{ scale: 0.5, rotate: -15 }}
+                animate={{ scale: 1, rotate: 0 }}
+                transition={{ type: "spring", stiffness: 260, damping: 12 }}
+              >
+                💔
+              </motion.div>
               <h2 className="text-2xl font-display font-bold">Life's Empty</h2>
               <div className="text-4xl font-black tabular-nums bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
                 {finalScore}
               </div>
               <div className="text-xs text-white/60">Max combo: {finalCombo}</div>
               {finalScore >= best && finalScore > 0 && (
-                <div className="flex items-center justify-center gap-1.5 text-amber-400 text-sm font-semibold">
+                <motion.div
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex items-center justify-center gap-1.5 text-amber-400 text-sm font-semibold"
+                >
                   <Sparkles className="w-4 h-4" /> New Best!
-                </div>
+                </motion.div>
               )}
               <div className="flex gap-2">
-                <Button variant="outline" className="flex-1 border-white/30 text-white" onClick={submitToLeaderboard}>
-                  Submit Score
-                </Button>
-                <Button className="flex-1 bg-gradient-to-r from-purple-500 to-pink-600 text-white font-bold" onClick={startGame}>
-                  Retry
-                </Button>
+                <motion.div className="flex-1" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }}>
+                  <Button variant="outline" className="w-full border-white/30 text-white" onClick={submitToLeaderboard}>
+                    Submit Score
+                  </Button>
+                </motion.div>
+                <motion.div className="flex-1" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }}>
+                  <Button className="w-full bg-gradient-to-r from-purple-500 to-pink-600 text-white font-bold" onClick={startGame}>
+                    Retry
+                  </Button>
+                </motion.div>
               </div>
               <ArcadeLeaderboard gameId="rhythm_blade" currentUserId={userId} refreshKey={refreshKey} />
             </div>
