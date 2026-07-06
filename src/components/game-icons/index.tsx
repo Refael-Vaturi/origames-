@@ -247,6 +247,25 @@ export function RopeSwingIcon({ className }: IconProps) {
   );
 }
 
+export function WordLadderIcon({ className }: IconProps) {
+  const id = useId();
+  return (
+    <svg viewBox="0 0 64 64" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id={`${id}-g`} x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#34d399" />
+          <stop offset="100%" stopColor="#fbbf24" />
+        </linearGradient>
+      </defs>
+      <rect x="6" y="14" width="14" height="14" rx="3" fill="#34d399" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" />
+      <rect x="25" y="14" width="14" height="14" rx="3" fill="#fbbf24" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" />
+      <rect x="44" y="14" width="14" height="14" rx="3" fill="#475569" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" />
+      <rect x="15" y="36" width="14" height="14" rx="3" fill={`url(#${id}-g)`} stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" />
+      <rect x="34" y="36" width="14" height="14" rx="3" fill="#34d399" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" />
+    </svg>
+  );
+}
+
 export function CityFindIcon({ className }: IconProps) {
   const id = useId();
   return (

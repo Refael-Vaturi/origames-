@@ -56,7 +56,10 @@ export function update(state: GameState, dt: number) {
     const anchor = state.anchors[state.anchorIndex];
     const alpha = -(GRAVITY / state.ropeLength) * Math.sin(state.theta);
     state.omega += alpha * dt;
-    state.omega *= 0.9995;
+    // Frame-rate-independent damping: a fixed per-frame multiplier would decay
+    // much faster on high-refresh-rate displays (90/120Hz) since it gets applied
+    // more often per second. Scale it by dt so the decay rate is per-second.
+    state.omega *= Math.pow(0.97, dt * 60);
     state.theta += state.omega * dt;
     state.playerX = anchor.x + state.ropeLength * Math.sin(state.theta);
     state.playerY = anchor.y + state.ropeLength * Math.cos(state.theta);

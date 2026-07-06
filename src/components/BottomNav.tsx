@@ -30,6 +30,7 @@ import {
   RopeSwingIcon,
   VelocityDriftIcon,
   WobbleRaceIcon,
+  WordLadderIcon,
 } from "@/components/game-icons";
 import type { ComponentType } from "react";
 
@@ -64,6 +65,7 @@ const gameOptions: {
   { id: "merge-tycoon", name: "Merge Tycoon", route: "/merge-tycoon", accent: "#fb923c", tag: "Idle", icon: MergeTycoonIcon, image: mergeTycoonCard },
   { id: "wobble-race", name: "Wobble Race", route: "/wobble-race", accent: "#fde047", tag: "Party", icon: WobbleRaceIcon, image: wobbleRaceCard },
   { id: "rope-swing", name: "Rope Swing Tumble", route: "/rope-swing", accent: "#38bdf8", tag: "Party", icon: RopeSwingIcon, image: ropeSwingCard },
+  { id: "word-ladder", name: "Word Ladder", route: "/word-ladder", accent: "#34d399", tag: "Word", icon: WordLadderIcon },
 ];
 
 const BottomNav = () => {
@@ -156,18 +158,33 @@ const BottomNav = () => {
                     key={g.id}
                     whileTap={{ scale: 0.96 }}
                     onClick={() => { playClick(); setPlayOpen(false); navigate(g.route); }}
-                    className="relative aspect-[4/5] rounded-xl overflow-hidden border border-border bg-card flex flex-col justify-between p-3 text-start"
+                    className="relative aspect-[4/5] rounded-xl overflow-hidden border border-border text-start"
                   >
-                    <div className="absolute top-0 left-0 right-0 h-[3px]" style={{ backgroundColor: g.accent }} />
-                    <div className="flex items-start justify-between">
-                      <div className="w-11 h-11 rounded-lg bg-muted flex items-center justify-center p-1.5">
-                        {g.image ? <img src={g.image} alt="" className="w-full h-full object-contain" /> : <g.icon className="w-full h-full" />}
+                    {g.image ? (
+                      <>
+                        <img src={g.image} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
+                        <div className="absolute top-2 right-2">
+                          <span className="text-[9px] font-display font-semibold uppercase tracking-wide text-white/90 bg-black/30 backdrop-blur px-1.5 py-0.5 rounded">
+                            {g.tag}
+                          </span>
+                        </div>
+                        <p className="absolute bottom-0 inset-x-0 p-3 font-display font-bold text-white text-sm drop-shadow">{g.name}</p>
+                      </>
+                    ) : (
+                      <div className="absolute inset-0 bg-card flex flex-col justify-between p-3">
+                        <div className="absolute top-0 left-0 right-0 h-[3px]" style={{ backgroundColor: g.accent }} />
+                        <div className="flex items-start justify-between">
+                          <div className="w-11 h-11 rounded-lg bg-muted flex items-center justify-center p-1.5">
+                            <g.icon className="w-full h-full" />
+                          </div>
+                          <span className="text-[9px] font-display font-semibold uppercase tracking-wide text-muted-foreground pt-1">
+                            {g.tag}
+                          </span>
+                        </div>
+                        <p className="font-display font-bold text-foreground text-sm">{g.name}</p>
                       </div>
-                      <span className="text-[9px] font-display font-semibold uppercase tracking-wide text-muted-foreground pt-1">
-                        {g.tag}
-                      </span>
-                    </div>
-                    <p className="font-display font-bold text-foreground text-sm">{g.name}</p>
+                    )}
                   </motion.button>
                 ))}
               </div>

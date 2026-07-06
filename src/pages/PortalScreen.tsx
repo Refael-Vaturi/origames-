@@ -35,6 +35,7 @@ import {
   RopeSwingIcon,
   VelocityDriftIcon,
   WobbleRaceIcon,
+  WordLadderIcon,
 } from "@/components/game-icons";
 import { useEffect, useState, type ComponentType } from "react";
 
@@ -199,6 +200,16 @@ const PortalScreen = () => {
       players: "1",
       tag: "Party",
     },
+    {
+      id: "word-ladder",
+      name: "Word Ladder",
+      icon: WordLadderIcon,
+      accent: "#34d399",
+      route: "/word-ladder",
+      description: "Guess the daily 5-letter word in 6 tries.",
+      players: "1",
+      tag: "Word",
+    },
   ];
 
   const featured = [games[0], games[1], games[4]];
@@ -358,18 +369,29 @@ const PortalScreen = () => {
                 key={g.id}
                 whileTap={{ scale: 0.96 }}
                 onClick={() => { playClick(); navigate(g.route); }}
-                className="relative shrink-0 w-32 h-40 rounded-xl overflow-hidden border border-border bg-card snap-start flex flex-col justify-between p-3 text-start"
+                className="relative shrink-0 w-32 h-40 rounded-xl overflow-hidden border border-border snap-start text-start"
               >
-                <div className="absolute top-0 left-0 right-0 h-[3px]" style={{ backgroundColor: g.accent }} />
-                <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center p-1.5">
-                  {g.image ? <img src={g.image} alt="" className="w-full h-full object-contain" /> : <g.icon className="w-full h-full" />}
-                </div>
-                <div>
-                  <p className="font-display font-semibold text-foreground text-sm leading-tight">
-                    {g.name}
-                  </p>
-                  <p className="text-muted-foreground text-[10px] font-body uppercase tracking-wide mt-0.5">{g.tag}</p>
-                </div>
+                {g.image ? (
+                  <>
+                    <img src={g.image} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/5 to-transparent" />
+                    <div className="absolute inset-0 p-2.5 flex flex-col justify-end">
+                      <p className="font-display font-semibold text-white text-sm leading-tight drop-shadow">{g.name}</p>
+                      <p className="text-white/75 text-[10px] font-body uppercase tracking-wide mt-0.5">{g.tag}</p>
+                    </div>
+                  </>
+                ) : (
+                  <div className="absolute inset-0 bg-card flex flex-col justify-between p-3">
+                    <div className="absolute top-0 left-0 right-0 h-[3px]" style={{ backgroundColor: g.accent }} />
+                    <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center p-1.5">
+                      <g.icon className="w-full h-full" />
+                    </div>
+                    <div>
+                      <p className="font-display font-semibold text-foreground text-sm leading-tight">{g.name}</p>
+                      <p className="text-muted-foreground text-[10px] font-body uppercase tracking-wide mt-0.5">{g.tag}</p>
+                    </div>
+                  </div>
+                )}
               </motion.button>
             ))}
           </div>
@@ -396,25 +418,39 @@ const PortalScreen = () => {
                 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={() => { playClick(); navigate(game.route); }}
-                className="relative rounded-xl overflow-hidden border border-border bg-card aspect-[4/5] flex flex-col justify-between p-3 text-start"
+                className="relative rounded-xl overflow-hidden border border-border aspect-[4/5] text-start"
               >
-                <div className="absolute top-0 left-0 right-0 h-[3px]" style={{ backgroundColor: game.accent }} />
-                <div className="flex items-start justify-between">
-                  <div className="w-11 h-11 rounded-lg bg-muted flex items-center justify-center p-1.5">
-                    {game.image ? <img src={game.image} alt="" className="w-full h-full object-contain" /> : <game.icon className="w-full h-full" />}
+                {game.image ? (
+                  <>
+                    <img src={game.image} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
+                    <div className="absolute top-2.5 right-2.5">
+                      <span className="text-[9px] font-display font-semibold uppercase tracking-wide text-white/90 bg-black/30 backdrop-blur px-1.5 py-0.5 rounded">
+                        {game.tag}
+                      </span>
+                    </div>
+                    <div className="absolute bottom-0 inset-x-0 p-3">
+                      <p className="font-display font-bold text-white text-sm drop-shadow">{game.name}</p>
+                      <p className="text-white/75 text-[10px] font-body mt-0.5">👥 {game.players}</p>
+                    </div>
+                  </>
+                ) : (
+                  <div className="absolute inset-0 bg-card flex flex-col justify-between p-3">
+                    <div className="absolute top-0 left-0 right-0 h-[3px]" style={{ backgroundColor: game.accent }} />
+                    <div className="flex items-start justify-between">
+                      <div className="w-11 h-11 rounded-lg bg-muted flex items-center justify-center p-1.5">
+                        <game.icon className="w-full h-full" />
+                      </div>
+                      <span className="text-[9px] font-display font-semibold uppercase tracking-wide text-muted-foreground pt-1">
+                        {game.tag}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="font-display font-bold text-foreground text-sm">{game.name}</p>
+                      <p className="text-muted-foreground text-[10px] font-body mt-0.5">👥 {game.players}</p>
+                    </div>
                   </div>
-                  <span className="text-[9px] font-display font-semibold uppercase tracking-wide text-muted-foreground pt-1">
-                    {game.tag}
-                  </span>
-                </div>
-                <div>
-                  <p className="font-display font-bold text-foreground text-sm">
-                    {game.name}
-                  </p>
-                  <p className="text-muted-foreground text-[10px] font-body mt-0.5">
-                    👥 {game.players}
-                  </p>
-                </div>
+                )}
               </motion.button>
             ))}
           </motion.div>

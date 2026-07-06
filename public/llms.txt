@@ -17,6 +17,7 @@
 - [Merge Tycoon](/merge-tycoon): Idle merge-tycoon game — buy stands, merge matching tiers into bigger businesses, and earn as much as you can before time runs out.
 - [Wobble Race](/wobble-race): Physics party obstacle course — tap to jump gaps and dodge spinning bars, racing to the finish line before time runs out.
 - [Rope Swing Tumble](/rope-swing): Grapple-swing physics game — tap to release the rope at the top of your swing and sail to the next post across the canyon.
+- [Word Ladder](/word-ladder): Daily Wordle-style word game — guess the 5-letter word in 6 tries, with color-coded hints and a daily streak.
 
 ## Info Pages
 

@@ -12,7 +12,7 @@ function toScreen(x: number, y: number, cam: { scale: number; offsetX: number; o
   return { x: x * cam.scale + cam.offsetX, y: y * cam.scale + cam.offsetY };
 }
 
-export function render(ctx: CanvasRenderingContext2D, state: GameState, w: number, h: number, time: number, topInset = 0) {
+export function render(ctx: CanvasRenderingContext2D, state: GameState, w: number, h: number, time: number, topInset = 0, bottomInset = 0) {
   const cam = computeCamera(w, h);
 
   ctx.fillStyle = "#0d1512";
@@ -137,6 +137,6 @@ export function render(ctx: CanvasRenderingContext2D, state: GameState, w: numbe
     ctx.textAlign = "center";
     ctx.font = "bold 14px monospace";
     ctx.fillStyle = "#f87171";
-    ctx.fillText("OFF TRACK", w / 2, h - 24);
+    ctx.fillText("OFF TRACK", w / 2, h - 108 - bottomInset);
   }
 }

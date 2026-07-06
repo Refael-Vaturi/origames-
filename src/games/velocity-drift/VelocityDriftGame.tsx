@@ -148,7 +148,7 @@ const VelocityDriftGame = () => {
       if (s.shakeTimer > 0) {
         ctx.translate((Math.random() - 0.5) * 6 * s.shakeTimer * 4, (Math.random() - 0.5) * 6 * s.shakeTimer * 4);
       }
-      render(ctx, s, w, h, time, safeAreaRef.current.top);
+      render(ctx, s, w, h, time, safeAreaRef.current.top, safeAreaRef.current.bottom);
       ctx.restore();
 
       animFrameRef.current = requestAnimationFrame(loop);
