@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Lightbulb, Send, Timer, Image as ImageIcon, Users, Copy, Share2, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Lightbulb, Target, Timer, Users, Copy, Share2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
@@ -9,29 +9,16 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { playClick, playSuccess, playError, playPop } from "@/hooks/useSound";
 import ArcadeLeaderboard from "../arcade/ArcadeLeaderboard";
 import { useArcadeScore } from "../arcade/useArcadeScore";
-import { CITIES, CityData, matchesCity, suggestCities } from "./cities";
+import { CITIES, CityData, haversineKm, scoreForDistance } from "./cities";
+import WorldGuessMap, { LatLng } from "./WorldGuessMap";
 import { toast } from "@/hooks/use-toast";
 
 const ROUNDS = 5;
 const TIME_PER_ROUND = 45;
-const HINT_COST = 50;
+const HINT_COSTS = [400, 700]; // cost of hint 1, hint 2 — steep, since a perfect guess is worth up to 5000
+const CORRECT_THRESHOLD_KM = 150; // "correct" badge / bonus if within this distance
+const NO_GUESS_PENALTY_KM = 20000; // treated distance when time runs out with no pin placed
 const GOOGLE_MAPS_API_KEY = "AIzaSyBNItXNypmi4rHtyK1PMdl5xiRoz9PrVgY";
-
-// Lat/Lng for each city (for Street View). Falls back to place name search.
-const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
-  "tel-aviv": { lat: 32.0809, lng: 34.7806 },
-  paris: { lat: 48.8584, lng: 2.2945 }, // Eiffel Tower
-  london: { lat: 51.5007, lng: -0.1246 }, // Big Ben
-  "new-york": { lat: 40.7580, lng: -73.9855 }, // Times Square
-  tokyo: { lat: 35.6595, lng: 139.7004 }, // Shibuya
-  rome: { lat: 41.8902, lng: 12.4922 }, // Colosseum
-  barcelona: { lat: 41.4036, lng: 2.1744 }, // Sagrada Familia
-  amsterdam: { lat: 52.3676, lng: 4.9041 },
-  prague: { lat: 50.0875, lng: 14.4213 }, // Old Town Square
-  istanbul: { lat: 41.0086, lng: 28.9802 }, // Hagia Sophia
-  sydney: { lat: -33.8568, lng: 151.2153 }, // Opera House
-  rio: { lat: -22.9519, lng: -43.2105 }, // Christ the Redeemer
-};
 
 type Phase = "intro" | "playing" | "reveal" | "game-over";
 
@@ -75,32 +62,33 @@ const CityFindGame = () => {
   const [phase, setPhase] = useState<Phase>("intro");
   const [cities, setCities] = useState<CityData[]>([]);
   const [roundIdx, setRoundIdx] = useState(0);
-  const [imgIdx, setImgIdx] = useState(0);
-  const [guess, setGuess] = useState("");
+  const [guessPos, setGuessPos] = useState<LatLng | null>(null);
   const [score, setScore] = useState(0);
   const [hintsUsed, setHintsUsed] = useState(0);
   const [timeLeft, setTimeLeft] = useState(TIME_PER_ROUND);
-  const [lastResult, setLastResult] = useState<{ correct: boolean; gain: number; city: CityData } | null>(null);
+  const [lastResult, setLastResult] = useState<{
+    correct: boolean;
+    gain: number;
+    city: CityData;
+    distanceKm: number;
+    guess: LatLng | null;
+  } | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [submitted, setSubmitted] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
 
   const currentCity = cities[roundIdx];
-  const suggestions = useMemo(() => suggestCities(guess), [guess]);
 
   const startGame = () => {
     playPop();
     setCities(pickCities(ROUNDS, roomCode || undefined));
     setRoundIdx(0);
-    setImgIdx(0);
-    setGuess("");
+    setGuessPos(null);
     setScore(0);
     setHintsUsed(0);
     setTimeLeft(TIME_PER_ROUND);
     setLastResult(null);
     setSubmitted(false);
     setPhase("playing");
-    setTimeout(() => inputRef.current?.focus(), 100);
   };
 
   const createRoom = () => {
@@ -141,20 +129,22 @@ const CityFindGame = () => {
 
   const submitGuess = (timedOut = false) => {
     if (phase !== "playing" || !currentCity) return;
-    const isCorrect = !timedOut && matchesCity(guess, currentCity);
-    let gain = 0;
+    const distanceKm =
+      !timedOut && guessPos ? haversineKm(guessPos.lat, guessPos.lng, currentCity.lat, currentCity.lng) : NO_GUESS_PENALTY_KM;
+    const isCorrect = distanceKm <= CORRECT_THRESHOLD_KM;
+    const base = scoreForDistance(distanceKm);
+    const timeBonus = Math.round(200 * (timeLeft / TIME_PER_ROUND));
+    const hintPenalty = HINT_COSTS.slice(0, hintsUsed).reduce((a, b) => a + b, 0);
+    const gain = base > 0 ? Math.max(0, base + timeBonus - hintPenalty) : 0;
+
     if (isCorrect) {
-      const base = 500;
-      const timeBonus = Math.round(300 * (timeLeft / TIME_PER_ROUND));
-      const hintPenalty = hintsUsed * HINT_COST;
-      gain = Math.max(0, base + timeBonus - hintPenalty);
       playSuccess();
-      toast({ title: `🎉 ${t("cityFind.correct")}`, description: `+${gain} points` });
+      toast({ title: `🎯 ${t("cityFind.correct")}`, description: `+${gain} points` });
     } else {
       playError();
     }
     setScore((s) => s + gain);
-    setLastResult({ correct: isCorrect, gain, city: currentCity });
+    setLastResult({ correct: isCorrect, gain, city: currentCity, distanceKm, guess: timedOut ? null : guessPos });
     setPhase("reveal");
   };
 
@@ -165,13 +155,11 @@ const CityFindGame = () => {
       return;
     }
     setRoundIdx((r) => r + 1);
-    setImgIdx(0);
-    setGuess("");
+    setGuessPos(null);
     setHintsUsed(0);
     setTimeLeft(TIME_PER_ROUND);
     setLastResult(null);
     setPhase("playing");
-    setTimeout(() => inputRef.current?.focus(), 100);
   };
 
   const useHint = () => {
@@ -283,53 +271,28 @@ const CityFindGame = () => {
                   </div>
                 )}
                 {hintsUsed >= 2 && (
-                  <div className="bg-accent/10 border border-accent/30 rounded-xl px-3 py-2 text-sm">
-                    <strong>{t("cityFind.countryHint")}</strong> {currentCity.flag} {currentCity.country_en}
+                  <div className="bg-accent/10 border border-accent/30 rounded-xl px-3 py-2 text-sm flex items-center gap-2">
+                    <strong>{t("cityFind.countryHint")}</strong>
+                    <span className="text-2xl leading-none">{currentCity.flag}</span>
+                    <span className="text-xs text-muted-foreground">(guess the country from its flag)</span>
                   </div>
                 )}
 
-                <div className="relative">
-                  <div className="flex gap-2">
-                    <Input
-                      ref={inputRef}
-                      value={guess}
-                      onChange={(e) => setGuess(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && submitGuess()}
-                      placeholder={t("cityFind.typeCity")}
-                      dir="auto"
-                      className="flex-1"
-                    />
-                    <Button onClick={() => submitGuess()} disabled={!guess.trim()}>
-                      <Send className="w-4 h-4" />
-                    </Button>
-                  </div>
-                  {suggestions.length > 0 && guess.length >= 1 && (
-                    <div className="absolute z-10 left-0 right-12 top-full mt-1 bg-popover border border-border rounded-xl shadow-lg overflow-hidden">
-                      {suggestions.map((c) => (
-                        <button
-                          key={c.id}
-                          type="button"
-                          onClick={() => { setGuess(c.name_en); setTimeout(() => submitGuess(), 0); }}
-                          className="w-full text-left px-3 py-2 text-sm hover:bg-muted flex items-center gap-2"
-                        >
-                          <span>{c.flag}</span>
-                          <span className="font-medium">{c.name_en}</span>
-                          <span className="text-muted-foreground text-xs">· {c.name_he}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <WorldGuessMap mode="input" guess={guessPos} onPick={setGuessPos} />
 
-                <div className="flex gap-2 text-xs">
+                <div className="flex gap-2 items-center">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={useHint}
                     disabled={hintsUsed >= 2}
+                    className="text-xs"
                   >
                     <Lightbulb className="w-3.5 h-3.5 mr-1" />
-                    {t("cityFind.hint")} ({hintsUsed}/2) · -{HINT_COST}
+                    {t("cityFind.hint")} ({hintsUsed}/2) · -{HINT_COSTS[hintsUsed] ?? 0}
+                  </Button>
+                  <Button onClick={() => submitGuess()} disabled={!guessPos} className="flex-1">
+                    <Target className="w-4 h-4 mr-2" /> Submit Guess
                   </Button>
                 </div>
               </motion.div>
@@ -360,12 +323,24 @@ const CityFindGame = () => {
                   </span>
                 </motion.div>
 
+                <p className="text-sm text-muted-foreground">
+                  {lastResult.guess
+                    ? `${Math.round(lastResult.distanceKm).toLocaleString()} km away`
+                    : "No guess placed"}
+                </p>
+
+                <WorldGuessMap
+                  mode="result"
+                  guess={lastResult.guess}
+                  actual={{ lat: lastResult.city.lat, lng: lastResult.city.lng }}
+                />
+
                 <div
                   className={`mt-4 text-3xl font-bold ${
                     lastResult.correct ? "text-game-green" : "text-muted-foreground"
                   }`}
                 >
-                  {lastResult.correct ? `+${lastResult.gain}` : "+0"}
+                  +{lastResult.gain}
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">
                   {tf("cityFind.total", { score })}
@@ -439,11 +414,7 @@ const LiveStreetView = ({ city, onUnavailable }: { city: CityData; onUnavailable
   useEffect(() => {
     let cancelled = false;
     setReady(false);
-    const coords = CITY_COORDS[city.id];
-    if (!coords) {
-      onUnavailable();
-      return;
-    }
+    const coords = { lat: city.lat, lng: city.lng };
 
     loadGoogleMaps(GOOGLE_MAPS_API_KEY)
       .then(() => {
@@ -511,9 +482,18 @@ const MysteryStreetView = ({ city }: { city: CityData }) => {
 
   useEffect(() => {
     if (!city.images || city.images.length <= 1) return;
-    const id = setInterval(() => setIdx((i) => (i + 1) % city.images.length), 3000);
+    const images = city.images;
+    const id = setInterval(() => setIdx((i) => (i + 1) % images.length), 3000);
     return () => clearInterval(id);
   }, [city.id, city.images]);
+
+  if (!city.images || city.images.length === 0) {
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-950 text-4xl">
+        🌍
+      </div>
+    );
+  }
 
   return (
     <img
