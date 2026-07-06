@@ -21,6 +21,7 @@ import CyberShieldGame from "./games/cyber-shield/CyberShieldGame";
 import FruitMergeGame from "./games/fruit-merge/FruitMergeGame";
 import MergeTycoonGame from "./games/merge-tycoon/MergeTycoonGame";
 import WobbleRaceGame from "./games/wobble-race/WobbleRaceGame";
+import RopeSwingGame from "./games/rope-swing/RopeSwingGame";
 import WelcomeScreen from "./pages/WelcomeScreen";
 import HomeScreen from "./pages/HomeScreen";
 import JoinByCodeScreen from "./pages/JoinByCodeScreen";
@@ -91,6 +92,7 @@ const App = () => {
               <Route path="/fruit-merge" element={<FruitMergeGame />} />
               <Route path="/merge-tycoon" element={<MergeTycoonGame />} />
               <Route path="/wobble-race" element={<WobbleRaceGame />} />
+              <Route path="/rope-swing" element={<RopeSwingGame />} />
 
               {/* Fake It Fast game routes */}
               <Route path="/fake-it-fast" element={<HomeScreen />} />

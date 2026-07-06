@@ -229,6 +229,24 @@ export function WobbleRaceIcon({ className }: IconProps) {
   );
 }
 
+export function RopeSwingIcon({ className }: IconProps) {
+  const id = useId();
+  return (
+    <svg viewBox="0 0 64 64" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id={`${id}-g`} x1="10" y1="10" x2="54" y2="54" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#38bdf8" />
+          <stop offset="100%" stopColor="#ef4444" />
+        </linearGradient>
+      </defs>
+      <circle cx="16" cy="10" r="5" fill="#78350f" />
+      <path d="M16 15 Q30 30 42 46" stroke="#92400e" strokeWidth="3" fill="none" strokeLinecap="round" />
+      <circle cx="42" cy="46" r="11" fill={`url(#${id}-g)`} stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" />
+      <path d="M8 46 Q30 58 56 40" stroke="rgba(255,255,255,0.35)" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeDasharray="1 7" />
+    </svg>
+  );
+}
+
 export function CityFindIcon({ className }: IconProps) {
   const id = useId();
   return (

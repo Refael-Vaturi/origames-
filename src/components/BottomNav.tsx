@@ -16,6 +16,7 @@ import {
   IronDomeIcon,
   MergeTycoonIcon,
   RhythmBladeIcon,
+  RopeSwingIcon,
   VelocityDriftIcon,
   WobbleRaceIcon,
 } from "@/components/game-icons";
@@ -50,6 +51,7 @@ const gameOptions: {
   { id: "fruit-merge", name: "Fruit Merge", route: "/fruit-merge", accent: "#fb7185", tag: "Merge", icon: FruitMergeIcon },
   { id: "merge-tycoon", name: "Merge Tycoon", route: "/merge-tycoon", accent: "#fb923c", tag: "Idle", icon: MergeTycoonIcon },
   { id: "wobble-race", name: "Wobble Race", route: "/wobble-race", accent: "#fde047", tag: "Party", icon: WobbleRaceIcon },
+  { id: "rope-swing", name: "Rope Swing Tumble", route: "/rope-swing", accent: "#38bdf8", tag: "Party", icon: RopeSwingIcon },
 ];
 
 const BottomNav = () => {
