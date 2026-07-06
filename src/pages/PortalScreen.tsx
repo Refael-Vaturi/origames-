@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Settings, LogIn, ShieldCheck, ChevronRight, Sparkles, Search } from "lucide-react";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
+import { playClick } from "@/hooks/useSound";
 import { useOnlinePresence } from "@/hooks/useOnlinePresence";
 import LanguageSelector from "@/components/LanguageSelector";
 import BottomNav from "@/components/BottomNav";
@@ -136,7 +137,7 @@ const PortalScreen = () => {
       <header className="relative z-10 flex items-center justify-between px-4 pt-3 pb-2">
         <button
           className="flex items-center gap-2.5 active:scale-95 transition-transform"
-          onClick={() => (user ? navigate("/profile") : navigate("/auth"))}
+          onClick={() => { playClick(); navigate(user ? "/profile" : "/auth"); }}
         >
           <div className="w-10 h-10 rounded-2xl gradient-hero flex items-center justify-center shadow-button">
             <span className="text-primary-foreground font-display font-bold text-sm">
@@ -162,7 +163,7 @@ const PortalScreen = () => {
           {isAdmin && (
             <button
               className="p-2 rounded-xl hover:bg-muted active:scale-95 transition text-primary"
-              onClick={() => navigate("/admin")}
+              onClick={() => { playClick(); navigate("/admin"); }}
               title="Admin"
             >
               <ShieldCheck className="w-5 h-5" />
@@ -170,7 +171,7 @@ const PortalScreen = () => {
           )}
           <button
             className="p-2 rounded-xl hover:bg-muted active:scale-95 transition text-muted-foreground"
-            onClick={() => navigate("/settings")}
+            onClick={() => { playClick(); navigate("/settings"); }}
             aria-label="Settings"
           >
             <Settings className="w-5 h-5" />
@@ -224,7 +225,7 @@ const PortalScreen = () => {
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             whileTap={{ scale: 0.98 }}
-            onClick={() => navigate(featured[heroIdx].route)}
+            onClick={() => { playClick(); navigate(featured[heroIdx].route); }}
             className="relative w-full h-44 rounded-3xl overflow-hidden shadow-card block"
           >
             <div className={`absolute inset-0 bg-gradient-to-br ${featured[heroIdx].color}`} />
@@ -266,7 +267,7 @@ const PortalScreen = () => {
               <motion.button
                 key={g.id}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => navigate(g.route)}
+                onClick={() => { playClick(); navigate(g.route); }}
                 className="relative shrink-0 w-32 h-40 rounded-2xl overflow-hidden shadow-card snap-start"
               >
                 <div className={`absolute inset-0 bg-gradient-to-br ${g.color}`} />
@@ -310,7 +311,7 @@ const PortalScreen = () => {
                   visible: { y: 0, opacity: 1 },
                 }}
                 whileTap={{ scale: 0.97 }}
-                onClick={() => navigate(game.route)}
+                onClick={() => { playClick(); navigate(game.route); }}
                 className="relative rounded-2xl overflow-hidden shadow-card aspect-[4/5]"
               >
                 <div className={`absolute inset-0 bg-gradient-to-br ${game.color}`} />

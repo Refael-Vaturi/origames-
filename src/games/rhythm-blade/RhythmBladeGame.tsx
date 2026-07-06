@@ -5,6 +5,7 @@ import { ArrowLeft, Trophy, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { playClick } from "@/hooks/useSound";
+import { useGameFirstVisit } from "@/hooks/useGameFirstVisit";
 import ArcadeLeaderboard from "../arcade/ArcadeLeaderboard";
 import { useArcadeScore } from "../arcade/useArcadeScore";
 import { toast } from "@/hooks/use-toast";
@@ -20,6 +21,7 @@ const RhythmBladeGame = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { submitScore, userId } = useArcadeScore("rhythm_blade");
+  const { isFirstVisit, markSeen } = useGameFirstVisit("rhythm-blade");
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const audioRef = useRef<RhythmAudio | null>(null);
@@ -53,6 +55,7 @@ const RhythmBladeGame = () => {
 
   const startGame = useCallback(() => {
     playClick();
+    markSeen();
     audioRef.current?.stop();
     const audio = new RhythmAudio();
     audioRef.current = audio;
@@ -63,7 +66,7 @@ const RhythmBladeGame = () => {
     audio.onBeat = (time, beatIndex) => handleBeat(stateRef.current, time, beatIndex);
     audio.start();
     setPhase("playing");
-  }, []);
+  }, [markSeen]);
 
   // Keyboard input
   useEffect(() => {
@@ -216,12 +219,16 @@ const RhythmBladeGame = () => {
               <h1 className="text-3xl font-display font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
                 Rhythm Blade
               </h1>
-              <p className="text-sm text-white/70">
-                Colored blocks fly toward the center on the beat. Press the matching{" "}
-                <span className="text-purple-300 font-semibold">arrow key</span> (or swipe) right as each one
-                reaches the ring. Chain 10 hits for <span className="text-yellow-300 font-semibold">Hyper Drive</span>{" "}
-                — triple points until you miss.
-              </p>
+              {isFirstVisit ? (
+                <p className="text-sm text-white/70">
+                  Colored blocks fly toward the center on the beat. Press the matching{" "}
+                  <span className="text-purple-300 font-semibold">arrow key</span> (or swipe) right as each one
+                  reaches the ring. Chain 10 hits for <span className="text-yellow-300 font-semibold">Hyper Drive</span>{" "}
+                  — triple points until you miss.
+                </p>
+              ) : (
+                <p className="text-xs text-white/50">Slice blocks on the beat. Chain combos for Hyper Drive.</p>
+              )}
               <div className="flex items-center justify-center gap-2 text-xs text-white/50">
                 <Trophy className="w-4 h-4 text-amber-400" /> Best: {best}
               </div>

@@ -4,6 +4,7 @@ import { Home, Gamepad2, Users, UserCircle, X } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { playClick, playPop } from "@/hooks/useSound";
 import fakeItFastCard from "@/assets/fake-it-fast-card.png";
 import ironDomeCard from "@/assets/iron-dome-card.png";
 
@@ -50,7 +51,8 @@ const BottomNav = () => {
                 ? location.pathname === "/"
                 : !!route && location.pathname.startsWith(route);
             const handle = () => {
-              if (id === "play") { setPlayOpen(true); return; }
+              if (id === "play") { playPop(); setPlayOpen(true); return; }
+              playClick();
               if ((id === "friends" || id === "profile") && !user) { navigate("/auth"); return; }
               if (route) navigate(route);
             };
@@ -103,7 +105,7 @@ const BottomNav = () => {
                   <h2 className="font-display text-lg font-bold text-foreground text-center">{t("nav.chooseGame")}</h2>
                 </div>
                 <button
-                  onClick={() => setPlayOpen(false)}
+                  onClick={() => { playClick(); setPlayOpen(false); }}
                   className="absolute end-4 top-4 p-1.5 rounded-full bg-muted text-muted-foreground active:scale-90 transition"
                 >
                   <X className="w-4 h-4" />
@@ -114,7 +116,7 @@ const BottomNav = () => {
                   <motion.button
                     key={g.id}
                     whileTap={{ scale: 0.95 }}
-                    onClick={() => { setPlayOpen(false); navigate(g.route); }}
+                    onClick={() => { playClick(); setPlayOpen(false); navigate(g.route); }}
                     className="relative aspect-[4/5] rounded-2xl overflow-hidden shadow-card"
                   >
                     <div className={`absolute inset-0 bg-gradient-to-br ${g.color}`} />

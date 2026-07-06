@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Camera, Edit2, Share2, Loader2, Copy, Check } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { playClick, playSuccess } from "@/hooks/useSound";
 
 const ProfileScreen = () => {
   const navigate = useNavigate();
@@ -67,6 +68,7 @@ const ProfileScreen = () => {
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
+      playSuccess();
       toast({ title: t("profile.save") + " ✅" });
       await refreshProfile();
       setIsEditing(false);
@@ -163,7 +165,7 @@ const ProfileScreen = () => {
       >
         <div className="bg-card rounded-3xl p-6 shadow-card">
           <div className="flex items-center gap-3 mb-6">
-            <button onClick={() => navigate(-1)} className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground">
+            <button onClick={() => { playClick(); navigate(-1); }} className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground">
               <ArrowLeft className="w-5 h-5" />
             </button>
             <h1 className="font-display text-2xl font-bold text-foreground">{t("profile.title")}</h1>
@@ -176,7 +178,7 @@ const ProfileScreen = () => {
                 <Share2 className="w-5 h-5" />
               </button>
               <button
-                onClick={() => setIsEditing(!isEditing)}
+                onClick={() => { playClick(); setIsEditing(!isEditing); }}
                 className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground"
               >
                 <Edit2 className="w-5 h-5" />
@@ -251,7 +253,7 @@ const ProfileScreen = () => {
                   </button>
                 ) : (
                   <button
-                    onClick={() => setIsEditing(true)}
+                    onClick={() => { playClick(); setIsEditing(true); }}
                     className="text-xs text-primary font-body underline"
                   >
                     {t("profile.setUsername") || "Set a username"}
@@ -299,7 +301,7 @@ const ProfileScreen = () => {
           </div>
 
           {!user && (
-            <Button variant="hero" size="lg" className="w-full mt-4" onClick={() => navigate("/auth")}>
+            <Button variant="hero" size="lg" className="w-full mt-4" onClick={() => { playClick(); navigate("/auth"); }}>
               {t("auth.loginBtn")}
             </Button>
           )}

@@ -5,6 +5,7 @@ import { ArrowLeft, Zap, Clock, Sparkles, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { playClick, playWhoosh, playPop, playError, playSuccess } from "@/hooks/useSound";
+import { useGameFirstVisit } from "@/hooks/useGameFirstVisit";
 import ArcadeLeaderboard from "../arcade/ArcadeLeaderboard";
 import { useArcadeScore } from "../arcade/useArcadeScore";
 import { toast } from "@/hooks/use-toast";
@@ -18,6 +19,7 @@ const GravityFlipGame = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { submitScore, userId } = useArcadeScore("gravity_flip");
+  const { isFirstVisit, markSeen } = useGameFirstVisit("gravity-flip");
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stateRef = useRef<GameState>(createInitialState());
@@ -50,6 +52,7 @@ const GravityFlipGame = () => {
 
   const startGame = useCallback(() => {
     playClick();
+    markSeen();
     const s = createInitialState();
     s.best = best;
     s.phase = "playing";
@@ -57,7 +60,7 @@ const GravityFlipGame = () => {
     prevPhaseRef.current = "playing";
     setPhase("playing");
     setRewindSaved(false);
-  }, [best]);
+  }, [best, markSeen]);
 
   // Input handling
   useEffect(() => {
@@ -236,11 +239,15 @@ const GravityFlipGame = () => {
               <h1 className="text-3xl font-display font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
                 Gravity Flip
               </h1>
-              <p className="text-sm text-white/70">
-                Tap anywhere (or press Space) to flip gravity. Dodge spikes and walls, drift through
-                antigrav zones, and grab <span className="text-purple-300 font-semibold">Chronos Shards</span> —
-                each one lets you rewind 3 seconds after a fatal hit.
-              </p>
+              {isFirstVisit ? (
+                <p className="text-sm text-white/70">
+                  Tap anywhere (or press Space) to flip gravity. Dodge spikes and walls, drift through
+                  antigrav zones, and grab <span className="text-purple-300 font-semibold">Chronos Shards</span> —
+                  each one lets you rewind 3 seconds after a fatal hit.
+                </p>
+              ) : (
+                <p className="text-xs text-white/50">Tap to flip gravity. Dodge everything.</p>
+              )}
               <div className="flex items-center justify-center gap-2 text-xs text-white/50">
                 <Trophy className="w-4 h-4 text-amber-400" /> Best: {best}
               </div>
