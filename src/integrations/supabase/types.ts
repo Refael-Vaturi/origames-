@@ -721,24 +721,7 @@ export type Database = {
       }
     }
     Views: {
-      profiles_public: {
-        Row: {
-          avatar_url: string | null
-          current_level: number
-          display_name: string
-          fakes_caught: number
-          games_played: number
-          id: string
-          last_seen: string | null
-          level: number
-          survived: number
-          user_id: string
-          username: string | null
-          wins: number
-          xp: number
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       admin_add_player_credits: {
