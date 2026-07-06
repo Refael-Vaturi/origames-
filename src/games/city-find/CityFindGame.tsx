@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Lightbulb, Send, Timer, Image as ImageIcon, Users, Copy, Share2, CheckCircle2 } from "lucide-react";
@@ -274,9 +274,7 @@ const CityFindGame = () => {
                 </div>
 
                 <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-muted shadow-card">
-                  <MysteryStreetView city={currentCity} />
-                  {/* Block address/labels overlay from Google Street View */}
-                  <div className="pointer-events-none absolute inset-x-0 top-0 h-12 bg-gradient-to-b from-background/80 to-transparent" />
+                  <CityView city={currentCity} />
                 </div>
 
                 {hintsUsed >= 1 && (
@@ -344,34 +342,30 @@ const CityFindGame = () => {
                 animate={{ scale: 1, opacity: 1 }}
                 className="bg-card rounded-2xl p-6 shadow-card text-center max-w-md mx-auto mt-4 w-full"
               >
-                {lastResult.correct && (
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: "spring", stiffness: 300 }}
-                    className="flex items-center justify-center gap-2 mb-3 text-game-green"
-                  >
-                    <CheckCircle2 className="w-8 h-8" />
-                      <span className="font-display text-2xl font-bold">{t("cityFind.correct")}</span>
-                  </motion.div>
-                )}
-                <div className="text-5xl mb-2">{lastResult.city.flag}</div>
-                <h3 className="font-display text-2xl font-bold">
-                  {lastResult.city.name_en}
-                </h3>
-                <p className="text-muted-foreground text-sm">{lastResult.city.country_en}</p>
-
-                <div className="mt-4 rounded-xl overflow-hidden border border-border aspect-video relative">
-                  <StreetViewOrMap city={lastResult.city} />
-                </div>
-
-
-                <div
-                  className={`mt-4 text-3xl font-bold ${
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                  className={`flex items-center justify-center gap-2 mb-3 ${
                     lastResult.correct ? "text-game-green" : "text-destructive"
                   }`}
                 >
-                  {lastResult.correct ? `+${lastResult.gain}` : t("cityFind.wrong")}
+                  {lastResult.correct ? (
+                    <CheckCircle2 className="w-10 h-10" />
+                  ) : (
+                    <span className="text-4xl">❌</span>
+                  )}
+                  <span className="font-display text-2xl font-bold">
+                    {lastResult.correct ? t("cityFind.correct") : t("cityFind.wrong")}
+                  </span>
+                </motion.div>
+
+                <div
+                  className={`mt-4 text-3xl font-bold ${
+                    lastResult.correct ? "text-game-green" : "text-muted-foreground"
+                  }`}
+                >
+                  {lastResult.correct ? `+${lastResult.gain}` : "+0"}
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">
                   {tf("cityFind.total", { score })}
@@ -416,27 +410,98 @@ const CityFindGame = () => {
   );
 };
 
-const StreetViewOrMap = ({ city }: { city: CityData }) => {
-  const coords = CITY_COORDS[city.id];
-  const mapsUrl = coords
-    ? `https://www.google.com/maps/@${coords.lat},${coords.lng},15z`
-    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${city.name_en}, ${city.country_en}`)}`;
+// Loads the Google Maps JS SDK exactly once, however many rounds/components need it.
+let mapsLoadPromise: Promise<void> | null = null;
+const loadGoogleMaps = (apiKey: string): Promise<void> => {
+  if (window.google?.maps?.StreetViewPanorama) return Promise.resolve();
+  if (mapsLoadPromise) return mapsLoadPromise;
+  mapsLoadPromise = new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}`;
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => {
+      mapsLoadPromise = null;
+      reject(new Error("Failed to load Google Maps"));
+    };
+    document.head.appendChild(script);
+  });
+  return mapsLoadPromise;
+};
+
+// Real, explorable Street View panorama dropped near the city's coordinates.
+// Navigation arrows (linksControl/clickToGo) let the player walk around; the
+// address bar and road-name labels are disabled so nothing gives the city away.
+const LiveStreetView = ({ city, onUnavailable }: { city: CityData; onUnavailable: () => void }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    setReady(false);
+    const coords = CITY_COORDS[city.id];
+    if (!coords) {
+      onUnavailable();
+      return;
+    }
+
+    loadGoogleMaps(GOOGLE_MAPS_API_KEY)
+      .then(() => {
+        if (cancelled || !containerRef.current) return;
+        const service = new google.maps.StreetViewService();
+        service.getPanorama(
+          {
+            location: coords,
+            radius: 50000,
+            source: google.maps.StreetViewSource.OUTDOOR,
+          },
+          (data, status) => {
+            if (cancelled) return;
+            if (status !== google.maps.StreetViewStatus.OK || !data?.location?.latLng || !containerRef.current) {
+              onUnavailable();
+              return;
+            }
+            new google.maps.StreetViewPanorama(containerRef.current, {
+              position: data.location.latLng,
+              pov: { heading: Math.random() * 360, pitch: 0 },
+              zoom: 0,
+              addressControl: false,
+              showRoadLabels: false,
+              linksControl: true,
+              panControl: true,
+              zoomControl: true,
+              fullscreenControl: false,
+              motionTracking: false,
+              motionTrackingControl: false,
+              clickToGo: true,
+            });
+            setReady(true);
+          }
+        );
+      })
+      .catch(() => {
+        if (!cancelled) onUnavailable();
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [city.id, onUnavailable]);
 
   return (
-    <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="block relative w-full h-full group">
-      <img
-        src={city.images[0]}
-        alt={`${city.name_en}, ${city.country_en}`}
-        className="w-full h-full object-cover"
-      />
-      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-        <span className="bg-card/90 px-3 py-1.5 rounded-lg text-xs font-semibold">🗺️ View on Google Maps</span>
-      </div>
-    </a>
+    <div className="relative w-full h-full bg-muted">
+      <div ref={containerRef} className="absolute inset-0" />
+      {!ready && (
+        <div className="absolute inset-0 flex items-center justify-center text-sm text-muted-foreground">
+          Loading street view…
+        </div>
+      )}
+    </div>
   );
 };
 
-// Mystery view: cycles through curated city images (Street View disabled - API key referrer-restricted)
+// Curated-photo slideshow, used only when live Street View has no coverage
+// near this city (or the Maps SDK fails to load).
 const MysteryStreetView = ({ city }: { city: CityData }) => {
   const [idx, setIdx] = useState(0);
 
@@ -460,8 +525,13 @@ const MysteryStreetView = ({ city }: { city: CityData }) => {
   );
 };
 
-
-
+const CityView = ({ city }: { city: CityData }) => {
+  const [failed, setFailed] = useState(false);
+  useEffect(() => setFailed(false), [city.id]);
+  const onUnavailable = useCallback(() => setFailed(true), []);
+  if (failed) return <MysteryStreetView city={city} />;
+  return <LiveStreetView city={city} onUnavailable={onUnavailable} />;
+};
 
 const JoinRoomInput = ({ onJoin }: { onJoin: (code: string) => void }) => {
   const [code, setCode] = useState("");
