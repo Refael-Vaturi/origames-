@@ -190,6 +190,24 @@ export function FruitMergeIcon({ className }: IconProps) {
   );
 }
 
+export function MergeTycoonIcon({ className }: IconProps) {
+  const id = useId();
+  return (
+    <svg viewBox="0 0 64 64" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id={`${id}-g`} x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#fbbf24" />
+          <stop offset="100%" stopColor="#fb923c" />
+        </linearGradient>
+      </defs>
+      <path d="M10 26 L14 12 H50 L54 26 Z" fill={`url(#${id}-g)`} stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" strokeLinejoin="round" />
+      <path d="M12 26v24a2 2 0 002 2h36a2 2 0 002-2V26" fill="#fde68a" stroke="rgba(120,53,15,0.3)" strokeWidth="1.5" />
+      <path d="M24 52V38a2 2 0 012-2h12a2 2 0 012 2v14" fill="#f97316" opacity="0.85" />
+      <path d="M10 26 h44 M20 26 v-6 M30 26 v-8 M40 26 v-6" stroke="rgba(120,53,15,0.35)" strokeWidth="1.5" />
+    </svg>
+  );
+}
+
 export function CityFindIcon({ className }: IconProps) {
   const id = useId();
   return (

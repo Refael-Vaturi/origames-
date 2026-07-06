@@ -21,6 +21,7 @@ import {
   FruitMergeIcon,
   GravityFlipIcon,
   IronDomeIcon,
+  MergeTycoonIcon,
   RhythmBladeIcon,
   VelocityDriftIcon,
 } from "@/components/game-icons";
@@ -147,6 +148,16 @@ const PortalScreen = () => {
       description: "Drop and merge matching fruit before the basket overflows.",
       players: "1",
       tag: "Merge",
+    },
+    {
+      id: "merge-tycoon",
+      name: "Merge Tycoon",
+      icon: MergeTycoonIcon,
+      accent: "#fb923c",
+      route: "/merge-tycoon",
+      description: "Merge matching stands into a bigger business, earn as much as you can.",
+      players: "1",
+      tag: "Idle",
     },
   ];
 

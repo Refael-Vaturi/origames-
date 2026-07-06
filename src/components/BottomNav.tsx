@@ -14,6 +14,7 @@ import {
   FruitMergeIcon,
   GravityFlipIcon,
   IronDomeIcon,
+  MergeTycoonIcon,
   RhythmBladeIcon,
   VelocityDriftIcon,
 } from "@/components/game-icons";
@@ -46,6 +47,7 @@ const gameOptions: {
   { id: "velocity-drift", name: "Velocity Drift", route: "/velocity-drift", accent: "#f43f5e", tag: "Racing", icon: VelocityDriftIcon },
   { id: "cyber-shield", name: "Cyber Shield", route: "/cyber-shield", accent: "#38bdf8", tag: "Strategy", icon: CyberShieldIcon },
   { id: "fruit-merge", name: "Fruit Merge", route: "/fruit-merge", accent: "#fb7185", tag: "Merge", icon: FruitMergeIcon },
+  { id: "merge-tycoon", name: "Merge Tycoon", route: "/merge-tycoon", accent: "#fb923c", tag: "Idle", icon: MergeTycoonIcon },
 ];
 
 const BottomNav = () => {
