@@ -101,6 +101,16 @@ const PortalScreen = () => {
       players: "1",
       tag: "Reflex",
     },
+    {
+      id: "rhythm-blade",
+      name: "Rhythm Blade",
+      emoji: "🎧",
+      route: "/rhythm-blade",
+      description: "Slice blocks on the beat, chain Hyper Drive combos.",
+      color: "from-[hsl(280,80%,55%)] to-[hsl(330,80%,60%)]",
+      players: "1",
+      tag: "Music",
+    },
   ];
 
   const featured = [games[0], games[1], games[4]];

@@ -12,7 +12,7 @@ interface Entry {
 }
 
 interface Props {
-  gameId: "clicker" | "color_identify" | "city_find" | "gravity_flip";
+  gameId: "clicker" | "color_identify" | "city_find" | "gravity_flip" | "rhythm_blade";
   currentUserId?: string;
   refreshKey?: number;
   limit?: number;
