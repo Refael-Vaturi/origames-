@@ -26,6 +26,7 @@ const gameOptions = [
   { id: "gravity-flip", name: "Gravity Flip", emoji: "🌀", route: "/gravity-flip", color: "from-[hsl(190,90%,50%)] to-[hsl(270,80%,60%)]", tag: "Reflex" },
   { id: "rhythm-blade", name: "Rhythm Blade", emoji: "🎧", route: "/rhythm-blade", color: "from-[hsl(280,80%,55%)] to-[hsl(330,80%,60%)]", tag: "Music" },
   { id: "velocity-drift", name: "Velocity Drift", emoji: "🏎️", route: "/velocity-drift", color: "from-[hsl(350,80%,55%)] to-[hsl(190,90%,50%)]", tag: "Racing" },
+  { id: "cyber-shield", name: "Cyber Shield", emoji: "🔰", route: "/cyber-shield", color: "from-[hsl(199,89%,55%)] to-[hsl(152,70%,45%)]", tag: "Strategy" },
 ];
 
 const BottomNav = () => {

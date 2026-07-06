@@ -122,6 +122,16 @@ const PortalScreen = () => {
       players: "1",
       tag: "Racing",
     },
+    {
+      id: "cyber-shield",
+      name: "Cyber Shield",
+      emoji: "🔰",
+      route: "/cyber-shield",
+      description: "Place towers, defend the database, survive every wave.",
+      color: "from-[hsl(199,89%,55%)] to-[hsl(152,70%,45%)]",
+      players: "1",
+      tag: "Strategy",
+    },
   ];
 
   const featured = [games[0], games[1], games[4]];
