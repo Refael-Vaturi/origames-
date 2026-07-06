@@ -389,6 +389,27 @@ const CityFindGame = () => {
   );
 };
 
+// Google calls window.gm_authFailure when the API key is rejected (bad key,
+// or — the common case here — an HTTP referrer restriction that doesn't
+// include this domain). This is the only reliable signal for that failure:
+// getPanorama() still reports a panorama as found, and the actual auth error
+// only surfaces when StreetViewPanorama tries to render tiles, at which
+// point Google draws its own "Oops!" overlay directly into our container
+// instead of calling back into our code. Once it fires, every Street View
+// attempt this session is treated as unavailable immediately.
+declare global {
+  interface Window {
+    gm_authFailure?: () => void;
+  }
+}
+let mapsAuthFailed = false;
+const authFailureListeners = new Set<() => void>();
+window.gm_authFailure = () => {
+  mapsAuthFailed = true;
+  authFailureListeners.forEach((fn) => fn());
+  authFailureListeners.clear();
+};
+
 // Loads the Google Maps JS SDK exactly once, however many rounds/components need it.
 let mapsLoadPromise: Promise<void> | null = null;
 const loadGoogleMaps = (apiKey: string): Promise<void> => {
@@ -440,23 +461,29 @@ const LiveStreetView = ({ city, onUnavailable }: { city: CityData; onUnavailable
       fn();
     };
 
-    loadGoogleMaps(GOOGLE_MAPS_API_KEY)
-      .then(() => {
-        if (cancelled || !containerRef.current) return;
-        const service = new google.maps.StreetViewService();
-        service.getPanorama(
-          {
-            location: coords,
-            radius: 50000,
-            source: google.maps.StreetViewSource.OUTDOOR,
-          },
-          (data, status) => {
-            if (status !== google.maps.StreetViewStatus.OK || !data?.location?.latLng || !containerRef.current) {
-              finish(onUnavailable);
-              return;
-            }
-            finish(() => {
-              new google.maps.StreetViewPanorama(containerRef.current!, {
+    const authListener = () => finish(onUnavailable);
+    authFailureListeners.add(authListener);
+
+    if (mapsAuthFailed) {
+      finish(onUnavailable);
+    } else {
+      loadGoogleMaps(GOOGLE_MAPS_API_KEY)
+        .then(() => {
+          if (cancelled || !containerRef.current || mapsAuthFailed) return;
+          const service = new google.maps.StreetViewService();
+          service.getPanorama(
+            {
+              location: coords,
+              radius: 50000,
+              source: google.maps.StreetViewSource.OUTDOOR,
+            },
+            (data, status) => {
+              if (status !== google.maps.StreetViewStatus.OK || !data?.location?.latLng || !containerRef.current) {
+                finish(onUnavailable);
+                return;
+              }
+              const container = containerRef.current;
+              new google.maps.StreetViewPanorama(container, {
                 position: data.location.latLng,
                 pov: { heading: Math.random() * 360, pitch: 0 },
                 zoom: 0,
@@ -470,16 +497,39 @@ const LiveStreetView = ({ city, onUnavailable }: { city: CityData; onUnavailable
                 motionTrackingControl: false,
                 clickToGo: true,
               });
-              setReady(true);
-            });
-          }
-        );
-      })
-      .catch(() => finish(onUnavailable));
+
+              // A rejected/restricted API key doesn't reject getPanorama() or
+              // throw — Google silently renders its own "Oops! Something went
+              // wrong" panel *inside our container* once it tries to fetch
+              // panorama tiles. gm_authFailure isn't reliably called for this
+              // in current library versions, so watch the DOM directly: if
+              // that text shows up, treat it exactly like an unavailable
+              // panorama instead of declaring success.
+              const authErrorObserver = new MutationObserver(() => {
+                if (container.textContent?.includes("Oops")) {
+                  authErrorObserver.disconnect();
+                  finish(onUnavailable);
+                }
+              });
+              authErrorObserver.observe(container, { childList: true, subtree: true, characterData: true });
+
+              setTimeout(() => {
+                authErrorObserver.disconnect();
+                finish(() => {
+                  if (mapsAuthFailed || container.textContent?.includes("Oops")) onUnavailable();
+                  else setReady(true);
+                });
+              }, 1200);
+            }
+          );
+        })
+        .catch(() => finish(onUnavailable));
+    }
 
     return () => {
       cancelled = true;
       clearTimeout(timeout);
+      authFailureListeners.delete(authListener);
     };
   }, [city.id, onUnavailable]);
 
