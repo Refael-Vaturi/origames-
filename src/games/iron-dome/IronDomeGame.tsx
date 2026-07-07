@@ -21,6 +21,7 @@ import { lovable } from '@/integrations/lovable';
 import { GameMusic } from './music';
 import { toast } from '@/hooks/use-toast';
 import { useFriends } from '@/hooks/useFriends';
+import { recordGameSession, RecordingEvent } from '@/lib/gameRecording';
 
 const IronDomeGame: React.FC = () => {
   const navigate = useNavigate();
@@ -30,6 +31,9 @@ const IronDomeGame: React.FC = () => {
   const animFrameRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
   const lastStateUpdateRef = useRef<number>(0);
+  const recordEventsRef = useRef<RecordingEvent[]>([]);
+  const gameStartTimeRef = useRef<number>(0);
+  const recordingSavedRef = useRef(false);
   const [phase, setPhase] = useState<GamePhase>('menu');
   const [showInGameSettings, setShowInGameSettings] = useState(false);
   const [gameState, setGameState] = useState<GameState | null>(null);
@@ -413,6 +417,27 @@ const IronDomeGame: React.FC = () => {
       const currentMaxLevel = gameState.mode === 'campaign' ? Math.max(gameState.wave, campaignMaxLevel) : campaignMaxLevel;
       syncProgressToDb(currentMaxLevel, campaignStars, getPersistentUpgrades(), newBestWave);
 
+      // Save a lightweight session recording for admin review (best-effort, works for guests too)
+      if (!recordingSavedRef.current) {
+        recordingSavedRef.current = true;
+        const accuracy = gameState.totalFired > 0 ? gameState.totalIntercepted / gameState.totalFired : 0;
+        recordGameSession({
+          game: 'iron_dome',
+          events: recordEventsRef.current,
+          score: gameState.score,
+          durationMs: gameStartTimeRef.current ? Date.now() - gameStartTimeRef.current : 0,
+          summary: {
+            mode: gameState.mode,
+            wave: gameState.wave,
+            result: phase === 'victory' ? 'victory' : 'game-over',
+            totalFired: gameState.totalFired,
+            totalIntercepted: gameState.totalIntercepted,
+            accuracy,
+            survivalTimeSec: gameState.mode === 'survival' ? Math.floor(gameState.survivalTimer / 1000) : undefined,
+          },
+        });
+      }
+
       if (user && !scoreSaved) {
         saveScore(gameState);
         // Save skill data for adaptive difficulty
@@ -611,7 +636,11 @@ const IronDomeGame: React.FC = () => {
 
         // Process sound events from engine
         if (stateRef.current.soundEvents.length > 0) {
-          stateRef.current.soundEvents.forEach(evt => playSoundRef.current(evt));
+          const elapsed = gameStartTimeRef.current ? Date.now() - gameStartTimeRef.current : 0;
+          stateRef.current.soundEvents.forEach(evt => {
+            playSoundRef.current(evt);
+            recordEventsRef.current.push({ t: elapsed, type: evt });
+          });
           stateRef.current.soundEvents = [];
         }
 
@@ -888,6 +917,9 @@ const IronDomeGame: React.FC = () => {
     if (!canvas) return;
     setScoreSaved(false);
     setReviveUsed(false);
+    recordEventsRef.current = [];
+    recordingSavedRef.current = false;
+    gameStartTimeRef.current = Date.now();
     const w = window.innerWidth;
     const h = window.innerHeight;
     const s = createInitialState(w, h);
