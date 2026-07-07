@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useCallback, useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Play, Infinity as InfinityIcon, BookOpen, Trophy, Volume2, VolumeX, Music, Pause, LogIn, Mail, Lock, Eye, EyeOff, User, AtSign, Settings, X, ShoppingCart, CreditCard } from 'lucide-react';
+import { ArrowLeft, Play, Infinity as InfinityIcon, BookOpen, Trophy, Volume2, VolumeX, Music, Pause, LogIn, Mail, Lock, Eye, EyeOff, User, AtSign, Settings, X, ShoppingCart, CreditCard, ChevronRight } from 'lucide-react';
 import {
   createInitialState, startWave, startSurvival, fireInterceptor, update, nextWave,
   buyStoreItem, activateAirSupport, activateGPSJammer, activateHeliAirstrike, renderGame,
@@ -463,62 +463,86 @@ const IronDomeGame: React.FC = () => {
     fetchData();
   }, [user]);
 
-  // Load progress from DB when user logs in
+  // Load progress from DB when user logs in — merges iron_dome_progress + profiles.admin_max_level + unlocked_levels
   useEffect(() => {
     if (!user) return;
+
     const loadProgress = async () => {
       try {
-        const { data } = await supabase.from('iron_dome_progress').select('*').eq('user_id', user.id).maybeSingle();
-        if (data) {
-          const dbStars = (data.stars || {}) as Record<string, number>;
-          const dbUpgrades = (data.upgrades || {}) as Record<string, number>;
-          const dbMaxLevel = data.max_level || 1;
-          const dbBestWave = data.best_wave || 0;
+        const [{ data: progress }, { data: profile }] = await Promise.all([
+          supabase.from('iron_dome_progress').select('*').eq('user_id', user.id).maybeSingle(),
+          supabase.from('profiles').select('admin_max_level, unlocked_levels').eq('user_id', user.id).maybeSingle(),
+        ]);
 
-          // Merge with localStorage (take the best of both)
-          const localStars = (() => { try { return JSON.parse(localStorage.getItem('ironDomeCampaignStars') || '{}'); } catch { return {}; } })();
-          const localMaxLevel = (() => { try { return parseInt(localStorage.getItem('ironDomeCampaignLevel') || '1'); } catch { return 1; } })();
-          const localBestWave = (() => { try { return parseInt(localStorage.getItem('ironDomeBestWave') || '0'); } catch { return 0; } })();
-          const localUpgrades = (() => { try { return JSON.parse(localStorage.getItem('ironDomeUpgrades') || '{}'); } catch { return {}; } })();
+        const dbStars = (progress?.stars || {}) as Record<string, number>;
+        const dbUpgrades = (progress?.upgrades || {}) as Record<string, number>;
+        const dbMaxLevel = progress?.max_level || 1;
+        const dbBestWave = progress?.best_wave || 0;
 
-          // Merge stars (take max per level)
-          const mergedStars: Record<number, number> = {};
-          const allKeys = new Set([...Object.keys(dbStars), ...Object.keys(localStars)]);
-          allKeys.forEach(k => { mergedStars[Number(k)] = Math.max(dbStars[k] || 0, localStars[k] || 0); });
+        const adminMaxLevel = profile?.admin_max_level || 0;
+        const unlockedLevels = (profile?.unlocked_levels || []) as number[];
+        const maxUnlockedFromArray = unlockedLevels.length ? Math.max(...unlockedLevels) : 0;
 
-          // Merge upgrades (take max)
-          const mergedUpgrades: Record<string, number> = {};
-          const upgradeKeys = new Set([...Object.keys(dbUpgrades), ...Object.keys(localUpgrades)]);
-          upgradeKeys.forEach(k => { mergedUpgrades[k] = Math.max(dbUpgrades[k] || 0, localUpgrades[k] || 0); });
+        // Merge with localStorage
+        const localStars = (() => { try { return JSON.parse(localStorage.getItem('ironDomeCampaignStars') || '{}'); } catch { return {}; } })();
+        const localMaxLevel = (() => { try { return parseInt(localStorage.getItem('ironDomeCampaignLevel') || '1'); } catch { return 1; } })();
+        const localBestWave = (() => { try { return parseInt(localStorage.getItem('ironDomeBestWave') || '0'); } catch { return 0; } })();
+        const localUpgrades = (() => { try { return JSON.parse(localStorage.getItem('ironDomeUpgrades') || '{}'); } catch { return {}; } })();
 
-          const mergedMaxLevel = Math.max(dbMaxLevel, localMaxLevel);
-          const mergedBestWave = Math.max(dbBestWave, localBestWave);
+        // Merge stars (take max per level)
+        const mergedStars: Record<number, number> = {};
+        const allKeys = new Set([...Object.keys(dbStars), ...Object.keys(localStars)]);
+        allKeys.forEach(k => { mergedStars[Number(k)] = Math.max(dbStars[k] || 0, localStars[k] || 0); });
 
-          setCampaignMaxLevel(mergedMaxLevel);
-          setCampaignStars(mergedStars);
-          setBestWave(mergedBestWave);
+        // Merge upgrades (take max)
+        const mergedUpgrades: Record<string, number> = {};
+        const upgradeKeys = new Set([...Object.keys(dbUpgrades), ...Object.keys(localUpgrades)]);
+        upgradeKeys.forEach(k => { mergedUpgrades[k] = Math.max(dbUpgrades[k] || 0, localUpgrades[k] || 0); });
 
-          // Save merged back to localStorage
-          try {
-            localStorage.setItem('ironDomeCampaignLevel', String(mergedMaxLevel));
-            localStorage.setItem('ironDomeCampaignStars', JSON.stringify(mergedStars));
-            localStorage.setItem('ironDomeBestWave', String(mergedBestWave));
-            localStorage.setItem('ironDomeUpgrades', JSON.stringify(mergedUpgrades));
-          } catch {}
+        // Effective unlocked = GREATEST(progress.max_level, admin override, unlocked_levels array, localStorage)
+        const mergedMaxLevel = Math.max(dbMaxLevel, localMaxLevel, adminMaxLevel, maxUnlockedFromArray);
+        const mergedBestWave = Math.max(dbBestWave, localBestWave);
 
-          // Save merged back to DB
+        setCampaignMaxLevel(mergedMaxLevel);
+        setCampaignStars(mergedStars);
+        setBestWave(mergedBestWave);
+
+        try {
+          localStorage.setItem('ironDomeCampaignLevel', String(mergedMaxLevel));
+          localStorage.setItem('ironDomeCampaignStars', JSON.stringify(mergedStars));
+          localStorage.setItem('ironDomeBestWave', String(mergedBestWave));
+          localStorage.setItem('ironDomeUpgrades', JSON.stringify(mergedUpgrades));
+        } catch {}
+
+        // Persist merged progress back to iron_dome_progress
+        if (mergedMaxLevel > dbMaxLevel || !progress) {
           syncProgressToDb(mergedMaxLevel, mergedStars, mergedUpgrades, mergedBestWave);
-        } else {
-          // No DB record yet - push localStorage to DB
-          const localStars = (() => { try { return JSON.parse(localStorage.getItem('ironDomeCampaignStars') || '{}'); } catch { return {}; } })();
-          const localMaxLevel = (() => { try { return parseInt(localStorage.getItem('ironDomeCampaignLevel') || '1'); } catch { return 1; } })();
-          const localBestWave = (() => { try { return parseInt(localStorage.getItem('ironDomeBestWave') || '0'); } catch { return 0; } })();
-          const localUpgrades = (() => { try { return JSON.parse(localStorage.getItem('ironDomeUpgrades') || '{}'); } catch { return {}; } })();
-          syncProgressToDb(localMaxLevel, localStars, localUpgrades, localBestWave);
         }
       } catch (e) { console.error('Failed to load progress:', e); }
     };
     loadProgress();
+
+    // Realtime: react instantly when admin unlocks levels for this user
+    const channel = supabase
+      .channel(`iron-dome-progress-${user.id}`)
+      .on('postgres_changes', {
+        event: '*', schema: 'public', table: 'iron_dome_progress', filter: `user_id=eq.${user.id}`,
+      }, (payload) => {
+        const row = (payload.new || payload.old) as { max_level?: number } | null;
+        if (row?.max_level) setCampaignMaxLevel(prev => Math.max(prev, row.max_level!));
+      })
+      .on('postgres_changes', {
+        event: 'UPDATE', schema: 'public', table: 'profiles', filter: `user_id=eq.${user.id}`,
+      }, (payload) => {
+        const row = payload.new as { admin_max_level?: number; unlocked_levels?: number[] } | null;
+        const admin = row?.admin_max_level || 0;
+        const fromArr = row?.unlocked_levels?.length ? Math.max(...row.unlocked_levels) : 0;
+        const next = Math.max(admin, fromArr);
+        if (next > 0) setCampaignMaxLevel(prev => Math.max(prev, next));
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, [user, syncProgressToDb]);
 
   // Handle purchase return
@@ -1058,64 +1082,133 @@ const IronDomeGame: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 flex flex-col items-center justify-center z-20"
+            className="absolute inset-0 z-20 overflow-y-auto"
           >
-            <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/60" />
-            <div className="relative z-10 flex flex-col items-center gap-4 px-4 max-w-md w-full">
+            {/* Tactical backdrop */}
+            <div className="absolute inset-0 bg-gradient-tactical" />
+            <div className="absolute inset-0 bg-gradient-scan opacity-70 pointer-events-none" />
+            <div
+              className="absolute inset-x-0 h-24 pointer-events-none opacity-30 animate-scanline"
+              style={{ background: 'linear-gradient(180deg, transparent, hsl(var(--primary) / 0.55), transparent)' }}
+            />
 
-              <motion.h1
-                className="text-5xl md:text-7xl font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-cyan-300 bg-clip-text text-transparent drop-shadow-2xl"
-                style={{ fontFamily: "'Courier New', monospace" }}
-                animate={{ textShadow: ['0 0 20px rgba(0,200,255,0.5)', '0 0 40px rgba(0,200,255,0.3)', '0 0 20px rgba(0,200,255,0.5)'] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              >
-                {T('title')}
-              </motion.h1>
-              <p className="text-cyan-200/60 text-sm tracking-widest">{T('subtitle')}</p>
+            <div className="relative z-10 min-h-full flex flex-col items-center justify-center px-4 py-8 gap-6 max-w-lg mx-auto w-full">
+              {/* Header */}
+              <div className="text-center space-y-1">
+                <p className="text-[10px] tracking-[0.4em] font-display uppercase text-primary/80">Command Matrix</p>
+                <h1 className="font-display text-4xl md:text-5xl font-bold bg-gradient-hero bg-clip-text text-transparent">
+                  {T('title')}
+                </h1>
+                <p className="text-muted-foreground text-xs tracking-widest uppercase">{T('subtitle')}</p>
+              </div>
 
-              <div className="flex flex-col gap-3 w-full mt-6">
-                <MenuButton icon={<Play className="w-5 h-5" />} label={T('campaign')} sub={T('selectLevel')} onClick={() => {
-                  if (stateRef.current) {
-                    stateRef.current.phase = 'level-select' as any;
-                    setPhase('level-select');
-                  }
-                }} color="cyan" />
-                <MenuButton icon={<InfinityIcon className="w-5 h-5" />} label={T('survival')} sub={T('howLong')} onClick={() => startGame('survival')} color="blue" />
-                <MenuButton icon={<span className="text-lg">🌍</span>} label="World" sub="Defend 195 capitals" onClick={() => setWorldOpen(true)} color="cyan" />
-
-                <div className="flex gap-3 mt-2">
-                  <MenuButtonSmall icon="📖" label={T('rules')} onClick={() => {
+              {/* Bento primary CTAs */}
+              <div className="grid grid-cols-2 gap-3 w-full">
+                {/* Campaign — hero tile */}
+                <motion.button
+                  whileHover={{ y: -3 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => {
                     if (stateRef.current) {
-                      stateRef.current.phase = 'rules';
-                      setPhase('rules');
+                      stateRef.current.phase = 'level-select' as any;
+                      setPhase('level-select');
                     }
-                  }} />
-                  <MenuButtonSmall icon="🏆" label={T('leaderboard')} onClick={() => {
+                  }}
+                  className="col-span-2 relative overflow-hidden rounded-2xl border border-primary/40 bg-card p-5 text-start shadow-tactical group"
+                >
+                  <div className="absolute inset-0 bg-gradient-hero opacity-10 group-hover:opacity-20 transition-opacity" />
+                  <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full border border-primary/30 animate-radar-sweep opacity-40" />
+                  <div className="relative flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-primary/15 border border-primary/40 flex items-center justify-center text-primary">
+                      <Play className="w-6 h-6" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-display font-bold text-2xl text-foreground">{T('campaign')}</p>
+                      <p className="text-muted-foreground text-sm">{T('selectLevel')}</p>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-primary/70" />
+                  </div>
+                </motion.button>
+
+                {/* Survival */}
+                <motion.button
+                  whileHover={{ y: -3 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => startGame('survival')}
+                  className="relative overflow-hidden rounded-2xl border border-accent/40 bg-card p-4 text-start shadow-tactical group"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-accent/15 to-transparent group-hover:from-accent/25 transition-colors" />
+                  <div className="relative flex flex-col gap-2">
+                    <div className="w-10 h-10 rounded-lg bg-accent/15 border border-accent/40 flex items-center justify-center text-accent">
+                      <InfinityIcon className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="font-display font-bold text-lg text-foreground">{T('survival')}</p>
+                      <p className="text-muted-foreground text-xs">{T('howLong')}</p>
+                    </div>
+                  </div>
+                </motion.button>
+
+                {/* World */}
+                <motion.button
+                  whileHover={{ y: -3 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => setWorldOpen(true)}
+                  className="relative overflow-hidden rounded-2xl border border-secondary/40 bg-card p-4 text-start shadow-tactical group"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-secondary/15 to-transparent group-hover:from-secondary/25 transition-colors" />
+                  <div className="relative flex flex-col gap-2">
+                    <div className="w-10 h-10 rounded-lg bg-secondary/15 border border-secondary/40 flex items-center justify-center text-secondary text-lg">🌍</div>
+                    <div>
+                      <p className="font-display font-bold text-lg text-foreground">World</p>
+                      <p className="text-muted-foreground text-xs">195 capitals</p>
+                    </div>
+                  </div>
+                </motion.button>
+              </div>
+
+              {/* Secondary bento row */}
+              <div className="grid grid-cols-3 gap-2 w-full">
+                <button
+                  onClick={() => {
+                    if (stateRef.current) { stateRef.current.phase = 'rules'; setPhase('rules'); }
+                  }}
+                  className="rounded-xl border border-border bg-card/60 backdrop-blur px-3 py-3 flex flex-col items-center gap-1 hover:border-primary/50 hover:bg-card transition"
+                >
+                  <span className="text-xl">📖</span>
+                  <span className="text-xs font-display font-semibold text-foreground">{T('rules')}</span>
+                </button>
+                <button
+                  onClick={() => {
                     setLbTab('campaign');
                     fetchLeaderboard('campaign');
                     setLeaderboardMode('campaign');
-                    if (stateRef.current) {
-                      stateRef.current.phase = 'leaderboard';
-                      setPhase('leaderboard');
-                    }
-                  }} />
-                  <MenuButtonSmall icon="🛒" label={T('store')} onClick={() => {
-                    if (stateRef.current) {
-                      stateRef.current.phase = 'main-shop' as any;
-                      setPhase('main-shop');
-                    }
-                  }} />
-                </div>
+                    if (stateRef.current) { stateRef.current.phase = 'leaderboard'; setPhase('leaderboard'); }
+                  }}
+                  className="rounded-xl border border-border bg-card/60 backdrop-blur px-3 py-3 flex flex-col items-center gap-1 hover:border-primary/50 hover:bg-card transition"
+                >
+                  <span className="text-xl">🏆</span>
+                  <span className="text-xs font-display font-semibold text-foreground">{T('leaderboard')}</span>
+                </button>
+                <button
+                  onClick={() => {
+                    if (stateRef.current) { stateRef.current.phase = 'main-shop' as any; setPhase('main-shop'); }
+                  }}
+                  className="rounded-xl border border-border bg-card/60 backdrop-blur px-3 py-3 flex flex-col items-center gap-1 hover:border-primary/50 hover:bg-card transition"
+                >
+                  <span className="text-xl">🛒</span>
+                  <span className="text-xs font-display font-semibold text-foreground">{T('store')}</span>
+                </button>
               </div>
 
-              {/* Auth status / Login button */}
-              <div className="mt-4 px-4 py-3 bg-black/40 rounded-xl border border-cyan-900/30 text-center w-full">
+              {/* Auth banner */}
+              <div className="w-full rounded-xl border border-border bg-card/60 backdrop-blur px-4 py-3 text-center">
                 {user ? (
-                  <p className="text-green-400/70 text-xs">✅ מחובר — הניקוד ישמר בלידרבורד</p>
+                  <p className="text-primary text-xs font-semibold">✅ מחובר — הניקוד ישמר בלידרבורד</p>
                 ) : (
                   <button
                     onClick={() => { setShowAuthModal(true); setAuthMode('login'); }}
-                    className="flex items-center justify-center gap-2 w-full text-cyan-300/70 hover:text-cyan-200 transition-colors"
+                    className="flex items-center justify-center gap-2 w-full text-accent hover:text-accent/80 transition-colors"
                   >
                     <LogIn className="w-4 h-4" />
                     <span className="text-xs font-bold">התחבר כדי לשמור ניקוד בלידרבורד</span>

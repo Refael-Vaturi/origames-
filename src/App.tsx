@@ -49,6 +49,7 @@ import AdminDownload from "./pages/admin/AdminDownload";
 import AdminAnnouncements from "./pages/admin/AdminAnnouncements";
 import AdminLiveRooms from "./pages/admin/AdminLiveRooms";
 import AdminGameRecordings from "./pages/admin/AdminGameRecordings";
+import AdminAI from "./pages/admin/AdminAI";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import ContactUs from "./pages/ContactUs";
 import About from "./pages/About";
@@ -142,6 +143,7 @@ const App = () => {
                   <Route path="announcements" element={<AdminAnnouncements />} />
                   <Route path="rooms" element={<AdminLiveRooms />} />
                   <Route path="recordings" element={<AdminGameRecordings />} />
+                  <Route path="ai" element={<AdminAI />} />
                 </Route>
               </Route>
 

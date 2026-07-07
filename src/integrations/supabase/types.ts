@@ -50,6 +50,39 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_admin_edits: {
+        Row: {
+          admin_email: string | null
+          admin_id: string | null
+          applied: boolean
+          changes: Json
+          created_at: string
+          id: string
+          model: string | null
+          prompt: string
+        }
+        Insert: {
+          admin_email?: string | null
+          admin_id?: string | null
+          applied?: boolean
+          changes?: Json
+          created_at?: string
+          id?: string
+          model?: string | null
+          prompt: string
+        }
+        Update: {
+          admin_email?: string | null
+          admin_id?: string | null
+          applied?: boolean
+          changes?: Json
+          created_at?: string
+          id?: string
+          model?: string | null
+          prompt?: string
+        }
+        Relationships: []
+      }
       announcements: {
         Row: {
           body: string | null
@@ -764,6 +797,30 @@ export type Database = {
         }
         Relationships: []
       }
+      site_settings: {
+        Row: {
+          description: string | null
+          key: string
+          updated_at: string
+          updated_by: string | null
+          value: Json
+        }
+        Insert: {
+          description?: string | null
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Update: {
+          description?: string | null
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Relationships: []
+      }
     }
     Views: {
       profiles_public: {
@@ -771,8 +828,6 @@ export type Database = {
           avatar_url: string | null
           country: string | null
           display_name: string | null
-          id: string | null
-          last_seen: string | null
           level: number | null
           user_id: string | null
           username: string | null
@@ -781,8 +836,6 @@ export type Database = {
           avatar_url?: string | null
           country?: string | null
           display_name?: string | null
-          id?: string | null
-          last_seen?: string | null
           level?: number | null
           user_id?: string | null
           username?: string | null
@@ -791,8 +844,6 @@ export type Database = {
           avatar_url?: string | null
           country?: string | null
           display_name?: string | null
-          id?: string | null
-          last_seen?: string | null
           level?: number | null
           user_id?: string | null
           username?: string | null

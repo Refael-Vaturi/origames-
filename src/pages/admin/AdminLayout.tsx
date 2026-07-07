@@ -11,6 +11,7 @@ import {
   Megaphone,
   DoorOpen,
   Film,
+  Sparkles,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -19,6 +20,7 @@ import { cn } from "@/lib/utils";
 
 const links = [
   { to: "/admin", label: "admin.dashboard.title", icon: LayoutDashboard, end: true },
+  { to: "/admin/ai", label: "AI Admin", icon: Sparkles },
   { to: "/admin/users", label: "admin.users.title", icon: Users },
   { to: "/admin/live", label: "admin.live.title", icon: Radio },
   { to: "/admin/rooms", label: "Live Rooms", icon: DoorOpen },
