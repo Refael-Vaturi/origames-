@@ -10,6 +10,7 @@ import { useGameFirstVisit } from "@/hooks/useGameFirstVisit";
 import ArcadeLeaderboard from "../arcade/ArcadeLeaderboard";
 import { useArcadeScore } from "../arcade/useArcadeScore";
 import { toast } from "@/hooks/use-toast";
+import { DailyTriviaGlyph } from "./MenuArt";
 import {
   DailyRecord,
   loadStreak,
@@ -187,7 +188,7 @@ const DailyTriviaGame = () => {
             className="fixed inset-0 z-30 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
           >
             <div className="max-w-sm w-full text-center text-white space-y-5">
-              <div className="text-5xl">🧠</div>
+              <DailyTriviaGlyph />
               <h1 className="text-2xl font-display font-bold">Daily Trivia</h1>
               <p className="text-sm text-white/70">{t("dailyTrivia.intro")}</p>
               <Button
