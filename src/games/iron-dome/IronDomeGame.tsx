@@ -1082,64 +1082,133 @@ const IronDomeGame: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 flex flex-col items-center justify-center z-20"
+            className="absolute inset-0 z-20 overflow-y-auto"
           >
-            <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/60" />
-            <div className="relative z-10 flex flex-col items-center gap-4 px-4 max-w-md w-full">
+            {/* Tactical backdrop */}
+            <div className="absolute inset-0 bg-gradient-tactical" />
+            <div className="absolute inset-0 bg-gradient-scan opacity-70 pointer-events-none" />
+            <div
+              className="absolute inset-x-0 h-24 pointer-events-none opacity-30 animate-scanline"
+              style={{ background: 'linear-gradient(180deg, transparent, hsl(var(--primary) / 0.55), transparent)' }}
+            />
 
-              <motion.h1
-                className="text-5xl md:text-7xl font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-cyan-300 bg-clip-text text-transparent drop-shadow-2xl"
-                style={{ fontFamily: "'Courier New', monospace" }}
-                animate={{ textShadow: ['0 0 20px rgba(0,200,255,0.5)', '0 0 40px rgba(0,200,255,0.3)', '0 0 20px rgba(0,200,255,0.5)'] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              >
-                {T('title')}
-              </motion.h1>
-              <p className="text-cyan-200/60 text-sm tracking-widest">{T('subtitle')}</p>
+            <div className="relative z-10 min-h-full flex flex-col items-center justify-center px-4 py-8 gap-6 max-w-lg mx-auto w-full">
+              {/* Header */}
+              <div className="text-center space-y-1">
+                <p className="text-[10px] tracking-[0.4em] font-display uppercase text-primary/80">Command Matrix</p>
+                <h1 className="font-display text-4xl md:text-5xl font-bold bg-gradient-hero bg-clip-text text-transparent">
+                  {T('title')}
+                </h1>
+                <p className="text-muted-foreground text-xs tracking-widest uppercase">{T('subtitle')}</p>
+              </div>
 
-              <div className="flex flex-col gap-3 w-full mt-6">
-                <MenuButton icon={<Play className="w-5 h-5" />} label={T('campaign')} sub={T('selectLevel')} onClick={() => {
-                  if (stateRef.current) {
-                    stateRef.current.phase = 'level-select' as any;
-                    setPhase('level-select');
-                  }
-                }} color="cyan" />
-                <MenuButton icon={<InfinityIcon className="w-5 h-5" />} label={T('survival')} sub={T('howLong')} onClick={() => startGame('survival')} color="blue" />
-                <MenuButton icon={<span className="text-lg">🌍</span>} label="World" sub="Defend 195 capitals" onClick={() => setWorldOpen(true)} color="cyan" />
-
-                <div className="flex gap-3 mt-2">
-                  <MenuButtonSmall icon="📖" label={T('rules')} onClick={() => {
+              {/* Bento primary CTAs */}
+              <div className="grid grid-cols-2 gap-3 w-full">
+                {/* Campaign — hero tile */}
+                <motion.button
+                  whileHover={{ y: -3 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => {
                     if (stateRef.current) {
-                      stateRef.current.phase = 'rules';
-                      setPhase('rules');
+                      stateRef.current.phase = 'level-select' as any;
+                      setPhase('level-select');
                     }
-                  }} />
-                  <MenuButtonSmall icon="🏆" label={T('leaderboard')} onClick={() => {
+                  }}
+                  className="col-span-2 relative overflow-hidden rounded-2xl border border-primary/40 bg-card p-5 text-start shadow-tactical group"
+                >
+                  <div className="absolute inset-0 bg-gradient-hero opacity-10 group-hover:opacity-20 transition-opacity" />
+                  <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full border border-primary/30 animate-radar-sweep opacity-40" />
+                  <div className="relative flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-primary/15 border border-primary/40 flex items-center justify-center text-primary">
+                      <Play className="w-6 h-6" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-display font-bold text-2xl text-foreground">{T('campaign')}</p>
+                      <p className="text-muted-foreground text-sm">{T('selectLevel')}</p>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-primary/70" />
+                  </div>
+                </motion.button>
+
+                {/* Survival */}
+                <motion.button
+                  whileHover={{ y: -3 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => startGame('survival')}
+                  className="relative overflow-hidden rounded-2xl border border-accent/40 bg-card p-4 text-start shadow-tactical group"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-accent/15 to-transparent group-hover:from-accent/25 transition-colors" />
+                  <div className="relative flex flex-col gap-2">
+                    <div className="w-10 h-10 rounded-lg bg-accent/15 border border-accent/40 flex items-center justify-center text-accent">
+                      <InfinityIcon className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="font-display font-bold text-lg text-foreground">{T('survival')}</p>
+                      <p className="text-muted-foreground text-xs">{T('howLong')}</p>
+                    </div>
+                  </div>
+                </motion.button>
+
+                {/* World */}
+                <motion.button
+                  whileHover={{ y: -3 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => setWorldOpen(true)}
+                  className="relative overflow-hidden rounded-2xl border border-secondary/40 bg-card p-4 text-start shadow-tactical group"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-secondary/15 to-transparent group-hover:from-secondary/25 transition-colors" />
+                  <div className="relative flex flex-col gap-2">
+                    <div className="w-10 h-10 rounded-lg bg-secondary/15 border border-secondary/40 flex items-center justify-center text-secondary text-lg">🌍</div>
+                    <div>
+                      <p className="font-display font-bold text-lg text-foreground">World</p>
+                      <p className="text-muted-foreground text-xs">195 capitals</p>
+                    </div>
+                  </div>
+                </motion.button>
+              </div>
+
+              {/* Secondary bento row */}
+              <div className="grid grid-cols-3 gap-2 w-full">
+                <button
+                  onClick={() => {
+                    if (stateRef.current) { stateRef.current.phase = 'rules'; setPhase('rules'); }
+                  }}
+                  className="rounded-xl border border-border bg-card/60 backdrop-blur px-3 py-3 flex flex-col items-center gap-1 hover:border-primary/50 hover:bg-card transition"
+                >
+                  <span className="text-xl">📖</span>
+                  <span className="text-xs font-display font-semibold text-foreground">{T('rules')}</span>
+                </button>
+                <button
+                  onClick={() => {
                     setLbTab('campaign');
                     fetchLeaderboard('campaign');
                     setLeaderboardMode('campaign');
-                    if (stateRef.current) {
-                      stateRef.current.phase = 'leaderboard';
-                      setPhase('leaderboard');
-                    }
-                  }} />
-                  <MenuButtonSmall icon="🛒" label={T('store')} onClick={() => {
-                    if (stateRef.current) {
-                      stateRef.current.phase = 'main-shop' as any;
-                      setPhase('main-shop');
-                    }
-                  }} />
-                </div>
+                    if (stateRef.current) { stateRef.current.phase = 'leaderboard'; setPhase('leaderboard'); }
+                  }}
+                  className="rounded-xl border border-border bg-card/60 backdrop-blur px-3 py-3 flex flex-col items-center gap-1 hover:border-primary/50 hover:bg-card transition"
+                >
+                  <span className="text-xl">🏆</span>
+                  <span className="text-xs font-display font-semibold text-foreground">{T('leaderboard')}</span>
+                </button>
+                <button
+                  onClick={() => {
+                    if (stateRef.current) { stateRef.current.phase = 'main-shop' as any; setPhase('main-shop'); }
+                  }}
+                  className="rounded-xl border border-border bg-card/60 backdrop-blur px-3 py-3 flex flex-col items-center gap-1 hover:border-primary/50 hover:bg-card transition"
+                >
+                  <span className="text-xl">🛒</span>
+                  <span className="text-xs font-display font-semibold text-foreground">{T('store')}</span>
+                </button>
               </div>
 
-              {/* Auth status / Login button */}
-              <div className="mt-4 px-4 py-3 bg-black/40 rounded-xl border border-cyan-900/30 text-center w-full">
+              {/* Auth banner */}
+              <div className="w-full rounded-xl border border-border bg-card/60 backdrop-blur px-4 py-3 text-center">
                 {user ? (
-                  <p className="text-green-400/70 text-xs">✅ מחובר — הניקוד ישמר בלידרבורד</p>
+                  <p className="text-primary text-xs font-semibold">✅ מחובר — הניקוד ישמר בלידרבורד</p>
                 ) : (
                   <button
                     onClick={() => { setShowAuthModal(true); setAuthMode('login'); }}
-                    className="flex items-center justify-center gap-2 w-full text-cyan-300/70 hover:text-cyan-200 transition-colors"
+                    className="flex items-center justify-center gap-2 w-full text-accent hover:text-accent/80 transition-colors"
                   >
                     <LogIn className="w-4 h-4" />
                     <span className="text-xs font-bold">התחבר כדי לשמור ניקוד בלידרבורד</span>
