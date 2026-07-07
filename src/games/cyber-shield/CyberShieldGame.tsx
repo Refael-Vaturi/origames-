@@ -27,7 +27,7 @@ const TOWER_ICONS: Record<TowerType, typeof ShieldCheck> = {
 const CyberShieldGame = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { t } = useLanguage();
+  const { t, tf } = useLanguage();
   const { submitScore, userId } = useArcadeScore("cyber_shield");
   const { isFirstVisit, markSeen } = useGameFirstVisit("cyber-shield");
 
@@ -39,6 +39,8 @@ const CyberShieldGame = () => {
   const hoverCellRef = useRef<{ row: number; col: number } | null>(null);
   const selectedTypeRef = useRef<TowerType | null>(null);
   const safeAreaRef = useRef({ top: 0, bottom: 0 });
+  const tRef = useRef(t);
+  useEffect(() => { tRef.current = t; }, [t]);
 
   const [phase, setPhase] = useState<Phase>("menu");
   const [finalScore, setFinalScore] = useState(0);
@@ -140,7 +142,7 @@ const CyberShieldGame = () => {
 
       const w = window.innerWidth;
       const h = window.innerHeight;
-      render(ctx, s, w, h, hoverCellRef.current, selectedTypeRef.current, safeAreaRef.current.top, safeAreaRef.current.bottom);
+      render(ctx, s, w, h, hoverCellRef.current, selectedTypeRef.current, safeAreaRef.current.top, safeAreaRef.current.bottom, tRef.current("hud.wave"));
 
       animFrameRef.current = requestAnimationFrame(loop);
     };
@@ -266,7 +268,7 @@ const CyberShieldGame = () => {
         <div className="absolute right-3 z-20" style={{ top: `calc(3.5rem + ${safeArea.top}px)` }}>
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <Button size="sm" className="bg-gradient-to-r from-sky-500 to-emerald-500 text-white font-bold" onClick={handleStartWave}>
-              <Play className="w-4 h-4 mr-1" /> Start Wave {ui.wave}
+              <Play className="w-4 h-4 mr-1" /> {tf("cyberShield.startWave", { wave: ui.wave })}
             </Button>
           </motion.div>
         </div>
@@ -293,10 +295,10 @@ const CyberShieldGame = () => {
                   disabled={selectedTower.level >= 4 || ui.dataBits < TOWER_STATS[selectedTower.type].upgradeCost(selectedTower.level)}
                   onClick={doUpgrade}
                 >
-                  Upgrade ({selectedTower.level >= 4 ? "MAX" : TOWER_STATS[selectedTower.type].upgradeCost(selectedTower.level)})
+                  {t("cyberShield.upgrade")} ({selectedTower.level >= 4 ? t("cyberShield.max") : TOWER_STATS[selectedTower.type].upgradeCost(selectedTower.level)})
                 </Button>
                 <Button size="sm" variant="outline" className="flex-1 border-rose-400/40 text-rose-300" onClick={doSell}>
-                  Sell
+                  {t("cyberShield.sell")}
                 </Button>
               </div>
             </div>
@@ -379,8 +381,8 @@ const CyberShieldGame = () => {
               >
                 💥
               </motion.div>
-              <h2 className="text-2xl font-display font-bold">Database Breached</h2>
-              <p className="text-xs text-white/50">Survived to wave {finalWave}</p>
+              <h2 className="text-2xl font-display font-bold">{t("cyberShield.gameOver")}</h2>
+              <p className="text-xs text-white/50">{tf("cyberShield.survivedToWave", { wave: finalWave })}</p>
               <div className="text-4xl font-black tabular-nums bg-gradient-to-r from-sky-400 to-emerald-400 bg-clip-text text-transparent">
                 {finalScore}
               </div>

@@ -15,7 +15,17 @@ const DIR_ARROW: Record<Direction, string> = {
   right: "▶",
 };
 
-export function render(ctx: CanvasRenderingContext2D, state: GameState, w: number, h: number, audioNow: number, time: number, topInset = 0) {
+export interface RhythmLabels {
+  perfect: string;
+  good: string;
+  miss: string;
+  combo: string;
+  hyperDrive: string;
+}
+
+const DEFAULT_LABELS: RhythmLabels = { perfect: "PERFECT", good: "GOOD", miss: "MISS", combo: "combo", hyperDrive: "⚡ HYPER DRIVE x3 ⚡" };
+
+export function render(ctx: CanvasRenderingContext2D, state: GameState, w: number, h: number, audioNow: number, time: number, topInset = 0, labels: RhythmLabels = DEFAULT_LABELS) {
   const bg = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, Math.max(w, h) * 0.7);
   bg.addColorStop(0, state.hyperDrive ? "#2a0845" : "#0f0620");
   bg.addColorStop(1, "#050208");
@@ -80,7 +90,7 @@ export function render(ctx: CanvasRenderingContext2D, state: GameState, w: numbe
     if (block.resolved && block.result && block.result !== "miss") {
       ctx.fillStyle = block.result === "perfect" ? "#facc15" : "#e2e8f0";
       ctx.font = "bold 11px monospace";
-      ctx.fillText(block.result.toUpperCase(), 0, -20);
+      ctx.fillText(labels[block.result], 0, -20);
     }
     ctx.restore();
   }
@@ -95,7 +105,7 @@ export function render(ctx: CanvasRenderingContext2D, state: GameState, w: numbe
     ctx.fillStyle = f.result === "miss" ? "#f43f5e" : f.result === "perfect" ? "#facc15" : "#e2e8f0";
     ctx.font = "bold 16px sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText(f.result === "miss" ? "MISS" : f.result.toUpperCase(), w / 2, h / 2 - 50 - age * 30);
+    ctx.fillText(labels[f.result], w / 2, h / 2 - 50 - age * 30);
     ctx.restore();
   }
   ctx.globalAlpha = 1;
@@ -110,7 +120,7 @@ export function render(ctx: CanvasRenderingContext2D, state: GameState, w: numbe
   if (state.combo > 1) {
     ctx.font = "bold 14px monospace";
     ctx.fillStyle = state.hyperDrive ? "#facc15" : "#c4b5fd";
-    ctx.fillText(`x${state.combo} combo`, w / 2, hudTop + 22);
+    ctx.fillText(`x${state.combo} ${labels.combo}`, w / 2, hudTop + 22);
   }
 
   if (state.hyperDrive) {
@@ -120,7 +130,7 @@ export function render(ctx: CanvasRenderingContext2D, state: GameState, w: numbe
     ctx.save();
     ctx.translate(w / 2, topInset + 28);
     ctx.scale(bounce, bounce);
-    ctx.fillText("⚡ HYPER DRIVE x3 ⚡", 0, 0);
+    ctx.fillText(labels.hyperDrive, 0, 0);
     ctx.restore();
   }
 

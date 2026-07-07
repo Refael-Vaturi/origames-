@@ -112,6 +112,7 @@ export function render(
   h: number,
   topInset = 0,
   bottomInset = 0,
+  totalEarnedLabel = "Total earned",
 ) {
   const m = computeGridMetrics(w, h, topInset, bottomInset);
 
@@ -170,7 +171,7 @@ export function render(
 
   ctx.font = "12px monospace";
   ctx.fillStyle = "rgba(248,250,252,0.55)";
-  ctx.fillText(`Total earned $${Math.floor(state.totalEarned)}`, w / 2, hudY + 18);
+  ctx.fillText(`${totalEarnedLabel} $${Math.floor(state.totalEarned)}`, w / 2, hudY + 18);
 
   ctx.textAlign = "right";
   ctx.font = "bold 18px monospace";

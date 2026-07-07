@@ -13,7 +13,7 @@ function toScreenY(normY: number, ceil: number, floor: number) {
   return ceil + normY * (floor - ceil);
 }
 
-export function render(ctx: CanvasRenderingContext2D, state: GameState, w: number, h: number, time: number, topInset = 0) {
+export function render(ctx: CanvasRenderingContext2D, state: GameState, w: number, h: number, time: number, topInset = 0, bestLabel = "BEST") {
   const { ceil, floor } = corridorY(h);
   const corridorH = floor - ceil;
   const playerScreenX = w * PLAYER_SCREEN_X_RATIO;
@@ -172,7 +172,7 @@ export function render(ctx: CanvasRenderingContext2D, state: GameState, w: numbe
   ctx.fillText(`${state.score}`, w / 2, hudTop);
   ctx.font = "11px monospace";
   ctx.fillStyle = "rgba(233,213,255,0.6)";
-  ctx.fillText(`BEST ${state.best}`, w / 2, hudTop + 18);
+  ctx.fillText(`${bestLabel} ${state.best}`, w / 2, hudTop + 18);
 
   ctx.textAlign = "right";
   for (let i = 0; i < 3; i++) {

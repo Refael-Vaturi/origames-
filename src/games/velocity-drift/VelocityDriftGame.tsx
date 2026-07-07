@@ -31,6 +31,8 @@ const VelocityDriftGame = () => {
   const lastTimeRef = useRef<number>(0);
   const prevPhaseRef = useRef<Phase>("menu");
   const safeAreaRef = useRef({ top: 0, bottom: 0 });
+  const tRef = useRef(t);
+  useEffect(() => { tRef.current = t; }, [t]);
 
   const [phase, setPhase] = useState<Phase>("menu");
   const [finalScore, setFinalScore] = useState(0);
@@ -150,7 +152,10 @@ const VelocityDriftGame = () => {
       if (s.shakeTimer > 0) {
         ctx.translate((Math.random() - 0.5) * 6 * s.shakeTimer * 4, (Math.random() - 0.5) * 6 * s.shakeTimer * 4);
       }
-      render(ctx, s, w, h, time, safeAreaRef.current.top, safeAreaRef.current.bottom);
+      render(ctx, s, w, h, time, safeAreaRef.current.top, safeAreaRef.current.bottom, {
+        combo: tRef.current("hud.combo"),
+        offTrack: tRef.current("velocityDrift.offTrack"),
+      });
       ctx.restore();
 
       animFrameRef.current = requestAnimationFrame(loop);
@@ -293,7 +298,7 @@ const VelocityDriftGame = () => {
               >
                 🏁
               </motion.div>
-              <h2 className="text-2xl font-display font-bold">Time's Up</h2>
+              <h2 className="text-2xl font-display font-bold">{t("velocityDrift.gameOver")}</h2>
               <div className="text-4xl font-black tabular-nums bg-gradient-to-r from-rose-400 to-cyan-400 bg-clip-text text-transparent">
                 {finalScore}
               </div>

@@ -39,7 +39,7 @@ const STATUS_BG: Record<LetterStatus, string> = {
 const WordLadderGame = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { t } = useLanguage();
+  const { t, tf } = useLanguage();
   const { submitScore, userId } = useArcadeScore("word_ladder");
   const { isFirstVisit, markSeen } = useGameFirstVisit("word-ladder");
 
@@ -227,12 +227,12 @@ const WordLadderGame = () => {
               className="w-full mt-2 space-y-4 text-center"
             >
               <h2 className="font-display font-bold text-xl">
-                {won ? "Nice one! 🎉" : `The word was ${answer}`}
+                {won ? t("wordLadder.niceOne") : tf("wordLadder.theWordWas", { word: answer })}
               </h2>
               <div className="text-3xl font-black tabular-nums text-primary">{finalScore}</div>
               <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1">
-                  <Flame className="w-3.5 h-3.5 text-orange-500" /> Streak {streak.streak}
+                  <Flame className="w-3.5 h-3.5 text-orange-500" /> {t("wordLadder.streak")} {streak.streak}
                 </span>
                 <span className="flex items-center gap-1">
                   <Trophy className="w-3.5 h-3.5 text-amber-500" /> {t("arcade.bestLabel")} {streak.best}
@@ -246,7 +246,7 @@ const WordLadderGame = () => {
                 {submitted ? t("arcade.submitted") : t("arcade.submitScore")}
               </Button>
               <ArcadeLeaderboard gameId="word_ladder" currentUserId={userId} refreshKey={refreshKey} />
-              <p className="text-xs text-muted-foreground">Come back tomorrow for a new word!</p>
+              <p className="text-xs text-muted-foreground">{t("wordLadder.comeBackTomorrow")}</p>
             </motion.div>
           )}
         </AnimatePresence>

@@ -23,7 +23,7 @@ import {
 const DailyTriviaGame = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { t } = useLanguage();
+  const { t, tf } = useLanguage();
   const { submitScore, userId } = useArcadeScore("daily_trivia");
   const { isFirstVisit, markSeen } = useGameFirstVisit("daily-trivia");
 
@@ -155,7 +155,9 @@ const DailyTriviaGame = () => {
               className="w-full mt-2 space-y-4 text-center"
             >
               <h2 className="font-display font-bold text-xl">
-                {correctCount === questions.length ? "Perfect score! 🎉" : `${correctCount} / ${questions.length} correct`}
+                {correctCount === questions.length
+                  ? t("dailyTrivia.perfectScore")
+                  : tf("dailyTrivia.scoreOutOf", { correct: correctCount, total: questions.length })}
               </h2>
               <div className="text-3xl font-black tabular-nums text-primary">{finalScore}</div>
               <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
@@ -170,7 +172,7 @@ const DailyTriviaGame = () => {
                 {submitted ? t("arcade.submitted") : t("arcade.submitScore")}
               </Button>
               <ArcadeLeaderboard gameId="daily_trivia" currentUserId={userId} refreshKey={refreshKey} />
-              <p className="text-xs text-muted-foreground">Come back tomorrow for new questions!</p>
+              <p className="text-xs text-muted-foreground">{t("dailyTrivia.comeBackTomorrow")}</p>
             </motion.div>
           )}
         </AnimatePresence>

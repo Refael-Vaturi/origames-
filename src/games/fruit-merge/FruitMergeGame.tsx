@@ -31,6 +31,8 @@ const FruitMergeGame = () => {
   const prevPhaseRef = useRef<Phase>("menu");
   const safeAreaRef = useRef({ top: 0, bottom: 0 });
   const scoreAtLastMergeRef = useRef(0);
+  const tRef = useRef(t);
+  useEffect(() => { tRef.current = t; }, [t]);
 
   const [phase, setPhase] = useState<Phase>("menu");
   const [finalScore, setFinalScore] = useState(0);
@@ -121,7 +123,7 @@ const FruitMergeGame = () => {
         prevPhaseRef.current = phaseAfter;
       }
 
-      render(ctx, s, w, h, safeAreaRef.current.top);
+      render(ctx, s, w, h, safeAreaRef.current.top, tRef.current("hud.best"), tRef.current("hud.next"));
       animFrameRef.current = requestAnimationFrame(loop);
     };
 
@@ -237,7 +239,7 @@ const FruitMergeGame = () => {
               >
                 🧺
               </motion.div>
-              <h2 className="text-2xl font-display font-bold">Basket Full</h2>
+              <h2 className="text-2xl font-display font-bold">{t("fruitMerge.gameOver")}</h2>
               <div className="text-4xl font-black tabular-nums bg-gradient-to-r from-rose-400 to-lime-400 bg-clip-text text-transparent">
                 {finalScore}
               </div>

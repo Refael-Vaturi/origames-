@@ -31,6 +31,8 @@ const GravityFlipGame = () => {
   const flipQueuedRef = useRef(false);
   const prevPhaseRef = useRef<Phase>("menu");
   const safeAreaRef = useRef({ top: 0, bottom: 0 });
+  const tRef = useRef(t);
+  useEffect(() => { tRef.current = t; }, [t]);
 
   const [phase, setPhase] = useState<Phase>("menu");
   const [finalScore, setFinalScore] = useState(0);
@@ -175,7 +177,7 @@ const GravityFlipGame = () => {
       if (s.shakeTimer > 0) {
         ctx.translate((Math.random() - 0.5) * 8 * s.shakeTimer * 5, (Math.random() - 0.5) * 8 * s.shakeTimer * 5);
       }
-      render(ctx, s, w, h, time, safeAreaRef.current.top);
+      render(ctx, s, w, h, time, safeAreaRef.current.top, tRef.current("hud.best"));
       ctx.restore();
 
       animFrameRef.current = requestAnimationFrame(loop);
@@ -224,7 +226,7 @@ const GravityFlipGame = () => {
             exit={{ opacity: 0 }}
             className="absolute top-16 left-1/2 -translate-x-1/2 z-20 px-4 py-1.5 rounded-full bg-purple-600/80 text-white text-sm font-bold flex items-center gap-1.5 pointer-events-none"
           >
-            <Clock className="w-4 h-4" /> Rewound 3 seconds!
+            <Clock className="w-4 h-4" /> {t("gravityFlip.rewound")}
           </motion.div>
         )}
       </AnimatePresence>
@@ -288,7 +290,7 @@ const GravityFlipGame = () => {
               >
                 💥
               </motion.div>
-              <h2 className="text-2xl font-display font-bold">Run Over</h2>
+              <h2 className="text-2xl font-display font-bold">{t("gravityFlip.gameOver")}</h2>
               <div className="text-4xl font-black tabular-nums bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
                 {finalScore}
               </div>
@@ -321,7 +323,7 @@ const GravityFlipGame = () => {
 
       {phase === "playing" && (
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 text-white/40 text-xs pointer-events-none">
-          <Zap className="w-3.5 h-3.5" /> Tap to flip gravity
+          <Zap className="w-3.5 h-3.5" /> {t("gravityFlip.tapToFlip")}
         </div>
       )}
     </div>

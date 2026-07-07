@@ -24,7 +24,7 @@ const RhythmBladeGame = () => {
   const { user } = useAuth();
   const { submitScore, userId } = useArcadeScore("rhythm_blade");
   const { isFirstVisit, markSeen } = useGameFirstVisit("rhythm-blade");
-  const { t } = useLanguage();
+  const { t, tf } = useLanguage();
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const audioRef = useRef<RhythmAudio | null>(null);
@@ -33,6 +33,8 @@ const RhythmBladeGame = () => {
   const prevPhaseRef = useRef<Phase>("menu");
   const pointerStartRef = useRef<{ x: number; y: number } | null>(null);
   const safeAreaRef = useRef({ top: 0, bottom: 0 });
+  const tRef = useRef(t);
+  useEffect(() => { tRef.current = t; }, [t]);
 
   const [phase, setPhase] = useState<Phase>("menu");
   const [finalScore, setFinalScore] = useState(0);
@@ -171,7 +173,13 @@ const RhythmBladeGame = () => {
       const h = window.innerHeight;
       ctx.save();
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      render(ctx, s, w, h, audioNow, time, safeAreaRef.current.top);
+      render(ctx, s, w, h, audioNow, time, safeAreaRef.current.top, {
+        perfect: tRef.current("rhythmBlade.perfect"),
+        good: tRef.current("rhythmBlade.good"),
+        miss: tRef.current("rhythmBlade.miss"),
+        combo: tRef.current("hud.combo"),
+        hyperDrive: tRef.current("rhythmBlade.hyperDrive"),
+      });
       ctx.restore();
 
       animFrameRef.current = requestAnimationFrame(loop);
@@ -268,11 +276,11 @@ const RhythmBladeGame = () => {
               >
                 💔
               </motion.div>
-              <h2 className="text-2xl font-display font-bold">Life's Empty</h2>
+              <h2 className="text-2xl font-display font-bold">{t("rhythmBlade.gameOver")}</h2>
               <div className="text-4xl font-black tabular-nums bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
                 {finalScore}
               </div>
-              <div className="text-xs text-white/60">Max combo: {finalCombo}</div>
+              <div className="text-xs text-white/60">{tf("rhythmBlade.maxCombo", { combo: finalCombo })}</div>
               {finalScore >= best && finalScore > 0 && (
                 <motion.div
                   initial={{ opacity: 0, y: -6 }}
@@ -302,7 +310,7 @@ const RhythmBladeGame = () => {
 
       {phase === "playing" && (
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 text-white/40 text-xs pointer-events-none">
-          Arrow keys / WASD / swipe
+          {t("rhythmBlade.hint")}
         </div>
       )}
     </div>

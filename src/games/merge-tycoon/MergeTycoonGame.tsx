@@ -31,6 +31,8 @@ const MergeTycoonGame = () => {
   const lastTimeRef = useRef<number>(0);
   const prevPhaseRef = useRef<Phase>("menu");
   const safeAreaRef = useRef({ top: 0, bottom: 0 });
+  const tRef = useRef(t);
+  useEffect(() => { tRef.current = t; }, [t]);
 
   const [phase, setPhase] = useState<Phase>("menu");
   const [finalScore, setFinalScore] = useState(0);
@@ -124,7 +126,7 @@ const MergeTycoonGame = () => {
 
       const w = window.innerWidth;
       const h = window.innerHeight;
-      render(ctx, s, w, h, safeAreaRef.current.top, safeAreaRef.current.bottom);
+      render(ctx, s, w, h, safeAreaRef.current.top, safeAreaRef.current.bottom, tRef.current("mergeTycoon.totalEarned"));
       animFrameRef.current = requestAnimationFrame(loop);
     };
 
@@ -257,7 +259,7 @@ const MergeTycoonGame = () => {
               >
                 📈
               </motion.div>
-              <h2 className="text-2xl font-display font-bold">Time's Up</h2>
+              <h2 className="text-2xl font-display font-bold">{t("mergeTycoon.gameOver")}</h2>
               <div className="text-4xl font-black tabular-nums bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">
                 ${finalScore}
               </div>

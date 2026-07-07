@@ -44,7 +44,7 @@ function drawFruit(ctx: CanvasRenderingContext2D, x: number, y: number, tier: nu
   ctx.restore();
 }
 
-export function render(ctx: CanvasRenderingContext2D, state: GameState, w: number, h: number, topInset = 0) {
+export function render(ctx: CanvasRenderingContext2D, state: GameState, w: number, h: number, topInset = 0, bestLabel = "BEST", nextLabel = "NEXT") {
   const container = computeContainer(w, h, topInset);
 
   ctx.fillStyle = "#fff7ed";
@@ -93,13 +93,13 @@ export function render(ctx: CanvasRenderingContext2D, state: GameState, w: numbe
   ctx.fillText(`${state.score}`, w / 2, topInset + 26);
   ctx.font = "11px sans-serif";
   ctx.fillStyle = "rgba(120,53,15,0.6)";
-  ctx.fillText(`BEST ${state.best}`, w / 2, topInset + 41);
+  ctx.fillText(`${bestLabel} ${state.best}`, w / 2, topInset + 41);
 
   const previewY = topInset + 68;
   drawFruit(ctx, w / 2, previewY, state.currentTier);
   ctx.textAlign = "left";
   ctx.font = "11px sans-serif";
   ctx.fillStyle = "rgba(120,53,15,0.55)";
-  ctx.fillText("NEXT", w - 74, topInset + 30);
+  ctx.fillText(nextLabel, w - 74, topInset + 30);
   drawFruit(ctx, w - 40, topInset + 50, state.queuedTier, 0.55);
 }

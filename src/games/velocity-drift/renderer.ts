@@ -12,7 +12,14 @@ function toScreen(x: number, y: number, cam: { scale: number; offsetX: number; o
   return { x: x * cam.scale + cam.offsetX, y: y * cam.scale + cam.offsetY };
 }
 
-export function render(ctx: CanvasRenderingContext2D, state: GameState, w: number, h: number, time: number, topInset = 0, bottomInset = 0) {
+export interface VelocityLabels {
+  combo: string;
+  offTrack: string;
+}
+
+const DEFAULT_LABELS: VelocityLabels = { combo: "combo", offTrack: "OFF TRACK" };
+
+export function render(ctx: CanvasRenderingContext2D, state: GameState, w: number, h: number, time: number, topInset = 0, bottomInset = 0, labels: VelocityLabels = DEFAULT_LABELS) {
   const cam = computeCamera(w, h);
 
   ctx.fillStyle = "#0d1512";
@@ -116,7 +123,7 @@ export function render(ctx: CanvasRenderingContext2D, state: GameState, w: numbe
 
   ctx.font = "bold 13px monospace";
   ctx.fillStyle = state.combo > 1.05 ? "#facc15" : "rgba(248,250,252,0.5)";
-  ctx.fillText(`x${state.combo.toFixed(1)} combo`, w / 2, hudTop + 20);
+  ctx.fillText(`x${state.combo.toFixed(1)} ${labels.combo}`, w / 2, hudTop + 20);
 
   ctx.textAlign = "right";
   ctx.font = "bold 18px monospace";
@@ -137,6 +144,6 @@ export function render(ctx: CanvasRenderingContext2D, state: GameState, w: numbe
     ctx.textAlign = "center";
     ctx.font = "bold 14px monospace";
     ctx.fillStyle = "#f87171";
-    ctx.fillText("OFF TRACK", w / 2, h - 108 - bottomInset);
+    ctx.fillText(labels.offTrack, w / 2, h - 108 - bottomInset);
   }
 }

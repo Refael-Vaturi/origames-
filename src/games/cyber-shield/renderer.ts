@@ -46,6 +46,7 @@ export function render(
   selectedType: TowerType | null,
   topInset = 0,
   bottomInset = 0,
+  waveLabel = "Wave",
 ) {
   const m = computeGridMetrics(w, h, topInset, bottomInset);
 
@@ -195,5 +196,5 @@ export function render(
 
   ctx.textAlign = "center";
   ctx.fillStyle = "#e2e8f0";
-  ctx.fillText(`Wave ${state.wave}`, w / 2, hudY);
+  ctx.fillText(`${waveLabel} ${state.wave}`, w / 2, hudY);
 }

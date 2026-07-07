@@ -235,7 +235,7 @@ const WobbleRaceGame = () => {
               >
                 {phase === "finished" ? <Flag className="w-14 h-14 mx-auto text-sky-300" /> : "⏱️"}
               </motion.div>
-              <h2 className="text-2xl font-display font-bold">{phase === "finished" ? "Finished!" : "Time's Up"}</h2>
+              <h2 className="text-2xl font-display font-bold">{phase === "finished" ? t("wobbleRace.finished") : t("wobbleRace.timeUp")}</h2>
               <div className="text-4xl font-black tabular-nums bg-gradient-to-r from-yellow-400 to-sky-400 bg-clip-text text-transparent">
                 {finalScore}
               </div>
