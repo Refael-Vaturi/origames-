@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Trophy, Sparkles, Flag } from "lucide-react";
+import { RopeSwingGlyph } from "./MenuArt";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -175,31 +176,33 @@ const RopeSwingGame = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 z-30 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+            className="absolute inset-0 z-30 overflow-y-auto p-5"
+            style={{ background: "linear-gradient(180deg, #0c1a24 0%, #1a0e10 100%)" }}
           >
-            <div className="max-w-sm w-full text-center text-white space-y-5">
-              <div className="text-6xl">🪢</div>
-              <h1 className="text-3xl font-display font-bold bg-gradient-to-r from-sky-400 to-red-400 bg-clip-text text-transparent">
-                Rope Swing Tumble
+            <div className="max-w-sm w-full mx-auto min-h-full flex flex-col justify-center text-white py-8">
+              <RopeSwingGlyph className="w-full h-16" />
+              <h1 className="text-3xl font-display font-black text-center -mt-1">
+                <span className="text-sky-300">Rope Swing</span> <span className="text-rose-400">Tumble</span>
               </h1>
-              {isFirstVisit ? (
-                <p className="text-sm text-white/70">{t("ropeSwing.intro")}</p>
-              ) : (
-                <p className="text-xs text-white/50">{t("ropeSwing.tagline")}</p>
-              )}
-              <div className="flex items-center justify-center gap-2 text-xs text-white/50">
+              <p className="text-sm text-white/60 text-center mt-3">
+                {isFirstVisit ? t("ropeSwing.intro") : t("ropeSwing.tagline")}
+              </p>
+
+              <div className="flex items-center justify-center gap-2 text-xs text-white/50 mt-4">
                 <Trophy className="w-4 h-4 text-amber-400" /> {t("arcade.bestLabel")}: {best}
               </div>
-              <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }}>
+
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} className="mt-6">
                 <Button
                   size="lg"
-                  className="w-full bg-gradient-to-r from-sky-500 to-red-500 hover:opacity-90 text-white font-bold shadow-[0_0_30px_rgba(56,189,248,0.35)]"
+                  className="w-full bg-sky-400 hover:bg-sky-300 text-[#0c1a24] font-display font-bold text-base shadow-[0_0_40px_rgba(56,189,248,0.4)]"
                   onClick={startGame}
                 >
                   {t("ropeSwing.start")}
                 </Button>
               </motion.div>
-              <div className="pt-2">
+
+              <div className="mt-6 border-t border-white/10 pt-4">
                 <ArcadeLeaderboard gameId="rope_swing" currentUserId={userId} refreshKey={refreshKey} />
               </div>
             </div>
@@ -211,43 +214,46 @@ const RopeSwingGame = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 z-30 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4"
+            className="absolute inset-0 z-30 overflow-y-auto p-5"
+            style={{ background: "linear-gradient(180deg, #0c1a24 0%, #1a0e10 100%)" }}
           >
-            <div className="max-w-sm w-full text-center text-white space-y-4">
+            <div className="max-w-sm w-full mx-auto min-h-full flex flex-col justify-center text-white py-8 text-center">
               <motion.div
-                className="text-5xl"
+                className="mx-auto"
                 initial={{ scale: 0.5, rotate: -15 }}
                 animate={{ scale: 1, rotate: 0 }}
                 transition={{ type: "spring", stiffness: 260, damping: 12 }}
               >
-                {phase === "finished" ? <Flag className="w-14 h-14 mx-auto text-sky-300" /> : "🌊"}
+                {phase === "finished" ? <Flag className="w-14 h-14 mx-auto text-sky-300" /> : <RopeSwingGlyph className="w-24 h-16 mx-auto" />}
               </motion.div>
-              <h2 className="text-2xl font-display font-bold">{phase === "finished" ? t("ropeSwing.madeIt") : t("ropeSwing.splashDown")}</h2>
-              <div className="text-4xl font-black tabular-nums bg-gradient-to-r from-sky-400 to-red-400 bg-clip-text text-transparent">
+              <h2 className="text-2xl font-display font-bold mt-1">{phase === "finished" ? t("ropeSwing.madeIt") : t("ropeSwing.splashDown")}</h2>
+              <div className="text-5xl font-display font-black tabular-nums text-sky-300 mt-1">
                 {finalScore}
               </div>
               {finalScore >= best && finalScore > 0 && (
                 <motion.div
                   initial={{ opacity: 0, y: -6 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="flex items-center justify-center gap-1.5 text-amber-400 text-sm font-semibold"
+                  className="flex items-center justify-center gap-1.5 text-amber-400 text-sm font-semibold mt-2"
                 >
                   <Sparkles className="w-4 h-4" /> {t("arcade.newBest")}
                 </motion.div>
               )}
-              <div className="flex gap-2">
+              <div className="flex gap-2 mt-5">
                 <motion.div className="flex-1" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }}>
                   <Button variant="outline" className="w-full border-white/30 text-white" onClick={submitToLeaderboard}>
                     {t("arcade.submitScore")}
                   </Button>
                 </motion.div>
                 <motion.div className="flex-1" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }}>
-                  <Button className="w-full bg-gradient-to-r from-sky-500 to-red-500 text-white font-bold" onClick={startGame}>
+                  <Button className="w-full bg-sky-400 hover:bg-sky-300 text-[#0c1a24] font-bold" onClick={startGame}>
                     {t("arcade.retry")}
                   </Button>
                 </motion.div>
               </div>
-              <ArcadeLeaderboard gameId="rope_swing" currentUserId={userId} refreshKey={refreshKey} />
+              <div className="mt-5 border-t border-white/10 pt-4">
+                <ArcadeLeaderboard gameId="rope_swing" currentUserId={userId} refreshKey={refreshKey} />
+              </div>
             </div>
           </motion.div>
         )}
