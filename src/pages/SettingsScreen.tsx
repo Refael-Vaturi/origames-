@@ -7,11 +7,12 @@ import { ArrowLeft, Globe, Volume2, VolumeX, Moon, Sun, Vibrate, Info } from "lu
 import { useState, useEffect } from "react";
 import { playClick, setSoundEnabled, isSoundEnabled } from "@/hooks/useSound";
 import { getStoredTheme, setStoredTheme } from "@/lib/theme";
+import LanguageSelector from "@/components/LanguageSelector";
 
 const SettingsScreen = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
-  const { t, toggleLanguage, language } = useLanguage();
+  const { t } = useLanguage();
   const [sound, setSound] = useState(isSoundEnabled());
   const [vibration, setVibration] = useState(true);
   const [darkMode, setDarkMode] = useState(() => getStoredTheme() === "dark");
@@ -56,13 +57,7 @@ const SettingsScreen = () => {
 
           <div className="divide-y divide-border">
             <SettingRow icon={Globe} label={t("settings.language")}>
-              <button
-                onClick={(e) => { e.stopPropagation(); toggleLanguage(); }}
-                className="px-4 py-2 rounded-xl bg-muted font-display text-sm font-semibold text-foreground hover:bg-primary/20 active:bg-primary/30 transition-colors cursor-pointer select-none"
-                style={{ WebkitTapHighlightColor: 'transparent', touchAction: 'manipulation' }}
-              >
-                {language === "en" ? "עברית" : "English"}
-              </button>
+              <LanguageSelector />
             </SettingRow>
 
             <SettingRow icon={sound ? Volume2 : VolumeX} label={t("settings.sound")}>

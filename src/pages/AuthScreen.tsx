@@ -256,7 +256,7 @@ const AuthScreen = () => {
               }`}
             >
               <Mail className="w-4 h-4" />
-              Email
+              {t("auth.email")}
             </button>
           </div>
 

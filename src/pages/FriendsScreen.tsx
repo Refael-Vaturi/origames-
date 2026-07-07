@@ -93,7 +93,7 @@ const FriendsScreen = () => {
         const { data: newRoom, error } = await supabase.from("rooms").insert({
           code,
           host_id: user.id,
-          name: "Game Room",
+          name: t("friends.gameRoom"),
           max_players: 8,
           rounds: 5,
           response_time: 30,
@@ -121,7 +121,7 @@ const FriendsScreen = () => {
         body: {
           target_user_id: friendUserId,
           type: "game_invite",
-          title: `🎮 ${profile?.display_name || "A friend"} ${t("notifications.invitedYou")}`,
+          title: `🎮 ${profile?.display_name || t("friends.aFriend")} ${t("notifications.invitedYou")}`,
           body: `${t("notifications.joinWith")} ${roomCode}`,
           data: { roomCode },
         },
@@ -131,7 +131,7 @@ const FriendsScreen = () => {
       if (navigator.share) {
         await navigator.share({
           title: "Fake It Fast",
-          text: `${t("friends.inviteMessage")} ${friendName}! Code: ${roomCode}`,
+          text: `${t("friends.inviteMessage")} ${friendName}! ${t("friends.code")}: ${roomCode}`,
           url: inviteLink,
         });
       } else {
@@ -317,9 +317,9 @@ const FriendsScreen = () => {
                           </div>
                           <div className="flex-1">
                             <p className="font-display font-semibold text-sm text-foreground">
-                              {f.friend?.display_name || "Unknown"}
+                              {f.friend?.display_name || t("friends.unknown")}
                             </p>
-                            <p className="text-xs text-muted-foreground">Lv. {f.friend?.level || 1}</p>
+                            <p className="text-xs text-muted-foreground">{t("portal.level")} {f.friend?.level || 1}</p>
                           </div>
                           <button
                             onClick={() => acceptRequest(f.id)}
@@ -355,7 +355,7 @@ const FriendsScreen = () => {
                           </div>
                           <div className="flex-1">
                             <p className="font-display font-semibold text-sm text-foreground">
-                              {f.friend?.display_name || "Unknown"}
+                              {f.friend?.display_name || t("friends.unknown")}
                             </p>
                             <p className="text-xs text-muted-foreground">{t("friends.pending")}</p>
                           </div>
@@ -509,10 +509,10 @@ function FriendCard({
       </div>
       <div className="flex-1">
         <p className="font-display font-semibold text-sm text-foreground">
-          {friendship.friend?.display_name || "Unknown"}
+          {friendship.friend?.display_name || t("friends.unknown")}
         </p>
         <p className="text-xs text-muted-foreground">
-          Lv. {friendship.friend?.level || 1} · {online ? t("friends.online") : t("friends.offline")}
+          {t("portal.level")} {friendship.friend?.level || 1} · {online ? t("friends.online") : t("friends.offline")}
         </p>
       </div>
 

@@ -36,13 +36,13 @@ const ProfileScreen = () => {
 
   const handleSave = async () => {
     if (!user) {
-      toast({ title: "Login required", variant: "destructive" });
+      toast({ title: t("profile.loginRequired"), variant: "destructive" });
       return;
     }
 
     // Validate username
     if (username && username.length < 3) {
-      toast({ title: t("profile.usernameTooShort") || "Username must be at least 3 characters", variant: "destructive" });
+      toast({ title: t("profile.usernameTooShort"), variant: "destructive" });
       return;
     }
 
@@ -56,7 +56,7 @@ const ProfileScreen = () => {
         .limit(1);
 
       if (existing && existing.length > 0) {
-        toast({ title: t("profile.usernameTaken") || "Username already taken", variant: "destructive" });
+        toast({ title: t("profile.usernameTaken"), variant: "destructive" });
         return;
       }
     }
@@ -66,7 +66,7 @@ const ProfileScreen = () => {
       .update({ display_name: displayName, username: username || null })
       .eq("user_id", user.id);
     if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({ title: t("profile.saveError"), description: error.message, variant: "destructive" });
     } else {
       playSuccess();
       toast({ title: t("profile.save") + " ✅" });
@@ -80,12 +80,12 @@ const ProfileScreen = () => {
     if (!file || !user) return;
 
     if (!file.type.startsWith("image/")) {
-      toast({ title: "Please select an image file", variant: "destructive" });
+      toast({ title: t("profile.selectImageFile"), variant: "destructive" });
       return;
     }
 
     if (file.size > 2 * 1024 * 1024) {
-      toast({ title: "Image must be under 2MB", variant: "destructive" });
+      toast({ title: t("profile.imageTooLarge"), variant: "destructive" });
       return;
     }
 
@@ -109,28 +109,28 @@ const ProfileScreen = () => {
         .eq("user_id", user.id);
 
       await refreshProfile();
-      toast({ title: t("profile.avatarUpdated") || "Avatar updated! 📸" });
+      toast({ title: t("profile.avatarUpdated") });
     } catch (err: any) {
-      toast({ title: "Upload failed", description: err.message, variant: "destructive" });
+      toast({ title: t("profile.uploadFailed"), description: err.message, variant: "destructive" });
     } finally {
       setUploading(false);
     }
   };
 
   const handleShare = async () => {
-    const shareText = `🎮 ${displayName} | Lv.${profile?.level || 1} | ${profile?.wins || 0} Wins | Fake It Fast`;
+    const shareText = `🎮 ${displayName} | ${t("portal.level")} ${profile?.level || 1} | ${profile?.wins || 0} ${t("profile.wins")} | Ori Games`;
     const shareUrl = `${window.location.origin}/profile`;
 
     if (navigator.share) {
       try {
         await navigator.share({
-          title: "Fake It Fast - Player Profile",
+          title: `Ori Games - ${t("profile.title")}`,
           text: shareText,
           url: shareUrl,
         });
       } catch (e: any) {
         if (e?.name !== "AbortError") {
-          toast({ title: "Share failed", variant: "destructive" });
+          toast({ title: t("profile.shareFailed"), variant: "destructive" });
         }
       }
     } else {
@@ -173,7 +173,7 @@ const ProfileScreen = () => {
               <button
                 onClick={handleShare}
                 className="p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground"
-                title="Share profile"
+                title={t("profile.shareProfile")}
               >
                 <Share2 className="w-5 h-5" />
               </button>
@@ -234,7 +234,7 @@ const ProfileScreen = () => {
                   />
                 </div>
                 <p className="text-xs text-muted-foreground font-body text-center">
-                  {t("profile.usernameHint") || "Lowercase letters, numbers and underscores only"}
+                  {t("profile.usernameHint")}
                 </p>
                 <Button variant="game" size="lg" className="w-full" onClick={handleSave}>
                   {t("profile.save")}
@@ -256,7 +256,7 @@ const ProfileScreen = () => {
                     onClick={() => { playClick(); setIsEditing(true); }}
                     className="text-xs text-primary font-body underline"
                   >
-                    {t("profile.setUsername") || "Set a username"}
+                    {t("profile.setUsername")}
                   </button>
                 )}
                 {(() => {
@@ -266,7 +266,7 @@ const ProfileScreen = () => {
                   return (
                     <div className="w-full mt-3 px-2">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="font-display text-sm font-bold text-primary">Lv.{level}</span>
+                        <span className="font-display text-sm font-bold text-primary">{t("portal.level")} {level}</span>
                         <span className="text-xs text-muted-foreground font-body">{xp} XP</span>
                       </div>
                       <div className="w-full h-3 bg-muted rounded-full overflow-hidden">
