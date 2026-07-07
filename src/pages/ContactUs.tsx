@@ -6,9 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const ContactUs = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -25,13 +27,13 @@ const ContactUs = () => {
       });
       const data = await response.json();
       if (response.ok) {
-        toast({ title: "Success!", description: "Your message has been sent." });
+        toast({ title: t("contact.successTitle"), description: t("contact.successBody") });
         form.reset();
       } else {
-        toast({ title: "Error", description: data.message, variant: "destructive" });
+        toast({ title: t("contact.errorTitle"), description: data.message, variant: "destructive" });
       }
     } catch {
-      toast({ title: "Something went wrong", description: "Please try again.", variant: "destructive" });
+      toast({ title: t("contact.genericErrorTitle"), description: t("contact.tryAgain"), variant: "destructive" });
     } finally {
       setSubmitting(false);
     }
@@ -44,36 +46,36 @@ const ContactUs = () => {
           onClick={() => navigate(-1)}
           className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6"
         >
-          <ArrowLeft className="w-4 h-4" /> Back
+          <ArrowLeft className="w-4 h-4" /> {t("arcade.back")}
         </button>
 
         <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
           <h1 className="font-display text-3xl font-bold mb-2 bg-gradient-to-r from-primary to-[hsl(var(--game-pink))] bg-clip-text text-transparent">
-            Contact Us
+            {t("contact.title")}
           </h1>
           <p className="text-muted-foreground mb-6">
-            Have a question or feedback? Send us a message.
+            {t("contact.subtitle")}
           </p>
 
           <form id="form" onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Name</label>
+              <label className="block text-sm font-medium mb-1">{t("contact.name")}</label>
               <Input name="name" required maxLength={100} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Email</label>
+              <label className="block text-sm font-medium mb-1">{t("contact.email")}</label>
               <Input name="email" type="email" required maxLength={255} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Phone</label>
+              <label className="block text-sm font-medium mb-1">{t("contact.phone")}</label>
               <Input name="phone" type="tel" required maxLength={30} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Message</label>
+              <label className="block text-sm font-medium mb-1">{t("contact.message")}</label>
               <Textarea name="message" required maxLength={2000} rows={5} />
             </div>
             <Button type="submit" variant="hero" size="lg" className="w-full" disabled={submitting}>
-              {submitting ? "Sending..." : "Send Message"}
+              {submitting ? t("contact.sending") : t("contact.sendMessage")}
             </Button>
           </form>
         </motion.div>
