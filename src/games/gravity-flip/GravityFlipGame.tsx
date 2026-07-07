@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Zap, Clock, Sparkles, Trophy } from "lucide-react";
+import { GravityFlipGlyph } from "./MenuArt";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -237,37 +238,40 @@ const GravityFlipGame = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 z-30 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+            className="absolute inset-0 z-30 overflow-y-auto p-5"
+            style={{ background: "radial-gradient(ellipse at 50% 30%, #1c0f3d 0%, #0b0620 65%)" }}
           >
-            <div className="max-w-sm w-full text-center text-white space-y-5">
-              <motion.div
-                className="text-6xl"
-                animate={{ rotate: 180 }}
-                transition={{ duration: 2.2, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
-              >
-                🌀
-              </motion.div>
-              <h1 className="text-3xl font-display font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
-                Gravity Flip
-              </h1>
-              {isFirstVisit ? (
-                <p className="text-sm text-white/70">{t("gravityFlip.intro")}</p>
-              ) : (
-                <p className="text-xs text-white/50">{t("gravityFlip.tagline")}</p>
-              )}
-              <div className="flex items-center justify-center gap-2 text-xs text-white/50">
+            <div className="max-w-sm w-full mx-auto min-h-full flex flex-col justify-center text-white py-8">
+              <div className="flex items-start justify-between gap-4">
+                <div className="text-start">
+                  <p className="text-[11px] tracking-[0.3em] uppercase text-cyan-300/70 font-display mb-1">Reflex Runner</p>
+                  <h1 className="text-4xl font-display font-black leading-[0.95] text-white">
+                    Gravity<br />Flip
+                  </h1>
+                  <div className="mt-2 h-1 w-14 rounded-full bg-gradient-to-r from-cyan-400 to-purple-400" />
+                </div>
+                <GravityFlipGlyph className="w-24 h-20 shrink-0 mt-1" />
+              </div>
+
+              <p className="text-sm text-white/60 mt-5 max-w-[85%]">
+                {isFirstVisit ? t("gravityFlip.intro") : t("gravityFlip.tagline")}
+              </p>
+
+              <div className="flex items-center gap-2 text-xs text-white/50 mt-4">
                 <Trophy className="w-4 h-4 text-amber-400" /> {t("arcade.bestLabel")}: {best}
               </div>
-              <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }}>
+
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} className="mt-6">
                 <Button
                   size="lg"
-                  className="w-full bg-gradient-to-r from-cyan-500 to-purple-600 hover:opacity-90 text-white font-bold shadow-[0_0_30px_rgba(34,211,238,0.35)]"
+                  className="w-full bg-cyan-400 hover:bg-cyan-300 text-[#0b0620] font-display font-bold text-base shadow-[0_0_40px_rgba(34,211,238,0.4)]"
                   onClick={startGame}
                 >
                   {t("gravityFlip.start")}
                 </Button>
               </motion.div>
-              <div className="pt-2">
+
+              <div className="mt-6 border-t border-white/10 pt-4">
                 <ArcadeLeaderboard gameId="gravity_flip" currentUserId={userId} refreshKey={refreshKey} />
               </div>
             </div>
@@ -279,43 +283,46 @@ const GravityFlipGame = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 z-30 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4"
+            className="absolute inset-0 z-30 overflow-y-auto p-5"
+            style={{ background: "radial-gradient(ellipse at 50% 30%, #1c0f3d 0%, #0b0620 65%)" }}
           >
-            <div className="max-w-sm w-full text-center text-white space-y-4">
+            <div className="max-w-sm w-full mx-auto min-h-full flex flex-col justify-center text-white py-8 text-center">
               <motion.div
-                className="text-5xl"
+                className="mx-auto"
                 initial={{ scale: 0.5, rotate: -15 }}
                 animate={{ scale: 1, rotate: 0 }}
                 transition={{ type: "spring", stiffness: 260, damping: 12 }}
               >
-                💥
+                <GravityFlipGlyph className="w-20 h-16" />
               </motion.div>
-              <h2 className="text-2xl font-display font-bold">{t("gravityFlip.gameOver")}</h2>
-              <div className="text-4xl font-black tabular-nums bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
+              <h2 className="text-2xl font-display font-bold mt-2">{t("gravityFlip.gameOver")}</h2>
+              <div className="text-5xl font-display font-black tabular-nums text-cyan-300 mt-1">
                 {finalScore}
               </div>
               {finalScore >= best && finalScore > 0 && (
                 <motion.div
                   initial={{ opacity: 0, y: -6 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="flex items-center justify-center gap-1.5 text-amber-400 text-sm font-semibold"
+                  className="flex items-center justify-center gap-1.5 text-amber-400 text-sm font-semibold mt-2"
                 >
                   <Sparkles className="w-4 h-4" /> {t("arcade.newBest")}
                 </motion.div>
               )}
-              <div className="flex gap-2">
+              <div className="flex gap-2 mt-5">
                 <motion.div className="flex-1" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }}>
                   <Button variant="outline" className="w-full border-white/30 text-white" onClick={submitToLeaderboard}>
                     {t("arcade.submitScore")}
                   </Button>
                 </motion.div>
                 <motion.div className="flex-1" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }}>
-                  <Button className="w-full bg-gradient-to-r from-cyan-500 to-purple-600 text-white font-bold" onClick={startGame}>
+                  <Button className="w-full bg-cyan-400 hover:bg-cyan-300 text-[#0b0620] font-bold" onClick={startGame}>
                     {t("arcade.retry")}
                   </Button>
                 </motion.div>
               </div>
-              <ArcadeLeaderboard gameId="gravity_flip" currentUserId={userId} refreshKey={refreshKey} />
+              <div className="mt-5 border-t border-white/10 pt-4">
+                <ArcadeLeaderboard gameId="gravity_flip" currentUserId={userId} refreshKey={refreshKey} />
+              </div>
             </div>
           </motion.div>
         )}
