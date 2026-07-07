@@ -463,62 +463,86 @@ const IronDomeGame: React.FC = () => {
     fetchData();
   }, [user]);
 
-  // Load progress from DB when user logs in
+  // Load progress from DB when user logs in — merges iron_dome_progress + profiles.admin_max_level + unlocked_levels
   useEffect(() => {
     if (!user) return;
+
     const loadProgress = async () => {
       try {
-        const { data } = await supabase.from('iron_dome_progress').select('*').eq('user_id', user.id).maybeSingle();
-        if (data) {
-          const dbStars = (data.stars || {}) as Record<string, number>;
-          const dbUpgrades = (data.upgrades || {}) as Record<string, number>;
-          const dbMaxLevel = data.max_level || 1;
-          const dbBestWave = data.best_wave || 0;
+        const [{ data: progress }, { data: profile }] = await Promise.all([
+          supabase.from('iron_dome_progress').select('*').eq('user_id', user.id).maybeSingle(),
+          supabase.from('profiles').select('admin_max_level, unlocked_levels').eq('user_id', user.id).maybeSingle(),
+        ]);
 
-          // Merge with localStorage (take the best of both)
-          const localStars = (() => { try { return JSON.parse(localStorage.getItem('ironDomeCampaignStars') || '{}'); } catch { return {}; } })();
-          const localMaxLevel = (() => { try { return parseInt(localStorage.getItem('ironDomeCampaignLevel') || '1'); } catch { return 1; } })();
-          const localBestWave = (() => { try { return parseInt(localStorage.getItem('ironDomeBestWave') || '0'); } catch { return 0; } })();
-          const localUpgrades = (() => { try { return JSON.parse(localStorage.getItem('ironDomeUpgrades') || '{}'); } catch { return {}; } })();
+        const dbStars = (progress?.stars || {}) as Record<string, number>;
+        const dbUpgrades = (progress?.upgrades || {}) as Record<string, number>;
+        const dbMaxLevel = progress?.max_level || 1;
+        const dbBestWave = progress?.best_wave || 0;
 
-          // Merge stars (take max per level)
-          const mergedStars: Record<number, number> = {};
-          const allKeys = new Set([...Object.keys(dbStars), ...Object.keys(localStars)]);
-          allKeys.forEach(k => { mergedStars[Number(k)] = Math.max(dbStars[k] || 0, localStars[k] || 0); });
+        const adminMaxLevel = profile?.admin_max_level || 0;
+        const unlockedLevels = (profile?.unlocked_levels || []) as number[];
+        const maxUnlockedFromArray = unlockedLevels.length ? Math.max(...unlockedLevels) : 0;
 
-          // Merge upgrades (take max)
-          const mergedUpgrades: Record<string, number> = {};
-          const upgradeKeys = new Set([...Object.keys(dbUpgrades), ...Object.keys(localUpgrades)]);
-          upgradeKeys.forEach(k => { mergedUpgrades[k] = Math.max(dbUpgrades[k] || 0, localUpgrades[k] || 0); });
+        // Merge with localStorage
+        const localStars = (() => { try { return JSON.parse(localStorage.getItem('ironDomeCampaignStars') || '{}'); } catch { return {}; } })();
+        const localMaxLevel = (() => { try { return parseInt(localStorage.getItem('ironDomeCampaignLevel') || '1'); } catch { return 1; } })();
+        const localBestWave = (() => { try { return parseInt(localStorage.getItem('ironDomeBestWave') || '0'); } catch { return 0; } })();
+        const localUpgrades = (() => { try { return JSON.parse(localStorage.getItem('ironDomeUpgrades') || '{}'); } catch { return {}; } })();
 
-          const mergedMaxLevel = Math.max(dbMaxLevel, localMaxLevel);
-          const mergedBestWave = Math.max(dbBestWave, localBestWave);
+        // Merge stars (take max per level)
+        const mergedStars: Record<number, number> = {};
+        const allKeys = new Set([...Object.keys(dbStars), ...Object.keys(localStars)]);
+        allKeys.forEach(k => { mergedStars[Number(k)] = Math.max(dbStars[k] || 0, localStars[k] || 0); });
 
-          setCampaignMaxLevel(mergedMaxLevel);
-          setCampaignStars(mergedStars);
-          setBestWave(mergedBestWave);
+        // Merge upgrades (take max)
+        const mergedUpgrades: Record<string, number> = {};
+        const upgradeKeys = new Set([...Object.keys(dbUpgrades), ...Object.keys(localUpgrades)]);
+        upgradeKeys.forEach(k => { mergedUpgrades[k] = Math.max(dbUpgrades[k] || 0, localUpgrades[k] || 0); });
 
-          // Save merged back to localStorage
-          try {
-            localStorage.setItem('ironDomeCampaignLevel', String(mergedMaxLevel));
-            localStorage.setItem('ironDomeCampaignStars', JSON.stringify(mergedStars));
-            localStorage.setItem('ironDomeBestWave', String(mergedBestWave));
-            localStorage.setItem('ironDomeUpgrades', JSON.stringify(mergedUpgrades));
-          } catch {}
+        // Effective unlocked = GREATEST(progress.max_level, admin override, unlocked_levels array, localStorage)
+        const mergedMaxLevel = Math.max(dbMaxLevel, localMaxLevel, adminMaxLevel, maxUnlockedFromArray);
+        const mergedBestWave = Math.max(dbBestWave, localBestWave);
 
-          // Save merged back to DB
+        setCampaignMaxLevel(mergedMaxLevel);
+        setCampaignStars(mergedStars);
+        setBestWave(mergedBestWave);
+
+        try {
+          localStorage.setItem('ironDomeCampaignLevel', String(mergedMaxLevel));
+          localStorage.setItem('ironDomeCampaignStars', JSON.stringify(mergedStars));
+          localStorage.setItem('ironDomeBestWave', String(mergedBestWave));
+          localStorage.setItem('ironDomeUpgrades', JSON.stringify(mergedUpgrades));
+        } catch {}
+
+        // Persist merged progress back to iron_dome_progress
+        if (mergedMaxLevel > dbMaxLevel || !progress) {
           syncProgressToDb(mergedMaxLevel, mergedStars, mergedUpgrades, mergedBestWave);
-        } else {
-          // No DB record yet - push localStorage to DB
-          const localStars = (() => { try { return JSON.parse(localStorage.getItem('ironDomeCampaignStars') || '{}'); } catch { return {}; } })();
-          const localMaxLevel = (() => { try { return parseInt(localStorage.getItem('ironDomeCampaignLevel') || '1'); } catch { return 1; } })();
-          const localBestWave = (() => { try { return parseInt(localStorage.getItem('ironDomeBestWave') || '0'); } catch { return 0; } })();
-          const localUpgrades = (() => { try { return JSON.parse(localStorage.getItem('ironDomeUpgrades') || '{}'); } catch { return {}; } })();
-          syncProgressToDb(localMaxLevel, localStars, localUpgrades, localBestWave);
         }
       } catch (e) { console.error('Failed to load progress:', e); }
     };
     loadProgress();
+
+    // Realtime: react instantly when admin unlocks levels for this user
+    const channel = supabase
+      .channel(`iron-dome-progress-${user.id}`)
+      .on('postgres_changes', {
+        event: '*', schema: 'public', table: 'iron_dome_progress', filter: `user_id=eq.${user.id}`,
+      }, (payload) => {
+        const row = (payload.new || payload.old) as { max_level?: number } | null;
+        if (row?.max_level) setCampaignMaxLevel(prev => Math.max(prev, row.max_level!));
+      })
+      .on('postgres_changes', {
+        event: 'UPDATE', schema: 'public', table: 'profiles', filter: `user_id=eq.${user.id}`,
+      }, (payload) => {
+        const row = payload.new as { admin_max_level?: number; unlocked_levels?: number[] } | null;
+        const admin = row?.admin_max_level || 0;
+        const fromArr = row?.unlocked_levels?.length ? Math.max(...row.unlocked_levels) : 0;
+        const next = Math.max(admin, fromArr);
+        if (next > 0) setCampaignMaxLevel(prev => Math.max(prev, next));
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, [user, syncProgressToDb]);
 
   // Handle purchase return
