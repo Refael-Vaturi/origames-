@@ -1205,10 +1205,11 @@ const IronDomeGame: React.FC = () => {
                   onClick={() => {
                     if (stateRef.current) { stateRef.current.phase = 'rules'; setPhase('rules'); }
                   }}
-                  className="rounded-xl border border-border bg-card/60 backdrop-blur px-3 py-3 flex flex-col items-center gap-1 hover:border-primary/50 hover:bg-card transition"
+                  className="relative overflow-hidden rounded-xl border border-border bg-card/60 backdrop-blur px-3 py-3 flex flex-col items-center gap-1.5 shadow-tactical hover:border-primary/50 hover:bg-card transition group"
                 >
-                  <span className="text-xl">📖</span>
-                  <span className="text-xs font-display font-semibold text-foreground">{T('rules')}</span>
+                  <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="relative w-8 h-8 rounded-lg bg-primary/10 border border-primary/30 flex items-center justify-center text-base">📖</div>
+                  <span className="relative text-xs font-display font-semibold text-foreground">{T('rules')}</span>
                 </button>
                 <button
                   onClick={() => {
@@ -1217,34 +1218,41 @@ const IronDomeGame: React.FC = () => {
                     setLeaderboardMode('campaign');
                     if (stateRef.current) { stateRef.current.phase = 'leaderboard'; setPhase('leaderboard'); }
                   }}
-                  className="rounded-xl border border-border bg-card/60 backdrop-blur px-3 py-3 flex flex-col items-center gap-1 hover:border-primary/50 hover:bg-card transition"
+                  className="relative overflow-hidden rounded-xl border border-border bg-card/60 backdrop-blur px-3 py-3 flex flex-col items-center gap-1.5 shadow-tactical hover:border-primary/50 hover:bg-card transition group"
                 >
-                  <span className="text-xl">🏆</span>
-                  <span className="text-xs font-display font-semibold text-foreground">{T('leaderboard')}</span>
+                  <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="relative w-8 h-8 rounded-lg bg-primary/10 border border-primary/30 flex items-center justify-center text-base animate-glow-pulse">🏆</div>
+                  <span className="relative text-xs font-display font-semibold text-foreground">{T('leaderboard')}</span>
                 </button>
                 <button
                   onClick={() => {
                     if (stateRef.current) { stateRef.current.phase = 'main-shop' as any; setPhase('main-shop'); }
                   }}
-                  className="rounded-xl border border-border bg-card/60 backdrop-blur px-3 py-3 flex flex-col items-center gap-1 hover:border-primary/50 hover:bg-card transition"
+                  className="relative overflow-hidden rounded-xl border border-border bg-card/60 backdrop-blur px-3 py-3 flex flex-col items-center gap-1.5 shadow-tactical hover:border-primary/50 hover:bg-card transition group"
                 >
-                  <span className="text-xl">🛒</span>
-                  <span className="text-xs font-display font-semibold text-foreground">{T('store')}</span>
+                  <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="relative w-8 h-8 rounded-lg bg-primary/10 border border-primary/30 flex items-center justify-center text-base">🛒</div>
+                  <span className="relative text-xs font-display font-semibold text-foreground">{T('store')}</span>
                 </button>
               </div>
 
               {/* Auth banner */}
-              <div className="w-full rounded-xl border border-border bg-card/60 backdrop-blur px-4 py-3 text-center">
+              <div className="relative overflow-hidden w-full rounded-xl border border-border bg-card/60 backdrop-blur px-4 py-3 text-center shadow-tactical">
                 {user ? (
-                  <p className="text-primary text-xs font-semibold">✅ מחובר — הניקוד ישמר בלידרבורד</p>
+                  <p className="relative text-primary text-xs font-semibold">✅ מחובר — הניקוד ישמר בלידרבורד</p>
                 ) : (
-                  <button
-                    onClick={() => { setShowAuthModal(true); setAuthMode('login'); }}
-                    className="flex items-center justify-center gap-2 w-full text-accent hover:text-accent/80 transition-colors"
-                  >
-                    <LogIn className="w-4 h-4" />
-                    <span className="text-xs font-bold">התחבר כדי לשמור ניקוד בלידרבורד</span>
-                  </button>
+                  <>
+                    <div className="absolute inset-0 bg-gradient-to-r from-accent/10 via-transparent to-accent/10" />
+                    <button
+                      onClick={() => { setShowAuthModal(true); setAuthMode('login'); }}
+                      className="relative flex items-center justify-center gap-2 w-full text-accent hover:text-accent/80 transition-colors"
+                    >
+                      <span className="w-6 h-6 rounded-full bg-accent/15 border border-accent/40 flex items-center justify-center animate-glow-pulse">
+                        <LogIn className="w-3.5 h-3.5" />
+                      </span>
+                      <span className="text-xs font-bold">התחבר כדי לשמור ניקוד בלידרבורד</span>
+                    </button>
+                  </>
                 )}
               </div>
             </div>
