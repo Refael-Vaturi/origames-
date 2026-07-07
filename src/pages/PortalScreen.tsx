@@ -50,12 +50,14 @@ interface GameCard {
   description: string;
   players: string;
   tag?: string;
+  /** Bento-grid size hint for the "All games" section. Defaults to a 1x1 square tile. */
+  size?: "lg";
 }
 
 const PortalScreen = () => {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
-  const { t } = useLanguage();
+  const { t, tf } = useLanguage();
   const { isAdmin } = useIsAdmin();
   useOnlinePresence({ track: !!user });
 
@@ -81,6 +83,7 @@ const PortalScreen = () => {
       description: t("portal.ironDomeDesc"),
       players: "1",
       tag: "Action",
+      size: "lg",
     },
     {
       id: "clicker",
@@ -156,6 +159,7 @@ const PortalScreen = () => {
       description: "Place towers, defend the database, survive every wave.",
       players: "1",
       tag: "Strategy",
+      size: "lg",
     },
     {
       id: "fruit-merge",
@@ -178,6 +182,7 @@ const PortalScreen = () => {
       description: "Merge matching stands into a bigger business, earn as much as you can.",
       players: "1",
       tag: "Idle",
+      size: "lg",
     },
     {
       id: "wobble-race",
@@ -254,7 +259,7 @@ const PortalScreen = () => {
           </div>
           <div className="text-start leading-tight">
             <p className="text-[11px] text-muted-foreground font-body">
-              {user ? `${t("portal.level") || "Level"} ${profile?.level || 1}` : "Welcome"}
+              {user ? `${t("portal.level") || "Level"} ${profile?.level || 1}` : t("portal.welcome")}
             </p>
             <p className="font-display font-semibold text-foreground text-sm">
               {user ? profile?.display_name || "Player" : (
@@ -307,7 +312,7 @@ const PortalScreen = () => {
         className="relative z-10 mx-4 mt-3 mb-1 h-11 rounded-2xl bg-card border border-border/70 flex items-center gap-2 px-4 text-muted-foreground text-sm active:scale-[0.98] transition-transform"
       >
         <Search className="w-4 h-4" />
-        <span className="font-body">Browse games…</span>
+        <span className="font-body">{t("portal.browseGames")}</span>
       </button>
 
       <main className="relative z-10 flex-1 pb-32">
@@ -315,7 +320,7 @@ const PortalScreen = () => {
         <section className="px-4 pt-4">
           <div className="flex items-center justify-between mb-2">
             <h2 className="font-display font-bold text-foreground text-base flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-primary" /> Featured
+              <Sparkles className="w-4 h-4 text-primary" /> {t("portal.featured")}
             </h2>
             <div className="flex gap-1">
               {featured.map((_, i) => (
@@ -361,7 +366,7 @@ const PortalScreen = () => {
                   {featured[heroIdx].description}
                 </p>
                 <span className="inline-flex items-center gap-1 mt-3 px-3 py-1.5 rounded-lg bg-white text-[#111] text-xs font-display font-semibold">
-                  Play now <ChevronRight className="w-3.5 h-3.5" />
+                  {t("portal.playNow")} <ChevronRight className="w-3.5 h-3.5" />
                 </span>
               </div>
             </div>
@@ -371,8 +376,8 @@ const PortalScreen = () => {
         {/* Horizontal quick-play rail */}
         <section className="pt-6">
           <div className="flex items-center justify-between px-4 mb-2">
-            <h2 className="font-display font-bold text-foreground text-base">Quick play</h2>
-            <span className="text-xs text-muted-foreground">Solo · 1 min</span>
+            <h2 className="font-display font-bold text-foreground text-base">{t("portal.quickPlay")}</h2>
+            <span className="text-xs text-muted-foreground">{t("portal.soloOneMin")}</span>
           </div>
           <div className="flex gap-3 overflow-x-auto px-4 pb-2 snap-x snap-mandatory scrollbar-hide">
             {games.filter((g) => g.players === "1").map((g) => (
@@ -411,73 +416,86 @@ const PortalScreen = () => {
         {/* All games grid */}
         <section className="pt-6 px-4">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="font-display font-bold text-foreground text-base">All games</h2>
-            <span className="text-xs text-muted-foreground">{games.length} games</span>
+            <h2 className="font-display font-bold text-foreground text-base">{t("portal.allGames")}</h2>
+            <span className="text-xs text-muted-foreground">{tf("portal.gamesCount", { count: games.length })}</span>
           </div>
           <motion.div
-            className="grid grid-cols-2 gap-3"
+            className="grid grid-cols-2 grid-flow-row-dense gap-3"
             initial="hidden"
             animate="visible"
             variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.06 } } }}
           >
-            {games.map((game) => (
-              <motion.button
-                key={game.id}
-                variants={{
-                  hidden: { y: 16, opacity: 0 },
-                  visible: { y: 0, opacity: 1 },
-                }}
-                whileTap={{ scale: 0.97 }}
-                onClick={() => { playClick(); navigate(game.route); }}
-                className="relative rounded-xl overflow-hidden border border-border aspect-[4/5] text-start"
-              >
-                {game.image ? (
-                  <>
-                    <img src={game.image} alt="" className="absolute inset-0 w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
-                    <div className="absolute top-2.5 right-2.5">
-                      <span className="text-[9px] font-display font-semibold uppercase tracking-wide text-white/90 bg-black/30 backdrop-blur px-1.5 py-0.5 rounded">
-                        {game.tag}
-                      </span>
-                    </div>
-                    <div className="absolute bottom-0 inset-x-0 p-3">
-                      <p className="font-display font-bold text-white text-sm drop-shadow">{game.name}</p>
-                      <p className="text-white/75 text-[10px] font-body mt-0.5">👥 {game.players}</p>
-                    </div>
-                  </>
-                ) : (
-                  <div className="absolute inset-0 bg-card flex flex-col justify-between p-3">
-                    <div className="absolute top-0 left-0 right-0 h-[3px]" style={{ backgroundColor: game.accent }} />
-                    <div className="flex items-start justify-between">
-                      <div className="w-11 h-11 rounded-lg bg-muted flex items-center justify-center p-1.5">
-                        <game.icon className="w-full h-full" />
+            {games.map((game) => {
+              const isLg = game.size === "lg";
+              return (
+                <motion.button
+                  key={game.id}
+                  variants={{
+                    hidden: { y: 16, opacity: 0 },
+                    visible: { y: 0, opacity: 1 },
+                  }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => { playClick(); navigate(game.route); }}
+                  className={`relative rounded-xl overflow-hidden border border-border text-start ${
+                    isLg ? "col-span-2 aspect-[2/1]" : "aspect-square"
+                  }`}
+                >
+                  {game.image ? (
+                    <>
+                      <img src={game.image} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
+                      <div className="absolute top-2.5 right-2.5">
+                        <span className="text-[9px] font-display font-semibold uppercase tracking-wide text-white/90 bg-black/30 backdrop-blur px-1.5 py-0.5 rounded">
+                          {game.tag}
+                        </span>
                       </div>
-                      <span className="text-[9px] font-display font-semibold uppercase tracking-wide text-muted-foreground pt-1">
-                        {game.tag}
-                      </span>
+                      <div className="absolute bottom-0 inset-x-0 p-3">
+                        <p className={`font-display font-bold text-white drop-shadow ${isLg ? "text-lg" : "text-sm"}`}>{game.name}</p>
+                        {isLg ? (
+                          <p className="text-white/75 text-xs font-body mt-1 max-w-[85%] line-clamp-1">{game.description}</p>
+                        ) : (
+                          <p className="text-white/75 text-[10px] font-body mt-0.5">👥 {game.players}</p>
+                        )}
+                      </div>
+                    </>
+                  ) : (
+                    <div className="absolute inset-0 bg-card flex flex-col justify-between p-3">
+                      <div className="absolute top-0 left-0 right-0 h-[3px]" style={{ backgroundColor: game.accent }} />
+                      <div className="flex items-start justify-between">
+                        <div className={`rounded-lg bg-muted flex items-center justify-center p-1.5 ${isLg ? "w-14 h-14" : "w-11 h-11"}`}>
+                          <game.icon className="w-full h-full" />
+                        </div>
+                        <span className="text-[9px] font-display font-semibold uppercase tracking-wide text-muted-foreground pt-1">
+                          {game.tag}
+                        </span>
+                      </div>
+                      <div>
+                        <p className={`font-display font-bold text-foreground ${isLg ? "text-lg" : "text-sm"}`}>{game.name}</p>
+                        {isLg ? (
+                          <p className="text-muted-foreground text-xs font-body mt-1 max-w-[85%] line-clamp-1">{game.description}</p>
+                        ) : (
+                          <p className="text-muted-foreground text-[10px] font-body mt-0.5">👥 {game.players}</p>
+                        )}
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-display font-bold text-foreground text-sm">{game.name}</p>
-                      <p className="text-muted-foreground text-[10px] font-body mt-0.5">👥 {game.players}</p>
-                    </div>
-                  </div>
-                )}
-              </motion.button>
-            ))}
+                  )}
+                </motion.button>
+              );
+            })}
           </motion.div>
         </section>
 
         {/* Footer */}
         <footer className="pt-8 pb-2 flex items-center justify-center gap-3 flex-wrap text-xs text-muted-foreground">
-          <button onClick={() => navigate("/about")} className="hover:text-foreground">About</button>
+          <button onClick={() => navigate("/about")} className="hover:text-foreground">{t("portal.about")}</button>
           <span className="opacity-30">·</span>
-          <button onClick={() => navigate("/contact")} className="hover:text-foreground">Contact</button>
+          <button onClick={() => navigate("/contact")} className="hover:text-foreground">{t("portal.contact")}</button>
           <span className="opacity-30">·</span>
           <button onClick={() => navigate("/privacy-policy")} className="hover:text-foreground">
-            {t("portal.privacyPolicy") || "Privacy"}
+            {t("portal.privacyPolicy")}
           </button>
           <span className="opacity-30">·</span>
-          <button onClick={() => navigate("/terms")} className="hover:text-foreground">Terms</button>
+          <button onClick={() => navigate("/terms")} className="hover:text-foreground">{t("portal.terms")}</button>
         </footer>
       </main>
 
