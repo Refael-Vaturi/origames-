@@ -771,8 +771,6 @@ export type Database = {
           avatar_url: string | null
           country: string | null
           display_name: string | null
-          id: string | null
-          last_seen: string | null
           level: number | null
           user_id: string | null
           username: string | null
@@ -781,8 +779,6 @@ export type Database = {
           avatar_url?: string | null
           country?: string | null
           display_name?: string | null
-          id?: string | null
-          last_seen?: string | null
           level?: number | null
           user_id?: string | null
           username?: string | null
@@ -791,8 +787,6 @@ export type Database = {
           avatar_url?: string | null
           country?: string | null
           display_name?: string | null
-          id?: string | null
-          last_seen?: string | null
           level?: number | null
           user_id?: string | null
           username?: string | null
