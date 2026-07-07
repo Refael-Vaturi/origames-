@@ -50,6 +50,39 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_admin_edits: {
+        Row: {
+          admin_email: string | null
+          admin_id: string | null
+          applied: boolean
+          changes: Json
+          created_at: string
+          id: string
+          model: string | null
+          prompt: string
+        }
+        Insert: {
+          admin_email?: string | null
+          admin_id?: string | null
+          applied?: boolean
+          changes?: Json
+          created_at?: string
+          id?: string
+          model?: string | null
+          prompt: string
+        }
+        Update: {
+          admin_email?: string | null
+          admin_id?: string | null
+          applied?: boolean
+          changes?: Json
+          created_at?: string
+          id?: string
+          model?: string | null
+          prompt?: string
+        }
+        Relationships: []
+      }
       announcements: {
         Row: {
           body: string | null
@@ -761,6 +794,30 @@ export type Database = {
           rounds?: number
           status?: string
           vote_time?: number
+        }
+        Relationships: []
+      }
+      site_settings: {
+        Row: {
+          description: string | null
+          key: string
+          updated_at: string
+          updated_by: string | null
+          value: Json
+        }
+        Insert: {
+          description?: string | null
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Update: {
+          description?: string | null
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
         }
         Relationships: []
       }
