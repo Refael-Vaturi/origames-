@@ -11,6 +11,7 @@ import ArcadeLeaderboard from "../arcade/ArcadeLeaderboard";
 import { useArcadeScore } from "../arcade/useArcadeScore";
 import { toast } from "@/hooks/use-toast";
 import { MAX_GUESSES, WORD_LENGTH } from "./words";
+import { WordLadderGlyph } from "./MenuArt";
 import {
   DailyRecord,
   LetterStatus,
@@ -261,7 +262,7 @@ const WordLadderGame = () => {
             className="fixed inset-0 z-30 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
           >
             <div className="max-w-sm w-full text-center text-white space-y-5">
-              <div className="text-5xl">🔤</div>
+              <WordLadderGlyph />
               <h1 className="text-2xl font-display font-bold">Word Ladder</h1>
               <p className="text-sm text-white/70">{t("wordLadder.intro")}</p>
               <Button
