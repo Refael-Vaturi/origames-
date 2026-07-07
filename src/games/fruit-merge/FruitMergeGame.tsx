@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Trophy, Sparkles } from "lucide-react";
+import { FruitMergeGlyph } from "./MenuArt";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -192,31 +193,34 @@ const FruitMergeGame = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 z-30 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+            className="absolute inset-0 z-30 overflow-y-auto p-5"
+            style={{ background: "#fff7ed" }}
           >
-            <div className="max-w-sm w-full text-center text-white space-y-5">
-              <div className="text-6xl">🍉</div>
-              <h1 className="text-3xl font-display font-bold bg-gradient-to-r from-rose-400 to-lime-400 bg-clip-text text-transparent">
+            <div className="max-w-sm w-full mx-auto min-h-full flex flex-col justify-center py-8" style={{ color: "#78350f" }}>
+              <FruitMergeGlyph className="w-28 h-20 mx-auto" />
+              <h1 className="text-4xl font-display font-black text-center -mt-2" style={{ color: "#78350f" }}>
                 Fruit Merge
               </h1>
-              {isFirstVisit ? (
-                <p className="text-sm text-white/70">{t("fruitMerge.intro")}</p>
-              ) : (
-                <p className="text-xs text-white/50">{t("fruitMerge.tagline")}</p>
-              )}
-              <div className="flex items-center justify-center gap-2 text-xs text-white/50">
-                <Trophy className="w-4 h-4 text-amber-400" /> {t("arcade.bestLabel")}: {best}
+              <p className="text-sm text-center mt-3 opacity-70">
+                {isFirstVisit ? t("fruitMerge.intro") : t("fruitMerge.tagline")}
+              </p>
+
+              <div className="flex items-center justify-center gap-2 text-xs mt-4 opacity-60">
+                <Trophy className="w-4 h-4 text-amber-600" /> {t("arcade.bestLabel")}: {best}
               </div>
-              <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }}>
+
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} className="mt-6">
                 <Button
                   size="lg"
-                  className="w-full bg-gradient-to-r from-rose-500 to-lime-500 hover:opacity-90 text-white font-bold shadow-[0_0_30px_rgba(244,63,94,0.35)]"
+                  className="w-full text-white font-display font-bold text-base"
+                  style={{ background: "#16a34a", boxShadow: "0 0 30px rgba(22,163,74,0.3)" }}
                   onClick={startGame}
                 >
                   {t("fruitMerge.start")}
                 </Button>
               </motion.div>
-              <div className="pt-2">
+
+              <div className="mt-6 border-t pt-4" style={{ borderColor: "rgba(120,53,15,0.15)" }}>
                 <ArcadeLeaderboard gameId="fruit_merge" currentUserId={userId} refreshKey={refreshKey} />
               </div>
             </div>
@@ -228,43 +232,51 @@ const FruitMergeGame = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 z-30 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4"
+            className="absolute inset-0 z-30 overflow-y-auto p-5"
+            style={{ background: "#fff7ed" }}
           >
-            <div className="max-w-sm w-full text-center text-white space-y-4">
+            <div className="max-w-sm w-full mx-auto min-h-full flex flex-col justify-center py-8 text-center" style={{ color: "#78350f" }}>
               <motion.div
-                className="text-5xl"
+                className="mx-auto"
                 initial={{ scale: 0.5, rotate: -15 }}
                 animate={{ scale: 1, rotate: 0 }}
                 transition={{ type: "spring", stiffness: 260, damping: 12 }}
               >
-                🧺
+                <FruitMergeGlyph className="w-24 h-16" />
               </motion.div>
               <h2 className="text-2xl font-display font-bold">{t("fruitMerge.gameOver")}</h2>
-              <div className="text-4xl font-black tabular-nums bg-gradient-to-r from-rose-400 to-lime-400 bg-clip-text text-transparent">
+              <div className="text-5xl font-display font-black tabular-nums mt-1" style={{ color: "#16a34a" }}>
                 {finalScore}
               </div>
               {finalScore >= best && finalScore > 0 && (
                 <motion.div
                   initial={{ opacity: 0, y: -6 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="flex items-center justify-center gap-1.5 text-amber-400 text-sm font-semibold"
+                  className="flex items-center justify-center gap-1.5 text-amber-600 text-sm font-semibold mt-2"
                 >
                   <Sparkles className="w-4 h-4" /> {t("arcade.newBest")}
                 </motion.div>
               )}
-              <div className="flex gap-2">
+              <div className="flex gap-2 mt-5">
                 <motion.div className="flex-1" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }}>
-                  <Button variant="outline" className="w-full border-white/30 text-white" onClick={submitToLeaderboard}>
+                  <Button
+                    variant="outline"
+                    className="w-full bg-transparent"
+                    style={{ borderColor: "rgba(120,53,15,0.3)", color: "#78350f" }}
+                    onClick={submitToLeaderboard}
+                  >
                     {t("arcade.submitScore")}
                   </Button>
                 </motion.div>
                 <motion.div className="flex-1" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }}>
-                  <Button className="w-full bg-gradient-to-r from-rose-500 to-lime-500 text-white font-bold" onClick={startGame}>
+                  <Button className="w-full text-white font-bold" style={{ background: "#16a34a" }} onClick={startGame}>
                     {t("arcade.retry")}
                   </Button>
                 </motion.div>
               </div>
-              <ArcadeLeaderboard gameId="fruit_merge" currentUserId={userId} refreshKey={refreshKey} />
+              <div className="mt-5 border-t pt-4" style={{ borderColor: "rgba(120,53,15,0.15)" }}>
+                <ArcadeLeaderboard gameId="fruit_merge" currentUserId={userId} refreshKey={refreshKey} />
+              </div>
             </div>
           </motion.div>
         )}
