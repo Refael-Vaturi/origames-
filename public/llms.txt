@@ -18,6 +18,7 @@
 - [Wobble Race](/wobble-race): Physics party obstacle course — tap to jump gaps and dodge spinning bars, racing to the finish line before time runs out.
 - [Rope Swing Tumble](/rope-swing): Grapple-swing physics game — tap to release the rope at the top of your swing and sail to the next post across the canyon.
 - [Word Ladder](/word-ladder): Daily Wordle-style word game — guess the 5-letter word in 6 tries, with color-coded hints and a daily streak.
+- [Daily Trivia](/daily-trivia): Daily quiz game — answer 8 multiple-choice trivia questions across science, history, geography and more, with a daily streak.
 
 ## Info Pages
 

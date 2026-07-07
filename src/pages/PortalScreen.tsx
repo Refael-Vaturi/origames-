@@ -36,6 +36,7 @@ import {
   VelocityDriftIcon,
   WobbleRaceIcon,
   WordLadderIcon,
+  DailyTriviaIcon,
 } from "@/components/game-icons";
 import { useEffect, useState, type ComponentType } from "react";
 
@@ -209,6 +210,16 @@ const PortalScreen = () => {
       description: "Guess the daily 5-letter word in 6 tries.",
       players: "1",
       tag: "Word",
+    },
+    {
+      id: "daily-trivia",
+      name: "Daily Trivia",
+      icon: DailyTriviaIcon,
+      accent: "#a78bfa",
+      route: "/daily-trivia",
+      description: "Answer today's 8 trivia questions and keep your streak alive.",
+      players: "1",
+      tag: "Quiz",
     },
   ];
 

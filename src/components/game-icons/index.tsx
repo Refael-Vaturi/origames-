@@ -266,6 +266,28 @@ export function WordLadderIcon({ className }: IconProps) {
   );
 }
 
+export function DailyTriviaIcon({ className }: IconProps) {
+  const id = useId();
+  return (
+    <svg viewBox="0 0 64 64" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id={`${id}-g`} x1="8" y1="4" x2="56" y2="60" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#a78bfa" />
+          <stop offset="100%" stopColor="#6366f1" />
+        </linearGradient>
+      </defs>
+      <circle cx="32" cy="32" r="26" fill={`url(#${id}-g)`} />
+      <path
+        d="M32 14c-6.6 0-12 5.4-12 12 0 4.4 2.4 8.2 6 10.3V40a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-3.7c3.6-2.1 6-5.9 6-10.3 0-6.6-5.4-12-12-12z"
+        fill="white"
+        fillOpacity="0.95"
+      />
+      <rect x="27" y="45" width="10" height="4" rx="2" fill="white" fillOpacity="0.95" />
+      <text x="32" y="30" textAnchor="middle" fontSize="13" fontWeight="700" fill="#6366f1" fontFamily="system-ui, sans-serif">?</text>
+    </svg>
+  );
+}
+
 export function CityFindIcon({ className }: IconProps) {
   const id = useId();
   return (

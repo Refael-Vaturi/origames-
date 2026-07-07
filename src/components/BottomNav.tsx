@@ -31,6 +31,7 @@ import {
   VelocityDriftIcon,
   WobbleRaceIcon,
   WordLadderIcon,
+  DailyTriviaIcon,
 } from "@/components/game-icons";
 import type { ComponentType } from "react";
 
@@ -66,6 +67,7 @@ const gameOptions: {
   { id: "wobble-race", name: "Wobble Race", route: "/wobble-race", accent: "#fde047", tag: "Party", icon: WobbleRaceIcon, image: wobbleRaceCard },
   { id: "rope-swing", name: "Rope Swing Tumble", route: "/rope-swing", accent: "#38bdf8", tag: "Party", icon: RopeSwingIcon, image: ropeSwingCard },
   { id: "word-ladder", name: "Word Ladder", route: "/word-ladder", accent: "#34d399", tag: "Word", icon: WordLadderIcon },
+  { id: "daily-trivia", name: "Daily Trivia", route: "/daily-trivia", accent: "#a78bfa", tag: "Quiz", icon: DailyTriviaIcon },
 ];
 
 const BottomNav = () => {

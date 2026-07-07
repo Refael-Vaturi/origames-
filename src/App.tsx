@@ -23,6 +23,7 @@ import MergeTycoonGame from "./games/merge-tycoon/MergeTycoonGame";
 import WobbleRaceGame from "./games/wobble-race/WobbleRaceGame";
 import RopeSwingGame from "./games/rope-swing/RopeSwingGame";
 import WordLadderGame from "./games/word-ladder/WordLadderGame";
+import DailyTriviaGame from "./games/daily-trivia/DailyTriviaGame";
 import WelcomeScreen from "./pages/WelcomeScreen";
 import HomeScreen from "./pages/HomeScreen";
 import JoinByCodeScreen from "./pages/JoinByCodeScreen";
@@ -96,6 +97,7 @@ const App = () => {
               <Route path="/wobble-race" element={<WobbleRaceGame />} />
               <Route path="/rope-swing" element={<RopeSwingGame />} />
               <Route path="/word-ladder" element={<WordLadderGame />} />
+              <Route path="/daily-trivia" element={<DailyTriviaGame />} />
 
               {/* Fake It Fast game routes */}
               <Route path="/fake-it-fast" element={<HomeScreen />} />
