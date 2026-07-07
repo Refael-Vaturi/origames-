@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Trophy, Sparkles, Flag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { playClick, playWhoosh, playError, playSuccess } from "@/hooks/useSound";
 import { useGameFirstVisit } from "@/hooks/useGameFirstVisit";
 import ArcadeLeaderboard from "../arcade/ArcadeLeaderboard";
@@ -19,6 +20,7 @@ const BEST_KEY = "wobbleRaceBest";
 const WobbleRaceGame = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useLanguage();
   const { submitScore, userId } = useArcadeScore("wobble_race");
   const { isFirstVisit, markSeen } = useGameFirstVisit("wobble-race");
 
@@ -157,16 +159,16 @@ const WobbleRaceGame = () => {
 
   const submitToLeaderboard = async () => {
     if (!user) {
-      toast({ title: "Sign in to submit your score" });
+      toast({ title: t("arcade.signInToSubmit") });
       navigate("/auth?redirect=/wobble-race");
       return;
     }
     const r = await submitScore(finalScore, 1, {});
     if (r.ok) {
-      toast({ title: "Score submitted!", description: `${finalScore} points` });
+      toast({ title: t("arcade.scoreSubmittedToast"), description: `${finalScore} points` });
       setRefreshKey((k) => k + 1);
     } else {
-      toast({ title: "Failed to submit", variant: "destructive" });
+      toast({ title: t("arcade.failedToSubmit"), variant: "destructive" });
     }
   };
 
@@ -176,7 +178,7 @@ const WobbleRaceGame = () => {
 
       <div className="absolute left-3 z-20" style={{ top: `calc(0.75rem + ${safeArea.top}px)` }}>
         <Button variant="ghost" size="sm" onClick={() => { playClick(); navigate("/"); }} className="text-white/90 hover:text-white bg-black/20 hover:bg-black/30">
-          <ArrowLeft className="w-4 h-4 mr-1" /> Back
+          <ArrowLeft className="w-4 h-4 mr-1" /> {t("arcade.back")}
         </Button>
       </div>
 
@@ -194,16 +196,12 @@ const WobbleRaceGame = () => {
                 Wobble Race
               </h1>
               {isFirstVisit ? (
-                <p className="text-sm text-white/70">
-                  Your wobbly blob runs on its own — tap (or press Space) to jump over gaps and dodge the spinning bars.
-                  Getting knocked or falling just costs you a little time, so keep tapping and reach the finish line
-                  before the clock runs out!
-                </p>
+                <p className="text-sm text-white/70">{t("wobbleRace.intro")}</p>
               ) : (
-                <p className="text-xs text-white/50">Tap to jump. Reach the finish before time runs out.</p>
+                <p className="text-xs text-white/50">{t("wobbleRace.tagline")}</p>
               )}
               <div className="flex items-center justify-center gap-2 text-xs text-white/50">
-                <Trophy className="w-4 h-4 text-amber-400" /> Best: {best}
+                <Trophy className="w-4 h-4 text-amber-400" /> {t("arcade.bestLabel")}: {best}
               </div>
               <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }}>
                 <Button
@@ -211,7 +209,7 @@ const WobbleRaceGame = () => {
                   className="w-full bg-gradient-to-r from-yellow-500 to-sky-500 hover:opacity-90 text-white font-bold shadow-[0_0_30px_rgba(250,204,21,0.35)]"
                   onClick={startGame}
                 >
-                  Start Race
+                  {t("wobbleRace.start")}
                 </Button>
               </motion.div>
               <div className="pt-2">
@@ -247,18 +245,18 @@ const WobbleRaceGame = () => {
                   animate={{ opacity: 1, y: 0 }}
                   className="flex items-center justify-center gap-1.5 text-amber-400 text-sm font-semibold"
                 >
-                  <Sparkles className="w-4 h-4" /> New Best!
+                  <Sparkles className="w-4 h-4" /> {t("arcade.newBest")}
                 </motion.div>
               )}
               <div className="flex gap-2">
                 <motion.div className="flex-1" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }}>
                   <Button variant="outline" className="w-full border-white/30 text-white" onClick={submitToLeaderboard}>
-                    Submit Score
+                    {t("arcade.submitScore")}
                   </Button>
                 </motion.div>
                 <motion.div className="flex-1" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }}>
                   <Button className="w-full bg-gradient-to-r from-yellow-500 to-sky-500 text-white font-bold" onClick={startGame}>
-                    Retry
+                    {t("arcade.retry")}
                   </Button>
                 </motion.div>
               </div>

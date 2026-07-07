@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Trophy, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { playClick } from "@/hooks/useSound";
 import { useGameFirstVisit } from "@/hooks/useGameFirstVisit";
 import ArcadeLeaderboard from "../arcade/ArcadeLeaderboard";
@@ -23,6 +24,7 @@ const RhythmBladeGame = () => {
   const { user } = useAuth();
   const { submitScore, userId } = useArcadeScore("rhythm_blade");
   const { isFirstVisit, markSeen } = useGameFirstVisit("rhythm-blade");
+  const { t } = useLanguage();
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const audioRef = useRef<RhythmAudio | null>(null);
@@ -184,16 +186,16 @@ const RhythmBladeGame = () => {
 
   const submitToLeaderboard = async () => {
     if (!user) {
-      toast({ title: "Sign in to submit your score" });
+      toast({ title: t("arcade.signInToSubmit") });
       navigate("/auth?redirect=/rhythm-blade");
       return;
     }
     const r = await submitScore(finalScore, 1, { maxCombo: finalCombo });
     if (r.ok) {
-      toast({ title: "Score submitted!", description: `${finalScore} points` });
+      toast({ title: t("arcade.scoreSubmittedToast"), description: `${finalScore} points` });
       setRefreshKey((k) => k + 1);
     } else {
-      toast({ title: "Failed to submit", variant: "destructive" });
+      toast({ title: t("arcade.failedToSubmit"), variant: "destructive" });
     }
   };
 
@@ -203,7 +205,7 @@ const RhythmBladeGame = () => {
 
       <div className="absolute left-3 z-20" style={{ top: `calc(0.75rem + ${safeArea.top}px)` }}>
         <Button variant="ghost" size="sm" onClick={() => { playClick(); navigate("/"); }} className="text-white/80 hover:text-white">
-          <ArrowLeft className="w-4 h-4 mr-1" /> Back
+          <ArrowLeft className="w-4 h-4 mr-1" /> {t("arcade.back")}
         </Button>
       </div>
 
@@ -227,17 +229,12 @@ const RhythmBladeGame = () => {
                 Rhythm Blade
               </h1>
               {isFirstVisit ? (
-                <p className="text-sm text-white/70">
-                  Colored blocks fly toward the center on the beat. Press the matching{" "}
-                  <span className="text-purple-300 font-semibold">arrow key</span> (or swipe) right as each one
-                  reaches the ring. Chain 10 hits for <span className="text-yellow-300 font-semibold">Hyper Drive</span>{" "}
-                  — triple points until you miss.
-                </p>
+                <p className="text-sm text-white/70">{t("rhythmBlade.intro")}</p>
               ) : (
-                <p className="text-xs text-white/50">Slice blocks on the beat. Chain combos for Hyper Drive.</p>
+                <p className="text-xs text-white/50">{t("rhythmBlade.tagline")}</p>
               )}
               <div className="flex items-center justify-center gap-2 text-xs text-white/50">
-                <Trophy className="w-4 h-4 text-amber-400" /> Best: {best}
+                <Trophy className="w-4 h-4 text-amber-400" /> {t("arcade.bestLabel")}: {best}
               </div>
               <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }}>
                 <Button
@@ -245,7 +242,7 @@ const RhythmBladeGame = () => {
                   className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:opacity-90 text-white font-bold shadow-[0_0_30px_rgba(192,132,252,0.35)]"
                   onClick={startGame}
                 >
-                  Start
+                  {t("rhythmBlade.start")}
                 </Button>
               </motion.div>
               <div className="pt-2">
@@ -282,18 +279,18 @@ const RhythmBladeGame = () => {
                   animate={{ opacity: 1, y: 0 }}
                   className="flex items-center justify-center gap-1.5 text-amber-400 text-sm font-semibold"
                 >
-                  <Sparkles className="w-4 h-4" /> New Best!
+                  <Sparkles className="w-4 h-4" /> {t("arcade.newBest")}
                 </motion.div>
               )}
               <div className="flex gap-2">
                 <motion.div className="flex-1" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }}>
                   <Button variant="outline" className="w-full border-white/30 text-white" onClick={submitToLeaderboard}>
-                    Submit Score
+                    {t("arcade.submitScore")}
                   </Button>
                 </motion.div>
                 <motion.div className="flex-1" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }}>
                   <Button className="w-full bg-gradient-to-r from-purple-500 to-pink-600 text-white font-bold" onClick={startGame}>
-                    Retry
+                    {t("arcade.retry")}
                   </Button>
                 </motion.div>
               </div>

@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Trophy, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { playClick, playPop, playSuccess } from "@/hooks/useSound";
 import { useGameFirstVisit } from "@/hooks/useGameFirstVisit";
 import ArcadeLeaderboard from "../arcade/ArcadeLeaderboard";
@@ -19,6 +20,7 @@ const BEST_KEY = "fruitMergeBest";
 const FruitMergeGame = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useLanguage();
   const { submitScore, userId } = useArcadeScore("fruit_merge");
   const { isFirstVisit, markSeen } = useGameFirstVisit("fruit-merge");
 
@@ -152,17 +154,17 @@ const FruitMergeGame = () => {
 
   const submitToLeaderboard = async () => {
     if (!user) {
-      toast({ title: "Sign in to submit your score" });
+      toast({ title: t("arcade.signInToSubmit") });
       navigate("/auth?redirect=/fruit-merge");
       return;
     }
     const r = await submitScore(finalScore, 1, {});
     if (r.ok) {
       playSuccess();
-      toast({ title: "Score submitted!", description: `${finalScore} points` });
+      toast({ title: t("arcade.scoreSubmittedToast"), description: `${finalScore} points` });
       setRefreshKey((k) => k + 1);
     } else {
-      toast({ title: "Failed to submit", variant: "destructive" });
+      toast({ title: t("arcade.failedToSubmit"), variant: "destructive" });
     }
   };
 
@@ -178,7 +180,7 @@ const FruitMergeGame = () => {
 
       <div className="absolute left-3 z-20" style={{ top: `calc(0.75rem + ${safeArea.top}px)` }}>
         <Button variant="ghost" size="sm" onClick={() => { playClick(); navigate("/"); }} className="text-[#78350f]/70 hover:text-[#78350f] bg-white/40 hover:bg-white/60">
-          <ArrowLeft className="w-4 h-4 mr-1" /> Back
+          <ArrowLeft className="w-4 h-4 mr-1" /> {t("arcade.back")}
         </Button>
       </div>
 
@@ -196,16 +198,12 @@ const FruitMergeGame = () => {
                 Fruit Merge
               </h1>
               {isFirstVisit ? (
-                <p className="text-sm text-white/70">
-                  Drag to aim, release to drop a fruit. Two fruits of the <span className="text-rose-300 font-semibold">same kind</span>{" "}
-                  merge into the next tier when they touch. Keep the stack below the dashed line — if it stays above it too
-                  long, the run ends. Chain merges for bigger combos and reach the Watermelon!
-                </p>
+                <p className="text-sm text-white/70">{t("fruitMerge.intro")}</p>
               ) : (
-                <p className="text-xs text-white/50">Drag to aim, release to drop. Merge matching fruit, don't overflow.</p>
+                <p className="text-xs text-white/50">{t("fruitMerge.tagline")}</p>
               )}
               <div className="flex items-center justify-center gap-2 text-xs text-white/50">
-                <Trophy className="w-4 h-4 text-amber-400" /> Best: {best}
+                <Trophy className="w-4 h-4 text-amber-400" /> {t("arcade.bestLabel")}: {best}
               </div>
               <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }}>
                 <Button
@@ -213,7 +211,7 @@ const FruitMergeGame = () => {
                   className="w-full bg-gradient-to-r from-rose-500 to-lime-500 hover:opacity-90 text-white font-bold shadow-[0_0_30px_rgba(244,63,94,0.35)]"
                   onClick={startGame}
                 >
-                  Start Game
+                  {t("fruitMerge.start")}
                 </Button>
               </motion.div>
               <div className="pt-2">
@@ -249,18 +247,18 @@ const FruitMergeGame = () => {
                   animate={{ opacity: 1, y: 0 }}
                   className="flex items-center justify-center gap-1.5 text-amber-400 text-sm font-semibold"
                 >
-                  <Sparkles className="w-4 h-4" /> New Best!
+                  <Sparkles className="w-4 h-4" /> {t("arcade.newBest")}
                 </motion.div>
               )}
               <div className="flex gap-2">
                 <motion.div className="flex-1" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }}>
                   <Button variant="outline" className="w-full border-white/30 text-white" onClick={submitToLeaderboard}>
-                    Submit Score
+                    {t("arcade.submitScore")}
                   </Button>
                 </motion.div>
                 <motion.div className="flex-1" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }}>
                   <Button className="w-full bg-gradient-to-r from-rose-500 to-lime-500 text-white font-bold" onClick={startGame}>
-                    Retry
+                    {t("arcade.retry")}
                   </Button>
                 </motion.div>
               </div>

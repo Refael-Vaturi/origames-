@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Zap, Clock, Sparkles, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { playClick, playWhoosh, playPop, playError, playSuccess } from "@/hooks/useSound";
 import { useGameFirstVisit } from "@/hooks/useGameFirstVisit";
 import ArcadeLeaderboard from "../arcade/ArcadeLeaderboard";
@@ -21,6 +22,7 @@ const GravityFlipGame = () => {
   const { user } = useAuth();
   const { submitScore, userId } = useArcadeScore("gravity_flip");
   const { isFirstVisit, markSeen } = useGameFirstVisit("gravity-flip");
+  const { t } = useLanguage();
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stateRef = useRef<GameState>(createInitialState());
@@ -185,16 +187,16 @@ const GravityFlipGame = () => {
 
   const submitToLeaderboard = async () => {
     if (!user) {
-      toast({ title: "Sign in to submit your score" });
+      toast({ title: t("arcade.signInToSubmit") });
       navigate("/auth?redirect=/gravity-flip");
       return;
     }
     const r = await submitScore(finalScore, 1, { best });
     if (r.ok) {
-      toast({ title: "Score submitted!", description: `${finalScore} points` });
+      toast({ title: t("arcade.scoreSubmittedToast"), description: `${finalScore} points` });
       setRefreshKey((k) => k + 1);
     } else {
-      toast({ title: "Failed to submit", variant: "destructive" });
+      toast({ title: t("arcade.failedToSubmit"), variant: "destructive" });
     }
   };
 
@@ -210,7 +212,7 @@ const GravityFlipGame = () => {
 
       <div className="absolute left-3 z-20 pointer-events-auto" style={{ top: `calc(0.75rem + ${safeArea.top}px)` }}>
         <Button variant="ghost" size="sm" onClick={() => { playClick(); navigate("/"); }} className="text-white/80 hover:text-white">
-          <ArrowLeft className="w-4 h-4 mr-1" /> Back
+          <ArrowLeft className="w-4 h-4 mr-1" /> {t("arcade.back")}
         </Button>
       </div>
 
@@ -247,16 +249,12 @@ const GravityFlipGame = () => {
                 Gravity Flip
               </h1>
               {isFirstVisit ? (
-                <p className="text-sm text-white/70">
-                  Tap anywhere (or press Space) to flip gravity. Dodge spikes and walls, drift through
-                  antigrav zones, and grab <span className="text-purple-300 font-semibold">Chronos Shards</span> —
-                  each one lets you rewind 3 seconds after a fatal hit.
-                </p>
+                <p className="text-sm text-white/70">{t("gravityFlip.intro")}</p>
               ) : (
-                <p className="text-xs text-white/50">Tap to flip gravity. Dodge everything.</p>
+                <p className="text-xs text-white/50">{t("gravityFlip.tagline")}</p>
               )}
               <div className="flex items-center justify-center gap-2 text-xs text-white/50">
-                <Trophy className="w-4 h-4 text-amber-400" /> Best: {best}
+                <Trophy className="w-4 h-4 text-amber-400" /> {t("arcade.bestLabel")}: {best}
               </div>
               <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }}>
                 <Button
@@ -264,7 +262,7 @@ const GravityFlipGame = () => {
                   className="w-full bg-gradient-to-r from-cyan-500 to-purple-600 hover:opacity-90 text-white font-bold shadow-[0_0_30px_rgba(34,211,238,0.35)]"
                   onClick={startGame}
                 >
-                  Start Run
+                  {t("gravityFlip.start")}
                 </Button>
               </motion.div>
               <div className="pt-2">
@@ -300,18 +298,18 @@ const GravityFlipGame = () => {
                   animate={{ opacity: 1, y: 0 }}
                   className="flex items-center justify-center gap-1.5 text-amber-400 text-sm font-semibold"
                 >
-                  <Sparkles className="w-4 h-4" /> New Best!
+                  <Sparkles className="w-4 h-4" /> {t("arcade.newBest")}
                 </motion.div>
               )}
               <div className="flex gap-2">
                 <motion.div className="flex-1" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }}>
                   <Button variant="outline" className="w-full border-white/30 text-white" onClick={submitToLeaderboard}>
-                    Submit Score
+                    {t("arcade.submitScore")}
                   </Button>
                 </motion.div>
                 <motion.div className="flex-1" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }}>
                   <Button className="w-full bg-gradient-to-r from-cyan-500 to-purple-600 text-white font-bold" onClick={startGame}>
-                    Retry
+                    {t("arcade.retry")}
                   </Button>
                 </motion.div>
               </div>

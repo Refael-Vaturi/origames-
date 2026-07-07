@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Trophy, Sparkles, ShieldCheck, Bug, KeyRound, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { playClick, playSuccess, playError } from "@/hooks/useSound";
 import { useGameFirstVisit } from "@/hooks/useGameFirstVisit";
 import ArcadeLeaderboard from "../arcade/ArcadeLeaderboard";
@@ -26,6 +27,7 @@ const TOWER_ICONS: Record<TowerType, typeof ShieldCheck> = {
 const CyberShieldGame = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useLanguage();
   const { submitScore, userId } = useArcadeScore("cyber_shield");
   const { isFirstVisit, markSeen } = useGameFirstVisit("cyber-shield");
 
@@ -231,16 +233,16 @@ const CyberShieldGame = () => {
 
   const submitToLeaderboard = async () => {
     if (!user) {
-      toast({ title: "Sign in to submit your score" });
+      toast({ title: t("arcade.signInToSubmit") });
       navigate("/auth?redirect=/cyber-shield");
       return;
     }
     const r = await submitScore(finalScore, finalWave, {});
     if (r.ok) {
-      toast({ title: "Score submitted!", description: `${finalScore} points` });
+      toast({ title: t("arcade.scoreSubmittedToast"), description: `${finalScore} points` });
       setRefreshKey((k) => k + 1);
     } else {
-      toast({ title: "Failed to submit", variant: "destructive" });
+      toast({ title: t("arcade.failedToSubmit"), variant: "destructive" });
     }
   };
 
@@ -256,7 +258,7 @@ const CyberShieldGame = () => {
 
       <div className="absolute left-3 z-20" style={{ top: `calc(0.75rem + ${safeArea.top}px)` }}>
         <Button variant="ghost" size="sm" onClick={() => { playClick(); navigate("/"); }} className="text-white/80 hover:text-white">
-          <ArrowLeft className="w-4 h-4 mr-1" /> Back
+          <ArrowLeft className="w-4 h-4 mr-1" /> {t("arcade.back")}
         </Button>
       </div>
 
@@ -338,18 +340,12 @@ const CyberShieldGame = () => {
                 Cyber Shield
               </h1>
               {isFirstVisit ? (
-                <p className="text-sm text-white/70">
-                  Malware is streaming toward your <span className="text-fuchsia-300 font-semibold">database</span>. Tap a tower below,
-                  then tap an open tile to place it. <span className="text-sky-300 font-semibold">Firewalls</span> slow packets in an
-                  area, <span className="text-emerald-300 font-semibold">Antivirus</span> turrets shred Trojans, and{" "}
-                  <span className="text-purple-300 font-semibold">Encryption Decoys</span> hit Ransomware hard. Tap a placed tower to
-                  upgrade or sell it, then press Start Wave when you're ready.
-                </p>
+                <p className="text-sm text-white/70">{t("cyberShield.intro")}</p>
               ) : (
-                <p className="text-xs text-white/50">Place towers, defend the database, survive every wave.</p>
+                <p className="text-xs text-white/50">{t("cyberShield.tagline")}</p>
               )}
               <div className="flex items-center justify-center gap-2 text-xs text-white/50">
-                <Trophy className="w-4 h-4 text-amber-400" /> Best: {best}
+                <Trophy className="w-4 h-4 text-amber-400" /> {t("arcade.bestLabel")}: {best}
               </div>
               <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }}>
                 <Button
@@ -357,7 +353,7 @@ const CyberShieldGame = () => {
                   className="w-full bg-gradient-to-r from-sky-500 to-emerald-500 hover:opacity-90 text-white font-bold shadow-[0_0_30px_rgba(56,189,248,0.35)]"
                   onClick={startGame}
                 >
-                  Start Defense
+                  {t("cyberShield.start")}
                 </Button>
               </motion.div>
               <div className="pt-2">
@@ -394,18 +390,18 @@ const CyberShieldGame = () => {
                   animate={{ opacity: 1, y: 0 }}
                   className="flex items-center justify-center gap-1.5 text-amber-400 text-sm font-semibold"
                 >
-                  <Sparkles className="w-4 h-4" /> New Best!
+                  <Sparkles className="w-4 h-4" /> {t("arcade.newBest")}
                 </motion.div>
               )}
               <div className="flex gap-2">
                 <motion.div className="flex-1" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }}>
                   <Button variant="outline" className="w-full border-white/30 text-white" onClick={submitToLeaderboard}>
-                    Submit Score
+                    {t("arcade.submitScore")}
                   </Button>
                 </motion.div>
                 <motion.div className="flex-1" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }}>
                   <Button className="w-full bg-gradient-to-r from-sky-500 to-emerald-500 text-white font-bold" onClick={startGame}>
-                    Retry
+                    {t("arcade.retry")}
                   </Button>
                 </motion.div>
               </div>

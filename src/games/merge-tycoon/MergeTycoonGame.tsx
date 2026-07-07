@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Trophy, Sparkles, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { playClick, playSuccess, playError } from "@/hooks/useSound";
 import { useGameFirstVisit } from "@/hooks/useGameFirstVisit";
 import ArcadeLeaderboard from "../arcade/ArcadeLeaderboard";
@@ -11,7 +12,7 @@ import { useArcadeScore } from "../arcade/useArcadeScore";
 import { toast } from "@/hooks/use-toast";
 import { buyGenerator, createInitialState, tapCell, update } from "./engine";
 import { computeGridMetrics, render, screenToGrid } from "./renderer";
-import { TIME_LIMIT, buyCost } from "./config";
+import { buyCost } from "./config";
 import { GameState, Phase } from "./types";
 import { getSafeAreaInsetPx } from "@/lib/safeArea";
 
@@ -20,6 +21,7 @@ const BEST_KEY = "mergeTycoonBest";
 const MergeTycoonGame = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useLanguage();
   const { submitScore, userId } = useArcadeScore("merge_tycoon");
   const { isFirstVisit, markSeen } = useGameFirstVisit("merge-tycoon");
 
@@ -154,16 +156,16 @@ const MergeTycoonGame = () => {
 
   const submitToLeaderboard = async () => {
     if (!user) {
-      toast({ title: "Sign in to submit your score" });
+      toast({ title: t("arcade.signInToSubmit") });
       navigate("/auth?redirect=/merge-tycoon");
       return;
     }
     const r = await submitScore(finalScore, 1, {});
     if (r.ok) {
-      toast({ title: "Score submitted!", description: `$${finalScore} earned` });
+      toast({ title: t("arcade.scoreSubmittedToast"), description: `$${finalScore} earned` });
       setRefreshKey((k) => k + 1);
     } else {
-      toast({ title: "Failed to submit", variant: "destructive" });
+      toast({ title: t("arcade.failedToSubmit"), variant: "destructive" });
     }
   };
 
@@ -176,7 +178,7 @@ const MergeTycoonGame = () => {
 
       <div className="absolute left-3 z-20" style={{ top: `calc(0.75rem + ${safeArea.top}px)` }}>
         <Button variant="ghost" size="sm" onClick={() => { playClick(); navigate("/"); }} className="text-white/80 hover:text-white">
-          <ArrowLeft className="w-4 h-4 mr-1" /> Back
+          <ArrowLeft className="w-4 h-4 mr-1" /> {t("arcade.back")}
         </Button>
       </div>
 
@@ -196,7 +198,7 @@ const MergeTycoonGame = () => {
                   : "bg-white/10 text-white/40"
               }`}
             >
-              <PlusCircle className="w-4 h-4 mr-1.5" /> Buy Stand (${cost})
+              <PlusCircle className="w-4 h-4 mr-1.5" /> {t("mergeTycoon.buyStand")} (${cost})
             </Button>
           </motion.div>
         </div>
@@ -216,16 +218,12 @@ const MergeTycoonGame = () => {
                 Merge Tycoon
               </h1>
               {isFirstVisit ? (
-                <p className="text-sm text-white/70">
-                  Buy stands and tap two of the <span className="text-amber-300 font-semibold">same tier</span> to merge them
-                  into a bigger, faster-earning business. Every stand on the board earns money automatically. Build the
-                  biggest empire you can in {TIME_LIMIT} seconds!
-                </p>
+                <p className="text-sm text-white/70">{t("mergeTycoon.intro")}</p>
               ) : (
-                <p className="text-xs text-white/50">Merge matching stands, build an empire, earn as much as you can.</p>
+                <p className="text-xs text-white/50">{t("mergeTycoon.tagline")}</p>
               )}
               <div className="flex items-center justify-center gap-2 text-xs text-white/50">
-                <Trophy className="w-4 h-4 text-amber-400" /> Best: ${best}
+                <Trophy className="w-4 h-4 text-amber-400" /> {t("arcade.bestLabel")}: ${best}
               </div>
               <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }}>
                 <Button
@@ -233,7 +231,7 @@ const MergeTycoonGame = () => {
                   className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-white font-bold shadow-[0_0_30px_rgba(251,146,60,0.35)]"
                   onClick={startGame}
                 >
-                  Start Business
+                  {t("mergeTycoon.start")}
                 </Button>
               </motion.div>
               <div className="pt-2">
@@ -269,18 +267,18 @@ const MergeTycoonGame = () => {
                   animate={{ opacity: 1, y: 0 }}
                   className="flex items-center justify-center gap-1.5 text-amber-400 text-sm font-semibold"
                 >
-                  <Sparkles className="w-4 h-4" /> New Best!
+                  <Sparkles className="w-4 h-4" /> {t("arcade.newBest")}
                 </motion.div>
               )}
               <div className="flex gap-2">
                 <motion.div className="flex-1" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }}>
                   <Button variant="outline" className="w-full border-white/30 text-white" onClick={submitToLeaderboard}>
-                    Submit Score
+                    {t("arcade.submitScore")}
                   </Button>
                 </motion.div>
                 <motion.div className="flex-1" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }}>
                   <Button className="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold" onClick={startGame}>
-                    Retry
+                    {t("arcade.retry")}
                   </Button>
                 </motion.div>
               </div>

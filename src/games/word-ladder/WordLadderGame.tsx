@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Flame, Trophy, Delete } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { playClick, playSuccess, playError, playPop } from "@/hooks/useSound";
 import { useGameFirstVisit } from "@/hooks/useGameFirstVisit";
 import ArcadeLeaderboard from "../arcade/ArcadeLeaderboard";
@@ -38,6 +39,7 @@ const STATUS_BG: Record<LetterStatus, string> = {
 const WordLadderGame = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useLanguage();
   const { submitScore, userId } = useArcadeScore("word_ladder");
   const { isFirstVisit, markSeen } = useGameFirstVisit("word-ladder");
 
@@ -138,17 +140,17 @@ const WordLadderGame = () => {
 
   const submitToLeaderboard = async () => {
     if (!user) {
-      toast({ title: "Sign in to submit your score" });
+      toast({ title: t("arcade.signInToSubmit") });
       navigate("/auth?redirect=/word-ladder");
       return;
     }
     const r = await submitScore(finalScore, 1, { won, guesses: guesses.length });
     if (r.ok) {
       setSubmitted(true);
-      toast({ title: "Score submitted!", description: `${finalScore} points` });
+      toast({ title: t("arcade.scoreSubmittedToast"), description: `${finalScore} points` });
       setRefreshKey((k) => k + 1);
     } else {
-      toast({ title: "Failed to submit", variant: "destructive" });
+      toast({ title: t("arcade.failedToSubmit"), variant: "destructive" });
     }
   };
 
@@ -163,7 +165,7 @@ const WordLadderGame = () => {
       <div className="w-full max-w-sm flex flex-col items-center px-4 pt-4 pb-8" style={{ paddingBottom: "calc(2rem + env(safe-area-inset-bottom))" }}>
         <div className="w-full flex items-center justify-between mb-4">
           <Button variant="ghost" size="sm" onClick={() => { playClick(); navigate("/"); }}>
-            <ArrowLeft className="w-4 h-4 mr-1" /> Back
+            <ArrowLeft className="w-4 h-4 mr-1" /> {t("arcade.back")}
           </Button>
           <h1 className="font-display font-bold text-foreground">Word Ladder</h1>
           <div className="flex items-center gap-1 text-sm text-muted-foreground">
@@ -233,7 +235,7 @@ const WordLadderGame = () => {
                   <Flame className="w-3.5 h-3.5 text-orange-500" /> Streak {streak.streak}
                 </span>
                 <span className="flex items-center gap-1">
-                  <Trophy className="w-3.5 h-3.5 text-amber-500" /> Best {streak.best}
+                  <Trophy className="w-3.5 h-3.5 text-amber-500" /> {t("arcade.bestLabel")} {streak.best}
                 </span>
               </div>
               <Button
@@ -241,7 +243,7 @@ const WordLadderGame = () => {
                 onClick={submitToLeaderboard}
                 disabled={submitted}
               >
-                {submitted ? "Submitted" : "Submit Score"}
+                {submitted ? t("arcade.submitted") : t("arcade.submitScore")}
               </Button>
               <ArcadeLeaderboard gameId="word_ladder" currentUserId={userId} refreshKey={refreshKey} />
               <p className="text-xs text-muted-foreground">Come back tomorrow for a new word!</p>
@@ -261,12 +263,7 @@ const WordLadderGame = () => {
             <div className="max-w-sm w-full text-center text-white space-y-5">
               <div className="text-5xl">🔤</div>
               <h1 className="text-2xl font-display font-bold">Word Ladder</h1>
-              <p className="text-sm text-white/70">
-                Guess the 5-letter word in 6 tries. After each guess, tiles turn{" "}
-                <span className="text-emerald-400 font-semibold">green</span> if the letter is correct and in the
-                right spot, <span className="text-amber-400 font-semibold">yellow</span> if it's in the word but the
-                wrong spot, and gray if it's not in the word at all. A new word every day!
-              </p>
+              <p className="text-sm text-white/70">{t("wordLadder.intro")}</p>
               <Button
                 size="lg"
                 className="w-full font-bold"
@@ -276,7 +273,7 @@ const WordLadderGame = () => {
                   setShowIntro(false);
                 }}
               >
-                Let's Go
+                {t("wordLadder.start")}
               </Button>
             </div>
           </motion.div>
