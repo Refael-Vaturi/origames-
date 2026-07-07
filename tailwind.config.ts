@@ -14,8 +14,19 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ["Fredoka", "sans-serif"],
-        body: ["Rubik", "sans-serif"],
+        display: ["'Space Grotesk'", "ui-sans-serif", "system-ui", "sans-serif"],
+        body: ["'DM Sans'", "ui-sans-serif", "system-ui", "sans-serif"],
+        sans: ["'DM Sans'", "ui-sans-serif", "system-ui", "sans-serif"],
+      },
+      backgroundImage: {
+        "gradient-tactical": "var(--gradient-tactical)",
+        "gradient-scan": "var(--gradient-scan)",
+        "gradient-hero": "var(--gradient-hero)",
+        "gradient-card": "var(--gradient-card)",
+      },
+      boxShadow: {
+        tactical: "var(--shadow-tactical)",
+        glow: "var(--shadow-glow)",
       },
       colors: {
         border: "hsl(var(--border))",
@@ -101,6 +112,19 @@ export default {
           "70%": { transform: "scale(0.9)" },
           "100%": { transform: "scale(1)", opacity: "1" },
         },
+        "radar-sweep": {
+          "0%": { transform: "rotate(0deg)", opacity: "0.35" },
+          "50%": { opacity: "0.9" },
+          "100%": { transform: "rotate(360deg)", opacity: "0.35" },
+        },
+        "scanline": {
+          "0%": { transform: "translateY(-100%)" },
+          "100%": { transform: "translateY(100%)" },
+        },
+        "glow-pulse": {
+          "0%, 100%": { boxShadow: "0 0 0 0 hsl(var(--primary) / 0.4)" },
+          "50%": { boxShadow: "0 0 24px 8px hsl(var(--primary) / 0.15)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -108,6 +132,9 @@ export default {
         "float": "float 3s ease-in-out infinite",
         "pulse-glow": "pulse-glow 2s ease-in-out infinite",
         "bounce-in": "bounce-in 0.6s ease-out",
+        "radar-sweep": "radar-sweep 6s linear infinite",
+        "scanline": "scanline 4s linear infinite",
+        "glow-pulse": "glow-pulse 2.4s ease-in-out infinite",
       },
     },
   },
