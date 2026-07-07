@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Flame, Trophy, Check, X } from "lucide-react";
@@ -11,6 +11,8 @@ import ArcadeLeaderboard from "../arcade/ArcadeLeaderboard";
 import { useArcadeScore } from "../arcade/useArcadeScore";
 import { toast } from "@/hooks/use-toast";
 import { DailyTriviaGlyph } from "./MenuArt";
+import { QUESTIONS } from "./questions";
+import { localizeQuestion, preloadTriviaTranslations } from "./localize";
 import {
   DailyRecord,
   loadStreak,
@@ -24,12 +26,30 @@ import {
 const DailyTriviaGame = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { t, tf } = useLanguage();
+  const { t, tf, language } = useLanguage();
   const { submitScore, userId } = useArcadeScore("daily_trivia");
   const { isFirstVisit, markSeen } = useGameFirstVisit("daily-trivia");
 
   const dateKey = useMemo(() => todayKey(), []);
-  const questions = useMemo(() => pickDailyQuestions(dateKey), [dateKey]);
+  const rawQuestions = useMemo(() => pickDailyQuestions(dateKey), [dateKey]);
+
+  const [translationsTick, setTranslationsTick] = useState(0);
+  useEffect(() => {
+    let cancelled = false;
+    preloadTriviaTranslations(language).then(() => {
+      if (!cancelled) setTranslationsTick((n) => n + 1);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [language]);
+
+  const questions = useMemo(
+    () => rawQuestions.map((q) => localizeQuestion(q, QUESTIONS.indexOf(q), language)),
+    // translationsTick intentionally forces a recompute once async translations resolve
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [rawQuestions, language, translationsTick],
+  );
 
   const existingRecord = useMemo(() => loadTodayRecord(dateKey), [dateKey]);
 
@@ -112,7 +132,7 @@ const DailyTriviaGame = () => {
               ))}
             </div>
 
-            <div className="w-full text-xs font-semibold text-primary uppercase tracking-wide mb-2">{q.category}</div>
+            <div className="w-full text-xs font-semibold text-primary uppercase tracking-wide mb-2">{t(`trivia.category.${q.category}`)}</div>
             <motion.h2
               key={current}
               initial={{ opacity: 0, y: 8 }}
