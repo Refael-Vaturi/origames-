@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Trophy, Sparkles, ShieldCheck, Bug, KeyRound, Play } from "lucide-react";
+import { CyberShieldGlyph } from "./MenuArt";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -334,31 +335,43 @@ const CyberShieldGame = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 z-30 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+            className="absolute inset-0 z-30 overflow-y-auto p-5"
+            style={{
+              background: "#050a08",
+              backgroundImage:
+                "linear-gradient(rgba(52,211,153,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(52,211,153,0.06) 1px, transparent 1px)",
+              backgroundSize: "22px 22px",
+            }}
           >
-            <div className="max-w-sm w-full text-center text-white space-y-5">
-              <div className="text-6xl">🔰</div>
-              <h1 className="text-3xl font-display font-bold bg-gradient-to-r from-sky-400 to-emerald-400 bg-clip-text text-transparent">
-                Cyber Shield
-              </h1>
-              {isFirstVisit ? (
-                <p className="text-sm text-white/70">{t("cyberShield.intro")}</p>
-              ) : (
-                <p className="text-xs text-white/50">{t("cyberShield.tagline")}</p>
-              )}
-              <div className="flex items-center justify-center gap-2 text-xs text-white/50">
+            <div className="max-w-sm w-full mx-auto min-h-full flex flex-col justify-center text-white py-8">
+              <p className="font-mono text-[11px] text-emerald-400/70">{"> initializing_defense_grid..."}</p>
+              <div className="flex items-center gap-4 mt-3">
+                <CyberShieldGlyph className="w-16 h-[70px] shrink-0" />
+                <div>
+                  <h1 className="text-3xl font-display font-bold text-white leading-tight">Cyber Shield</h1>
+                  <p className="font-mono text-[11px] text-sky-400/80 mt-0.5">[ TOWER DEFENSE ]</p>
+                </div>
+              </div>
+
+              <p className="text-sm text-white/60 mt-4">
+                {isFirstVisit ? t("cyberShield.intro") : t("cyberShield.tagline")}
+              </p>
+
+              <div className="flex items-center gap-2 text-xs text-white/50 mt-4 font-mono">
                 <Trophy className="w-4 h-4 text-amber-400" /> {t("arcade.bestLabel")}: {best}
               </div>
-              <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }}>
+
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} className="mt-6">
                 <Button
                   size="lg"
-                  className="w-full bg-gradient-to-r from-sky-500 to-emerald-500 hover:opacity-90 text-white font-bold shadow-[0_0_30px_rgba(56,189,248,0.35)]"
+                  className="w-full bg-emerald-400 hover:bg-emerald-300 text-[#050a08] font-display font-bold text-base shadow-[0_0_40px_rgba(52,211,153,0.4)]"
                   onClick={startGame}
                 >
                   {t("cyberShield.start")}
                 </Button>
               </motion.div>
-              <div className="pt-2">
+
+              <div className="mt-6 border-t border-emerald-400/10 pt-4">
                 <ArcadeLeaderboard gameId="cyber_shield" currentUserId={userId} refreshKey={refreshKey} />
               </div>
             </div>
@@ -370,44 +383,53 @@ const CyberShieldGame = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 z-30 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4"
+            className="absolute inset-0 z-30 overflow-y-auto p-5"
+            style={{
+              background: "#050a08",
+              backgroundImage:
+                "linear-gradient(rgba(52,211,153,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(52,211,153,0.06) 1px, transparent 1px)",
+              backgroundSize: "22px 22px",
+            }}
           >
-            <div className="max-w-sm w-full text-center text-white space-y-4">
+            <div className="max-w-sm w-full mx-auto min-h-full flex flex-col justify-center text-white py-8 text-center">
+              <p className="font-mono text-[11px] text-rose-400/80">{"> connection_terminated"}</p>
               <motion.div
-                className="text-5xl"
+                className="mx-auto mt-2"
                 initial={{ scale: 0.5, rotate: -15 }}
                 animate={{ scale: 1, rotate: 0 }}
                 transition={{ type: "spring", stiffness: 260, damping: 12 }}
               >
-                💥
+                <CyberShieldGlyph className="w-14 h-[62px] opacity-60" />
               </motion.div>
-              <h2 className="text-2xl font-display font-bold">{t("cyberShield.gameOver")}</h2>
-              <p className="text-xs text-white/50">{tf("cyberShield.survivedToWave", { wave: finalWave })}</p>
-              <div className="text-4xl font-black tabular-nums bg-gradient-to-r from-sky-400 to-emerald-400 bg-clip-text text-transparent">
+              <h2 className="text-2xl font-display font-bold mt-2">{t("cyberShield.gameOver")}</h2>
+              <p className="text-xs text-white/50 font-mono">{tf("cyberShield.survivedToWave", { wave: finalWave })}</p>
+              <div className="text-5xl font-display font-black tabular-nums text-emerald-400 mt-1">
                 {finalScore}
               </div>
               {finalScore >= best && finalScore > 0 && (
                 <motion.div
                   initial={{ opacity: 0, y: -6 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="flex items-center justify-center gap-1.5 text-amber-400 text-sm font-semibold"
+                  className="flex items-center justify-center gap-1.5 text-amber-400 text-sm font-semibold mt-2"
                 >
                   <Sparkles className="w-4 h-4" /> {t("arcade.newBest")}
                 </motion.div>
               )}
-              <div className="flex gap-2">
+              <div className="flex gap-2 mt-5">
                 <motion.div className="flex-1" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }}>
                   <Button variant="outline" className="w-full border-white/30 text-white" onClick={submitToLeaderboard}>
                     {t("arcade.submitScore")}
                   </Button>
                 </motion.div>
                 <motion.div className="flex-1" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.96 }}>
-                  <Button className="w-full bg-gradient-to-r from-sky-500 to-emerald-500 text-white font-bold" onClick={startGame}>
+                  <Button className="w-full bg-emerald-400 hover:bg-emerald-300 text-[#050a08] font-bold" onClick={startGame}>
                     {t("arcade.retry")}
                   </Button>
                 </motion.div>
               </div>
-              <ArcadeLeaderboard gameId="cyber_shield" currentUserId={userId} refreshKey={refreshKey} />
+              <div className="mt-5 border-t border-emerald-400/10 pt-4">
+                <ArcadeLeaderboard gameId="cyber_shield" currentUserId={userId} refreshKey={refreshKey} />
+              </div>
             </div>
           </motion.div>
         )}
