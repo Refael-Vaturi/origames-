@@ -72,9 +72,59 @@ const WORDS_HE: string[] = [
   "עצבות", "אמונה", "שניות",
 ];
 
+// Curated common 5-letter Spanish words. Kept accent-free (real, correctly
+// unaccented words) so the standard QWERTY layout stays fully valid.
+const WORDS_ES: string[] = [
+  "PERRO", "GATOS", "CASAS", "MESAS", "LIBRO", "PLAYA", "NOCHE", "VERDE", "LARGO", "CORTO",
+  "FUEGO", "AGUAS", "CIELO", "MUNDO", "VIDAS", "AMIGO", "NIEVE", "PLATO", "FRUTA", "LECHE",
+  "COLOR", "DULCE", "FELIZ", "BARCO", "CALLE", "NARIZ", "BOCAS", "MANOS", "OREJA", "PELOS",
+  "BARBA", "FALDA", "BOLSO", "RELOJ", "BANCO", "CAMPO", "MONTE", "VALLE", "COSTA", "ISLAS",
+  "NORTE", "OESTE", "LADOS", "ABAJO", "CERCA", "LEJOS", "FUERA", "NUEVO", "VIEJO", "JOVEN",
+  "SUCIO", "LENTO", "GORDO", "FLACO", "POBRE",
+];
+
+// Curated common 5-letter French words, also kept accent-free.
+const WORDS_FR: string[] = [
+  "CHIEN", "CHATS", "TABLE", "LIVRE", "PORTE", "PLAGE", "NUAGE", "ARBRE", "FLEUR", "VERTE",
+  "GRAND", "PETIT", "NOIRE", "BLANC", "JAUNE", "ROUGE", "MONDE", "DOUCE", "CHAUD", "FROID",
+  "CLAIR", "SALLE", "CHOSE", "PLACE", "ROUTE", "FORCE", "SPORT", "COURT", "LARGE", "DOUZE",
+  "JEUNE", "VIEUX", "BEAUX", "FRAIS", "SUCRE", "PAINS", "POMME", "FRUIT", "TRAIN", "AVION",
+  "CHAMP", "MONTS",
+];
+
+// Curated common 5-letter German words, kept free of umlauts/ß so the
+// standard QWERTY layout stays fully valid.
+const WORDS_DE: string[] = [
+  "BLUME", "TISCH", "STUHL", "LICHT", "APFEL", "BIRNE", "TRAUM", "MONAT", "WOCHE", "JAHRE",
+  "KATZE", "HUNDE", "PFERD", "VOGEL", "FISCH", "BLATT", "STEIN", "BERGE", "STADT", "VATER",
+  "LEUTE", "PREIS", "MARKT", "LADEN", "REGEN", "WOLKE", "SONNE", "STERN", "MEERE", "KLEID",
+  "JACKE", "SCHUH", "BRIEF", "SEITE", "WORTE", "FRAGE",
+];
+
+// Curated common 5-letter Portuguese words, kept accent-free.
+const WORDS_PT: string[] = [
+  "CASAS", "LIVRO", "PORTA", "PRAIA", "NOITE", "VERDE", "LARGO", "FOGOS", "MUNDO", "AMIGO",
+  "PRATO", "FRUTA", "LEITE", "DOCES", "FELIZ", "BARCO", "NARIZ", "BOCAS", "BARBA", "BOLSA",
+  "BANCO", "CAMPO", "MONTE", "VALES", "COSTA", "ILHAS", "NORTE", "LADOS", "PERTO", "LONGE",
+  "NOVOS", "VELHO", "JOVEM", "SUJOS", "LENTO", "GORDO", "POBRE", "LIVRE", "FORTE", "FRACO",
+];
+
+// Curated common 5-letter Italian words, kept accent-free.
+const WORDS_IT: string[] = [
+  "LIBRO", "PORTA", "NOTTE", "VERDE", "LARGO", "FUOCO", "MONDO", "AMICO", "LATTE", "DOLCE",
+  "BARCA", "BOCCA", "BARBA", "BORSA", "BANCA", "CAMPO", "MONTE", "VALLE", "COSTA", "ISOLE",
+  "NUOVO", "LENTO", "MAGRO", "FORTE", "FIORE", "CIELO", "SEDIA", "LETTO", "TETTO", "PIANO",
+  "BAGNO", "PARCO", "TRENO", "AEREO",
+];
+
 export const WORD_LISTS: Partial<Record<Language, string[]>> = {
   en: WORDS_EN,
   he: WORDS_HE,
+  es: WORDS_ES,
+  fr: WORDS_FR,
+  de: WORDS_DE,
+  pt: WORDS_PT,
+  it: WORDS_IT,
 };
 
 // Physical/on-screen keyboard layouts, only needed for languages whose native
