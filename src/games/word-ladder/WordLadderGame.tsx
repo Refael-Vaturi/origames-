@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Flame, Trophy, Delete } from "lucide-react";
+import { ArrowLeft, Flame, Trophy, Delete, CornerDownLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -10,7 +10,7 @@ import { useGameFirstVisit } from "@/hooks/useGameFirstVisit";
 import ArcadeLeaderboard from "../arcade/ArcadeLeaderboard";
 import { useArcadeScore } from "../arcade/useArcadeScore";
 import { toast } from "@/hooks/use-toast";
-import { MAX_GUESSES, WORD_LENGTH } from "./words";
+import { MAX_GUESSES, getKeyboardLayout, getLetterPattern, getWordLength } from "./words";
 import { WordLadderGlyph } from "./MenuArt";
 import {
   DailyRecord,
@@ -25,12 +25,6 @@ import {
   todayKey,
 } from "./logic";
 
-const KEY_ROWS = [
-  ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
-  ["A", "S", "D", "F", "G", "H", "J", "K", "L"],
-  ["ENTER", "Z", "X", "C", "V", "B", "N", "M", "BACK"],
-];
-
 const STATUS_BG: Record<LetterStatus, string> = {
   correct: "bg-emerald-500 text-white border-emerald-500",
   present: "bg-amber-400 text-white border-amber-400",
@@ -40,12 +34,14 @@ const STATUS_BG: Record<LetterStatus, string> = {
 const WordLadderGame = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { t, tf } = useLanguage();
+  const { t, tf, language } = useLanguage();
   const { submitScore, userId } = useArcadeScore("word_ladder");
   const { isFirstVisit, markSeen } = useGameFirstVisit("word-ladder");
 
   const dateKey = useMemo(() => todayKey(), []);
-  const answer = useMemo(() => pickDailyWord(dateKey), [dateKey]);
+  const answer = useMemo(() => pickDailyWord(language, dateKey), [language, dateKey]);
+  const wordLength = useMemo(() => getWordLength(language), [language]);
+  const keyRows = useMemo(() => getKeyboardLayout(language), [language]);
 
   const [guesses, setGuesses] = useState<string[]>([]);
   const [results, setResults] = useState<LetterStatus[][]>([]);
@@ -59,14 +55,20 @@ const WordLadderGame = () => {
   const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
-    const record = loadTodayRecord(dateKey);
+    const record = loadTodayRecord(language, dateKey);
     if (record && record.finished) {
       setGuesses(record.guesses);
       setResults(record.results);
       setFinished(true);
       setWon(record.won);
+    } else {
+      setGuesses([]);
+      setResults([]);
+      setFinished(false);
+      setWon(false);
     }
-  }, [dateKey]);
+    setCurrent("");
+  }, [language, dateKey]);
 
   const keyStatus = useMemo(() => {
     const map: Record<string, LetterStatus> = {};
@@ -85,7 +87,7 @@ const WordLadderGame = () => {
 
   const submitGuess = useCallback(() => {
     if (finished) return;
-    if (!isValidGuess(current)) {
+    if (!isValidGuess(current, language)) {
       setShake(true);
       playError();
       setTimeout(() => setShake(false), 400);
@@ -107,10 +109,10 @@ const WordLadderGame = () => {
       setFinished(true);
       setWon(isWin);
       const record: DailyRecord = { dateKey, guesses: newGuesses, results: newResults, won: isWin, finished: true };
-      saveTodayRecord(record);
+      saveTodayRecord(record, language);
       setStreak(loadStreak());
     }
-  }, [answer, current, dateKey, finished, guesses, results]);
+  }, [answer, current, dateKey, finished, guesses, results, language]);
 
   const handleKey = useCallback(
     (key: string) => {
@@ -119,23 +121,24 @@ const WordLadderGame = () => {
         submitGuess();
       } else if (key === "BACK") {
         setCurrent((c) => c.slice(0, -1));
-      } else if (current.length < WORD_LENGTH) {
+      } else if (current.length < wordLength) {
         playClick();
         setCurrent((c) => c + key);
       }
     },
-    [current.length, finished, submitGuess],
+    [current.length, finished, submitGuess, wordLength],
   );
 
   useEffect(() => {
+    const pattern = getLetterPattern(language);
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Enter") handleKey("ENTER");
       else if (e.key === "Backspace") handleKey("BACK");
-      else if (/^[a-zA-Z]$/.test(e.key)) handleKey(e.key.toUpperCase());
+      else if (pattern.test(e.key)) handleKey(language === "en" ? e.key.toUpperCase() : e.key);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [handleKey]);
+  }, [handleKey, language]);
 
   const finalScore = finished ? scoreForRecord({ dateKey, guesses, results, won, finished }) : 0;
 
@@ -157,8 +160,8 @@ const WordLadderGame = () => {
 
   const rows = Array.from({ length: MAX_GUESSES }, (_, i) => {
     if (i < guesses.length) return { letters: guesses[i].split(""), status: results[i] };
-    if (i === guesses.length && !finished) return { letters: current.padEnd(WORD_LENGTH, " ").split(""), status: null };
-    return { letters: Array(WORD_LENGTH).fill(""), status: null };
+    if (i === guesses.length && !finished) return { letters: current.padEnd(wordLength, " ").split(""), status: null };
+    return { letters: Array(wordLength).fill(""), status: null };
   });
 
   return (
@@ -181,7 +184,7 @@ const WordLadderGame = () => {
           transition={{ duration: 0.35 }}
         >
           {rows.map((row, i) => (
-            <div key={i} className="grid grid-cols-5 gap-1.5">
+            <div key={i} className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${wordLength}, minmax(0, 1fr))` }}>
               {row.letters.map((letter, j) => (
                 <div
                   key={j}
@@ -198,7 +201,7 @@ const WordLadderGame = () => {
 
         {!finished && (
           <div className="w-full space-y-1.5">
-            {KEY_ROWS.map((row, i) => (
+            {keyRows.map((row, i) => (
               <div key={i} className="flex justify-center gap-1">
                 {row.map((key) => {
                   const status = keyStatus[key];
@@ -211,7 +214,7 @@ const WordLadderGame = () => {
                         isSpecial ? "px-3 bg-muted text-foreground" : "w-8"
                       } ${!isSpecial && status ? STATUS_BG[status] : !isSpecial ? "bg-card border border-border text-foreground" : ""}`}
                     >
-                      {key === "BACK" ? <Delete className="w-4 h-4" /> : key}
+                      {key === "BACK" ? <Delete className="w-4 h-4" /> : key === "ENTER" ? <CornerDownLeft className="w-4 h-4" /> : key}
                     </button>
                   );
                 })}

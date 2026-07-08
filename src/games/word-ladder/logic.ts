@@ -1,4 +1,5 @@
-import { MAX_GUESSES, WORD_LENGTH, WORDS } from "./words";
+import type { Language } from "@/contexts/LanguageContext";
+import { MAX_GUESSES, getLetterPattern, getWordList } from "./words";
 
 export type LetterStatus = "correct" | "present" | "absent";
 
@@ -15,23 +16,25 @@ function hashString(s: string): number {
   return h;
 }
 
-export function pickDailyWord(dateKey: string = todayKey()): string {
-  const idx = hashString(dateKey) % WORDS.length;
-  return WORDS[idx];
+export function pickDailyWord(language: Language, dateKey: string = todayKey()): string {
+  const list = getWordList(language);
+  const idx = hashString(dateKey) % list.length;
+  return list[idx];
 }
 
 export function evaluateGuess(guess: string, answer: string): LetterStatus[] {
-  const result: LetterStatus[] = new Array(WORD_LENGTH).fill("absent");
+  const length = answer.length;
+  const result: LetterStatus[] = new Array(length).fill("absent");
   const answerLetters = answer.split("");
-  const used = new Array(WORD_LENGTH).fill(false);
+  const used = new Array(length).fill(false);
 
-  for (let i = 0; i < WORD_LENGTH; i++) {
+  for (let i = 0; i < length; i++) {
     if (guess[i] === answerLetters[i]) {
       result[i] = "correct";
       used[i] = true;
     }
   }
-  for (let i = 0; i < WORD_LENGTH; i++) {
+  for (let i = 0; i < length; i++) {
     if (result[i] === "correct") continue;
     const idx = answerLetters.findIndex((l, j) => l === guess[i] && !used[j]);
     if (idx !== -1) {
@@ -42,8 +45,11 @@ export function evaluateGuess(guess: string, answer: string): LetterStatus[] {
   return result;
 }
 
-export function isValidGuess(guess: string): boolean {
-  return guess.length === WORD_LENGTH && /^[A-Z]+$/.test(guess);
+export function isValidGuess(guess: string, language: Language): boolean {
+  const wordLength = getWordList(language)[0]?.length ?? 5;
+  if ([...guess].length !== wordLength) return false;
+  const pattern = getLetterPattern(language);
+  return [...guess].every((ch) => pattern.test(ch));
 }
 
 export interface DailyRecord {
@@ -83,9 +89,9 @@ function saveStreak(data: StreakData) {
   }
 }
 
-export function loadTodayRecord(dateKey: string = todayKey()): DailyRecord | null {
+export function loadTodayRecord(language: Language, dateKey: string = todayKey()): DailyRecord | null {
   try {
-    const raw = localStorage.getItem(RECORD_PREFIX + dateKey);
+    const raw = localStorage.getItem(RECORD_PREFIX + language + "-" + dateKey);
     if (raw) return JSON.parse(raw);
   } catch {
     /* ignore */
@@ -100,9 +106,9 @@ function isYesterday(dateKey: string, today: string): boolean {
   return dateKey === y;
 }
 
-export function saveTodayRecord(record: DailyRecord) {
+export function saveTodayRecord(record: DailyRecord, language: Language) {
   try {
-    localStorage.setItem(RECORD_PREFIX + record.dateKey, JSON.stringify(record));
+    localStorage.setItem(RECORD_PREFIX + language + "-" + record.dateKey, JSON.stringify(record));
   } catch {
     /* ignore */
   }
