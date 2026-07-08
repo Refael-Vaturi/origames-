@@ -1,138 +1,98 @@
+# רה-דיזיין מלא – 15 משחקים בסגנון Cyber Neon Arcade
 
-# תוכנית עבודה מפורטת — סבב עיצוב + תיקונים + AI Admin
+## המטרה
+כל משחק יראה כמו מה שהוא באמת מייצג – לא מופשט, לא "חץ במקום אוטו". שדרוג gameplay-visuals + HUD בסטנדרט AAA mobile, עם פלטת Cyber Mint (#0F172A רקע, #10B981 primary neon, #06B6D4 accent, #F0FDF4 טקסט).
 
-## חלק 1 — מערכת עיצוב חדשה (Cyber Mint / Space Grotesk / Bento)
+## עקרונות אחידים לכל המשחקים
+- **HUD אחיד**: לוגו/שם משחק שמאל, ניקוד/שלב באמצע, כפתור pause/back ימין. גופן Space Grotesk לספרות, DM Sans לטקסט.
+- **Juice**: screen shake בפגיעות, particles על כל פעולה משמעותית, glow-pulse על UI, trailing motion.
+- **פלטה**: רקע כהה #0F172A עם gradient, אקסנטים ניאון #10B981/#06B6D4, סכנה #f43f5e.
+- **Menu מחודש**: card עם live preview animation של המכניקה + best score + כפתור Start ניאוני.
+- **Game Over**: overlay עם glassmorphism, סטטיסטיקה, כפתור Retry עם גלואינג.
 
-### 1.1 טוקנים גלובליים (`src/index.css` + `tailwind.config.ts`)
-- להגדיר את פלטת **Cyber Mint** כ־HSL בלבד:
-  - `--background: 222 47% 11%` (‎#0F172A)
-  - `--foreground: 138 76% 97%` (‎#F0FDF4)
-  - `--primary: 160 84% 39%` (‎#10B981 ירוק מנטה)
-  - `--primary-foreground: 222 47% 11%`
-  - `--accent: 189 94% 43%` (‎#06B6D4 ציאן)
-  - `--muted / --card / --border / --ring` בגוונים כהים עם רמז ירקרק
-- להוסיף טוקנים סמנטיים חדשים:
-  - `--gradient-hero`, `--gradient-tactical`, `--gradient-scan`
-  - `--shadow-glow`, `--shadow-tactical`, `--shadow-bento`
-  - `--radar-pulse`, `--scanline`
-- ב־`tailwind.config.ts`:
-  - `fontFamily.display = ['Space Grotesk', ...]`, `fontFamily.sans = ['DM Sans', ...]`
-  - להוסיף `boxShadow`, `backgroundImage`, ו־`animation/keyframes` חדשים: `radar-sweep`, `scanline`, `bento-tilt`, `glow-pulse`
-- להוסיף `<link>` ל־Google Fonts (Space Grotesk + DM Sans) ב־`index.html`
+## שינויים ספציפיים per-game
 
-### 1.2 מסך Portal (`src/pages/Portal.tsx` + קומפוננטות משנה)
-- Layout מסוג **Bento Grid** בסגנון Tactical HUD:
-  - כרטיס Hero גדול עם המשחק הנוכחי / פיצ'ר, רקע גרדיאנט + סריקת radar
-  - טייל Quick Play (רשימת 5 המשחקים) — כרטיסים ריבועיים עם hover‑lift וזוהר
-  - טייל סטטיסטיקות (קרדיטים, רמה, חברים)
-  - טייל התראות / קמפיינים חדשים
-  - טייל פרופיל + כפתור הגדרות (הגלגל המונפש נשמר)
-- Micro‑interactions: tilt קל, glow, ספינרים בעדינות; לכבד `prefers-reduced-motion`
-- כל הצבעים דרך הטוקנים בלבד (בלי `text-white`/`bg-black`)
+### 1. Velocity Drift (הכי דחוף – המשתמש ציין אותו)
+- **החלף את החץ באוטו** – ספרייט אוטו מלמעלה (top-down) או פרספקטיבת נהג (chase cam) עם גלגלים, פנסים, זנב אור.
+- **כביש**: 3 מסלולים עם קווים לבנים מקווקווים שנעים לאחור, שוליים ניאוניים, guardrails, גשרים.
+- **סביבה**: עיר לילה עם בניינים ניאוניים דוהרים בצדדים, מנהרות, גשמי אור.
+- **HUD**: מד מהירות עגול בפינה, מונה זמן, drift-meter מתמלא בפניות.
+- **אפקטים**: skid marks, drift sparks כתומים, boost trail כחול, screen shake בהתנגשות.
 
-### 1.3 מסך Iron Dome תפריט (`src/pages/IronDome.tsx` phase='menu')
-- **Kinetic Command Matrix**: bento עם 3 CTA ראשיים (Campaign / Survival / World)
-- כרטיסים משניים: Rules, Leaderboard, Store, Perks
-- באנר "התחבר כדי לשמור התקדמות" למשתמש אורח
-- אנימציית radar‑sweep + scanline ברקע, פולסים על ה‑CTA
-- ניקוי כל צבעי hex/tailwind ישירים והמרתם לטוקנים
+### 2. Iron Dome
+- שדרוג ה-launcher מ-triangle לספרייט מערכת יירוט אמיתי (base + turret + radar dish).
+- טילי אויב עם lens flare + smoke trail; יירוטים = flash + shockwave.
+- HUD בסגנון tactical: radar sweep, threat count, wave indicator, energy bar.
 
-### 1.4 בדיקות ויזואליות
-- להריץ Playwright על `/` ו־`/iron-dome`, לצלם, לוודא שאין רגרסיות RTL ושאין contrast issues
+### 3. Rhythm Blade
+- Blade אמיתי (חרב זוהרת) במקום פס, notes עם glow rings, hit rings expand.
+- Combo counter גדול + streak trail, אפקט freeze-frame בפגיעה מושלמת.
 
----
+### 4. Gravity Flip
+- דמות רצה עם תנועה של רצה (לא ריבוע), gravity lines בהיפוך, particles כשהופכים.
+- מכשולים כ-hazard tiles עם ניאון אדום; רקע פרלקס.
 
-## חלק 2 — תיקון "פתיחת שלבים מהאדמין ל‑Iron Dome Campaign"
+### 5. Cyber Shield
+- מגן זוהר בפועל עם shield mesh, hex-grid רקע, אויבים כ-viruses/packets.
+- HUD מסך CRT: uptime, threats blocked, integrity bar.
 
-### 2.1 האבחון הנוכחי
-- באדמין `unlockLevel` מעדכן ב־DB: `campaignMaxLevel`, `admin_max_level`, `unlocked_levels`
-- בקליינט `loadProgress` קורא רק את `iron_dome_progress.max_level` ← ולכן לא רואה את מה שהאדמין פתח אם הערך גבוה מ‑max_level
-- אין subscription realtime — צריך רענון ידני
+### 6. Wobble Race
+- דמות עם רגליים מתנודדות (ragdoll suggestion), מסלול עם רמפות, קו סיום עם דגלים.
+- Camera follow, dust particles ברגליים.
 
-### 2.2 שינויים
-1. **`loadProgress`** (ב־`IronDome.tsx` או בהוק `useIronDomeProgress`):
-   - לקרוא גם את `admin_max_level` ו־`unlocked_levels`
-   - `effectiveMax = GREATEST(max_level, admin_max_level, MAX(unlocked_levels))`
-   - להזרים את זה ל־state של Campaign selector
-2. **Realtime**:
-   - להוסיף `supabase.channel('iron_dome_progress:'+userId).on('postgres_changes', ...)` שמעדכן את ה‑state מיידית כשהאדמין משנה
-3. **Level Select UI**:
-   - כפתור שלב נעול ↔ פתוח לפי `effectiveMax`
-   - קליק על שלב פתוח → קופץ ישר אליו בלי לחייב מעבר סדרתי מהשלב 1
-4. **Admin unlock action**:
-   - לוודא שה־RPC/`update` כותב את שלושת השדות באטומיות (טרנזקציה יחידה או RPC ייעודי `admin_unlock_level(user_id, level)`)
-   - ליצור אם חסר: פונקציה `security definer` שמוודאת שהמשתמש הוא admin לפי `has_role`
+### 7. Rope Swing
+- דמות מלאה במקום עיגול, חבל עם physics מוצג, canyon עם עומק (פרלקס).
+- Successful landing = flash + fireworks.
 
-### 2.3 בדיקה
-- Playwright: להתחבר כאדמין → לפתוח שלב 15 למשתמש X → להתחבר כ־X → לפתוח Iron Dome → לוודא ששלב 15 זמין ושלחיצה מעלה ישר את השלב
+### 8. Fruit Merge
+- פירות עם gradient shading + rim light, מיכל זכוכית שקוף עם glow.
+- Merge = burst particles + shockwave + score popup עולה למעלה.
 
----
+### 9. Merge Tycoon
+- בניינים תלת-מימדיים (2.5D isometric look), coins עם ספין, "level up" flash.
+- Skyline רקע עם ניאון עיר, יום/לילה cycle.
 
-## חלק 3 — תיקון הקלטות באדמין
+### 10. Word Ladder
+- אריחי Scrabble אמיתיים (עם צל, gradient, אות מודגשת), Rack למטה, ניקוד flying.
+- קונפטי בהצלחה, shake באות שגויה.
 
-### 3.1 בעיה
-- אין טבלה `game_recordings` בכלל בסכמה
-- באדמין קיים UI שקורא אליה ← קורס/מציג ריק
+### 11. Daily Trivia
+- כרטיס שאלה מעוצב, טיימר טבעת מסתובבת, options ככפתורים גדולים עם hover glow.
+- Correct = ירוק pulse + confetti, Wrong = אדום shake.
 
-### 3.2 מיגרציה חדשה
-טבלה `public.game_recordings` עם:
-- `user_id uuid → auth.users`, `game_type text`, `level int`, `duration_ms int`
-- `events jsonb` (או `storage_path text` אם נעדיף Storage)
-- `score int`, `metadata jsonb`
-- `created_at`, `updated_at`
-- `GRANT SELECT, INSERT ON ... TO authenticated`, `GRANT ALL TO service_role`
-- RLS:
-  - insert/select self: `auth.uid() = user_id`
-  - select כל: `has_role(auth.uid(),'admin')`
-- אינדקסים: `(user_id, created_at DESC)`, `(game_type, level)`
-- טריגר `updated_at`
+### 12. City Find
+- שדרוג ה-globe/map עם ניאון borders, pin drop animation עם ripple.
+- מד מרחק שמתעדכן חי, HUD מסך RADAR.
 
-### 3.3 קליינט
-- הוק חדש `useGameRecordings` לרשימה + נגן
-- באדמין: טאב Recordings — פילטרים (משתמש/משחק/שלב), הפעלה, מחיקה
-- ב־Iron Dome: לרשום events (spawn/interception/hit) לתוך buffer ולשמור בסוף הריצה
+### 13. Color Identify
+- פלטת צבעים כ-swatches עם shine, מד זמן מתמלא, streak counter.
+- Correct = burst בצבע הנכון.
 
----
+### 14. Clicker
+- אובייקט מרכזי גדול עם pulse + click ripples, +N flying numbers, upgrade cards.
+- Idle animations (float, glow).
 
-## חלק 4 — מודול "AI Admin" עם Gemini
+### 15. Menu Art (glyphs) לכולם
+- החלפת ה-MenuArt.tsx של כל משחק לגרסה שמראה בפועל את המכניקה (אוטו נוסע, טילים מתפוצצים, פירות מתמזגים...).
 
-### 4.1 מסך חדש `src/pages/AdminAI.tsx` (מוגן ב־`has_role='admin'`)
-- שדה API Key של Gemini + כפתור Save (נשמר דרך edge function שכותב ל‑secrets — לא ב־DB גלוי; חלופה: טבלה `admin_settings` מוצפנת אך עדיפות ל‑secret)
-- אזור פרומפט חופשי: "מה לשנות באתר"
-- כפתור **Preview** ו־**Apply**
-- לוג היסטוריית שינויים
+## הגישה הטכנית
+- כל משחק משתמש ב-canvas render. עדכון בעיקר ב-`renderer.ts` (ציור ספרייטים במקום צורות פרימיטיביות) + `MenuArt.tsx` + מסך menu/gameover ב-`*Game.tsx`.
+- **אין נגיעה ב-engine.ts/logic** – רק שכבת visuals ו-UI.
+- שימוש ב-SVG paths + canvas 2D drawing (gradients, radial, shadow blur) במקום assets חיצוניים.
+- Tokens חדשים ב-`index.css` (arcade-*) ואנימציות משותפות ב-tailwind.config.
 
-### 4.2 Edge function `gemini-admin-edit`
-- קלט: `prompt`, קונטקסט (רשימת קבצים רלוונטיים / snippet)
-- קורא ל־Gemini 2.x עם system prompt שמחייב פלט JSON של Patch: מערך של `{file, find, replace}` או diff
-- מחזיר את ה־patch לקליינט
-- ב־Apply: פונקציה שמריצה כתיבה בפועל — **⚠️ שים לב**: קוד ריצה לא יכול לערוך את קבצי הפרויקט בפרוד. פתרון מעשי:
-  - שלב 1: להציג את ה‑diff המוצע + הוראות להעתקה ידנית (או שילוב עם GitHub API אם המשתמש יחבר repo)
-  - שלב 2 (מומלץ): להשתמש ב‑GitHub connector — ה‑function פותחת PR אוטומטי עם ה‑patch
-- בקרות בטיחות: whitelist של תיקיות (`src/`, `supabase/functions/`), חסימת מסלולים רגישים (`src/integrations/supabase/*`, `.env`)
+## סדר ביצוע
+1. Design tokens משותפים (arcade palette + animations) ב-index.css/tailwind
+2. Velocity Drift (הבעיה הכי בולטת שהמשתמש ציין)
+3. Iron Dome + Rhythm Blade + Cyber Shield (משחקי action)
+4. Gravity Flip + Wobble Race + Rope Swing (משחקי platformer)
+5. Fruit Merge + Merge Tycoon (משחקי merge)
+6. Word Ladder + Daily Trivia + Color Identify (משחקי מוח)
+7. City Find + Clicker + כל ה-MenuArts
 
-### 4.3 סוד
-- Gemini key: להשתמש ב־`add_secret` (`GEMINI_API_KEY`) ← המשתמש יזין דרך הטופס המאובטח
-- אין לאחסן את המפתח ב‑DB בשום מקרה
+## הערה
+זה עבודה גדולה מאוד. אני מתחיל מ-**Velocity Drift** במלואו (הבעיה שציינת במפורש – "חץ במקום אוטו") ואז עובר משחק-משחק. אחרי כל 3-4 משחקים אחזור אליך לאישור לפני המשך.
 
-### 4.4 איטרציות ("תעבור על זה כמה פעמים שיעבוד")
-- לאחר בנייה: הרצת סנאריו לדוגמה ("שנה את כותרת הפורטל ל‑X") — לוודא שהפלט תקין, שה‑diff מיושם, שאין שגיאות build
-- לתקן פרומפט/סכימת JSON עד יציבות
-
----
-
-## חלק 5 — סדר ביצוע מוצע
-1. עיצוב (חלק 1) — טוקנים → Portal → Iron Dome menu → בדיקות
-2. תיקון פתיחת שלבים (חלק 2)
-3. מיגרציית `game_recordings` + UI (חלק 3)
-4. AdminAI + Gemini (חלק 4)
-5. סבב QA כולל ב‑Playwright + פרסום
-
----
-
-## חלק 6 — סיכונים ונקודות שדורשות אישור
-- **AI Admin שעורך קוד בפרוד**: לא אפשרי ישירות ללא GitHub. צריך להחליט: (א) diff לצפייה בלבד, (ב) PR אוטומטי דרך GitHub connector, (ג) הזרקת שינויים ל‑DB בלבד (למשל טקסטים/הגדרות דינמיות). ממליץ ב'.
-- **אחסון מפתח Gemini**: secret בלבד, לא DB.
-- **הקלטות**: `jsonb` מספיק לרוב, אבל אם מריצים ארוך → Storage bucket.
-
-מוכן — אשר ואתחיל בחלק 1.
+## פירוט טכני
+- קבצים לעדכון: `src/games/*/renderer.ts` (15), `src/games/*/MenuArt.tsx` (15), `src/games/*/{Name}Game.tsx` (15 – menu+gameover), `src/index.css`, `tailwind.config.ts`.
+- אין שינויי DB, אין edge functions חדשים.
