@@ -132,30 +132,61 @@ export function render(ctx: CanvasRenderingContext2D, state: GameState, w: numbe
   }
   ctx.globalAlpha = 1;
 
-  // Player
+  // Player — running character sprite
   const playerScreenY = toScreenY(state.y, ceil, floor);
   const playerColor = state.gravityDir === 1 ? "#22d3ee" : "#c084fc";
   const invuln = state.invulnTimer > 0 && Math.floor(time / 80) % 2 === 0;
   ctx.save();
-  ctx.globalAlpha = invuln ? 0.35 : 1;
+  ctx.globalAlpha = invuln ? 0.4 : 1;
   ctx.translate(playerScreenX, playerScreenY);
-  ctx.rotate(state.velocityY * 0.15);
-  const glow = ctx.createRadialGradient(0, 0, 0, 0, 0, 26);
-  glow.addColorStop(0, `${playerColor}55`);
+  if (state.gravityDir === -1) ctx.scale(1, -1);
+
+  const bob = Math.sin(time * 0.02) * 2;
+  const legSwing = Math.sin(time * 0.025) * 6;
+
+  const glow = ctx.createRadialGradient(0, 0, 0, 0, 0, 30);
+  glow.addColorStop(0, `${playerColor}66`);
   glow.addColorStop(1, "transparent");
   ctx.fillStyle = glow;
-  ctx.fillRect(-26, -26, 52, 52);
-  ctx.fillStyle = playerColor;
   ctx.beginPath();
-  ctx.moveTo(0, -14);
-  ctx.lineTo(11, 0);
-  ctx.lineTo(0, 14);
-  ctx.lineTo(-11, 0);
-  ctx.closePath();
+  ctx.arc(0, 0, 30, 0, Math.PI * 2);
   ctx.fill();
-  ctx.strokeStyle = "#fff";
-  ctx.lineWidth = 1.5;
+
+  ctx.strokeStyle = playerColor;
+  ctx.lineCap = "round";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(-2, 6);
+  ctx.lineTo(-4 + legSwing * 0.4, 14);
+  ctx.moveTo(2, 6);
+  ctx.lineTo(4 - legSwing * 0.4, 14);
   ctx.stroke();
+
+  ctx.fillStyle = playerColor;
+  ctx.shadowColor = playerColor;
+  ctx.shadowBlur = 10;
+  ctx.beginPath();
+  ctx.roundRect(-6, -6 + bob, 12, 14, 3);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+
+  ctx.fillStyle = "#F0FDF4";
+  ctx.beginPath();
+  ctx.arc(0, -12 + bob, 5, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = "#0F172A";
+  ctx.fillRect(-3, -13 + bob, 6, 2);
+
+  ctx.strokeStyle = playerColor;
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(-5, -2 + bob);
+  ctx.lineTo(-7 - legSwing * 0.3, 4 + bob);
+  ctx.moveTo(5, -2 + bob);
+  ctx.lineTo(7 + legSwing * 0.3, 4 + bob);
+  ctx.stroke();
+
   ctx.restore();
 
   // Flip flash
