@@ -117,6 +117,13 @@ const WORDS_IT: string[] = [
   "BAGNO", "PARCO", "TRENO", "AEREO",
 ];
 
+// Curated common 5-letter Russian words.
+const WORDS_RU: string[] = [
+  "СТОЛЫ", "КНИГИ", "ДВЕРИ", "ГОРОД", "ПТИЦЫ", "ЦВЕТЫ", "ТРАВА", "ОГОНЬ", "ЗЕМЛЯ", "ВЕТЕР",
+  "ДОЖДЬ", "СНЕГА", "ВЕСНА", "ОСЕНЬ", "МЕСЯЦ", "СЕМЬЯ", "ШКОЛА", "ИГРОК", "ТАНЕЦ", "ПЕСНЯ",
+  "ФИЛЬМ", "КНИГА", "БУКВЫ", "СЛОВА", "ЯЗЫКИ", "ОБМАН", "ОТВЕТ", "КОНЕЦ", "СРЕДА",
+];
+
 export const WORD_LISTS: Partial<Record<Language, string[]>> = {
   en: WORDS_EN,
   he: WORDS_HE,
@@ -125,6 +132,7 @@ export const WORD_LISTS: Partial<Record<Language, string[]>> = {
   de: WORDS_DE,
   pt: WORDS_PT,
   it: WORDS_IT,
+  ru: WORDS_RU,
 };
 
 // Physical/on-screen keyboard layouts, only needed for languages whose native
@@ -141,12 +149,19 @@ export const KEYBOARD_LAYOUTS: Partial<Record<Language, string[][]>> = {
     ["ש", "ד", "ג", "כ", "ע", "י", "ח", "ל", "ך", "ף"],
     ["ENTER", "ז", "ס", "ב", "ה", "נ", "מ", "צ", "ת", "ץ", "BACK"],
   ],
+  // Standard Russian ЙЦУКЕН physical keyboard layout.
+  ru: [
+    ["Й", "Ц", "У", "К", "Е", "Н", "Г", "Ш", "Щ", "З", "Х", "Ъ"],
+    ["Ф", "Ы", "В", "А", "П", "Р", "О", "Л", "Д", "Ж", "Э"],
+    ["ENTER", "Я", "Ч", "С", "М", "И", "Т", "Ь", "Б", "Ю", "BACK"],
+  ],
 };
 
 // Matches a single letter typed on a physical keyboard for the given language.
 export const LETTER_PATTERNS: Partial<Record<Language, RegExp>> = {
   en: /^[a-zA-Z]$/,
   he: /^[א-ת]$/,
+  ru: /^[а-яА-ЯёЁ]$/,
 };
 
 export function getWordList(language: Language): string[] {
