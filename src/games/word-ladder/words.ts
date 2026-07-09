@@ -42,7 +42,7 @@ const WORDS_EN: string[] = [
   "REBEL", "REFER", "RELAX", "REPLY", "RIGHT", "RIVAL", "RIVER", "ROBOT", "ROMAN", "ROUGH",
   "ROUND", "ROUTE", "ROYAL", "RURAL", "SADLY", "SAFER", "SAUCE", "SCALE", "SCENE", "SCOPE",
   "SCORE", "SENSE", "SERVE", "SEVEN", "SHALL", "SHAPE", "SHARE", "SHARP", "SHEET", "SHELF",
-  "SHELL", "SHIFT", "SHINE", "SHIRT", "SHOCK", "SHOOT", "SHORT", "SHOWN", "SIGHT", "SIMPLE",
+  "SHELL", "SHIFT", "SHINE", "SHIRT", "SHOCK", "SHOOT", "SHORT", "SHOWN", "SIGHT", "SIEGE",
   "SINCE", "SIXTH", "SIXTY", "SKILL", "SLEEP", "SLIDE", "SMALL", "SMART", "SMILE", "SMITH",
   "SMOKE", "SOLID", "SOLVE", "SORRY", "SOUND", "SOUTH", "SPACE", "SPARE", "SPEAK", "SPEED",
   "SPEND", "SPENT", "SPLIT", "SPOKE", "SPORT", "STAFF", "STAGE", "STAKE", "STAND", "START",
@@ -124,6 +124,43 @@ const WORDS_RU: string[] = [
   "ФИЛЬМ", "КНИГА", "БУКВЫ", "СЛОВА", "ЯЗЫКИ", "ОБМАН", "ОТВЕТ", "КОНЕЦ", "СРЕДА",
 ];
 
+// Curated common 5-letter Ukrainian words.
+const WORDS_UK: string[] = [
+  "КНИГА", "ДВЕРІ", "МІСТО", "ПТАХИ", "КВІТИ", "ЗЕМЛЯ", "ВІТЕР", "СНІГИ", "ВЕСНА", "ОСІНЬ",
+  "ШКОЛА", "ІГРОК", "ПІСНЯ", "ФІЛЬМ", "КНИГИ", "СЛОВА", "ОБМАН", "РІЧКА", "ОЗЕРА", "ХМАРИ",
+  "ЛІКАР", "АКТОР", "ВЕЧІР", "РАНОК", "НАРОД", "ГОЛОС", "ДУМКА", "ВІЙНА",
+];
+
+// Curated common 5-letter Polish words, kept free of ą/ć/ę/ł/ń/ó/ś/ź/ż so the
+// standard QWERTY layout stays fully valid.
+const WORDS_PL: string[] = [
+  "KOTEK", "SERCE", "DOMEK", "RADIO", "TEATR", "RONDO", "MOTOR", "AKTOR", "NAUKA", "PRACA",
+  "KRAJE", "MORZE", "NIEBO", "OKRES", "TERAZ", "RAZEM", "WALKA", "GRUPA", "AKCJA", "ZAMEK",
+  "OWOCE", "KOLOR", "MEBEL", "NUMER", "ADRES", "OBRAZ", "LAMPA", "RZEKA", "ZIMNO", "RANEK",
+];
+
+// Curated common 5-letter Dutch words.
+const WORDS_NL: string[] = [
+  "PAARD", "BOMEN", "WATER", "BROOD", "KAMER", "APPEL", "FIETS", "BOTER", "KLEUR", "GROEN",
+  "BRUIN", "ZWART", "STOEL", "TAFEL", "BLOEM", "VOGEL", "ZOMER", "GROOT", "KLEIN", "REGEN",
+  "FILMS", "VADER", "BROER",
+];
+
+// Curated common 5-letter Swedish words, kept free of å/ä/ö so the standard
+// QWERTY layout stays fully valid.
+const WORDS_SV: string[] = [
+  "SKOLA", "STORM", "MUSIK", "POJKE", "FADER", "MODER", "GRUND", "STORA", "LJUST", "BRUNT",
+  "SNABB", "STARK", "GATAN", "HUSET", "TIDEN",
+];
+
+// Curated common 5-letter Turkish words, kept free of ç/ğ/ı/ö/ş/ü so the
+// standard QWERTY layout stays fully valid.
+const WORDS_TR: string[] = [
+  "MASAL", "KAPAK", "DOLAP", "ARABA", "ELMAS", "DENIZ", "KUTUP", "KUZEN", "SEPET", "TAVUK",
+  "LAMBA", "KUTLU", "KEMAN", "BAKAN", "ANLAM", "DAMAR", "KANAL", "MADEN", "LIMAN", "KEMIK",
+  "TARIH", "DEVIR", "SEVGI", "BILGI", "DEMIR", "YAZAR",
+];
+
 export const WORD_LISTS: Partial<Record<Language, string[]>> = {
   en: WORDS_EN,
   he: WORDS_HE,
@@ -133,6 +170,11 @@ export const WORD_LISTS: Partial<Record<Language, string[]>> = {
   pt: WORDS_PT,
   it: WORDS_IT,
   ru: WORDS_RU,
+  uk: WORDS_UK,
+  pl: WORDS_PL,
+  nl: WORDS_NL,
+  sv: WORDS_SV,
+  tr: WORDS_TR,
 };
 
 // Physical/on-screen keyboard layouts, only needed for languages whose native
@@ -155,6 +197,12 @@ export const KEYBOARD_LAYOUTS: Partial<Record<Language, string[][]>> = {
     ["Ф", "Ы", "В", "А", "П", "Р", "О", "Л", "Д", "Ж", "Э"],
     ["ENTER", "Я", "Ч", "С", "М", "И", "Т", "Ь", "Б", "Ю", "BACK"],
   ],
+  // Standard Ukrainian physical keyboard layout (a ЙЦУКЕН variant).
+  uk: [
+    ["Й", "Ц", "У", "К", "Е", "Н", "Г", "Ш", "Щ", "З", "Х", "Ї"],
+    ["Ф", "І", "В", "А", "П", "Р", "О", "Л", "Д", "Ж", "Є"],
+    ["ENTER", "Я", "Ч", "С", "М", "И", "Т", "Ь", "Б", "Ю", "BACK"],
+  ],
 };
 
 // Matches a single letter typed on a physical keyboard for the given language.
@@ -162,6 +210,7 @@ export const LETTER_PATTERNS: Partial<Record<Language, RegExp>> = {
   en: /^[a-zA-Z]$/,
   he: /^[א-ת]$/,
   ru: /^[а-яА-ЯёЁ]$/,
+  uk: /^[а-щьюяєіїґА-ЩЬЮЯЄІЇҐ]$/,
 };
 
 export function getWordList(language: Language): string[] {
