@@ -134,7 +134,7 @@ const WordLadderGame = () => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Enter") handleKey("ENTER");
       else if (e.key === "Backspace") handleKey("BACK");
-      else if (pattern.test(e.key)) handleKey(language === "en" ? e.key.toUpperCase() : e.key);
+      else if (pattern.test(e.key)) handleKey(e.key.toUpperCase());
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
