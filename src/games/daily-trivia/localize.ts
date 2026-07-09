@@ -18,6 +18,9 @@ const loaders: Partial<Record<Language, () => Promise<{ default: TranslationMap 
   es: () => import("./translations/es"),
   fr: () => import("./translations/fr"),
   ru: () => import("./translations/ru"),
+  de: () => import("./translations/de"),
+  pt: () => import("./translations/pt"),
+  it: () => import("./translations/it"),
 };
 
 const cache: Partial<Record<Language, TranslationMap>> = {};
