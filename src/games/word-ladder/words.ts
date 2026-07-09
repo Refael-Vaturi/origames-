@@ -72,6 +72,16 @@ const WORDS_HE: string[] = [
   "עצבות", "אמונה", "שניות",
 ];
 
+// Curated common 5-letter Arabic words (letters counted without short-vowel
+// marks, matching how Arabic is normally written). Mostly feminine nouns
+// ending in taa marbuta (ة), a very common 5-letter shape in Arabic.
+const WORDS_AR: string[] = [
+  "مدرسة", "كتابة", "سيارة", "جميلة", "كبيرة", "جديدة", "قديمة", "حديقة", "مكتبة", "قصيدة",
+  "عاصمة", "مدينة", "خريطة", "طبيعة", "ثقافة", "رياضة", "سياسة", "تجارة", "صناعة", "زراعة",
+  "طبيبة", "معلمة", "طالبة", "جامعة", "حكومة", "عائلة", "سعادة", "كرامة", "شجاعة", "نظافة",
+  "برودة", "حرارة", "مزرعة", "كنيسة",
+];
+
 // Curated common 5-letter Spanish words. Kept accent-free (real, correctly
 // unaccented words) so the standard QWERTY layout stays fully valid.
 const WORDS_ES: string[] = [
@@ -164,6 +174,7 @@ const WORDS_TR: string[] = [
 export const WORD_LISTS: Partial<Record<Language, string[]>> = {
   en: WORDS_EN,
   he: WORDS_HE,
+  ar: WORDS_AR,
   es: WORDS_ES,
   fr: WORDS_FR,
   de: WORDS_DE,
@@ -191,6 +202,12 @@ export const KEYBOARD_LAYOUTS: Partial<Record<Language, string[][]>> = {
     ["ש", "ד", "ג", "כ", "ע", "י", "ח", "ל", "ך", "ף"],
     ["ENTER", "ז", "ס", "ב", "ה", "נ", "מ", "צ", "ת", "ץ", "BACK"],
   ],
+  // Standard Arabic physical keyboard layout.
+  ar: [
+    ["ض", "ص", "ث", "ق", "ف", "غ", "ع", "ه", "خ", "ح", "ج", "د"],
+    ["ش", "س", "ي", "ب", "ل", "ا", "ت", "ن", "م", "ك", "ط"],
+    ["ENTER", "ئ", "ء", "ؤ", "ر", "ى", "ة", "و", "ز", "ظ", "BACK"],
+  ],
   // Standard Russian ЙЦУКЕН physical keyboard layout.
   ru: [
     ["Й", "Ц", "У", "К", "Е", "Н", "Г", "Ш", "Щ", "З", "Х", "Ъ"],
@@ -209,6 +226,7 @@ export const KEYBOARD_LAYOUTS: Partial<Record<Language, string[][]>> = {
 export const LETTER_PATTERNS: Partial<Record<Language, RegExp>> = {
   en: /^[a-zA-Z]$/,
   he: /^[א-ת]$/,
+  ar: /^[ء-ي]$/,
   ru: /^[а-яА-ЯёЁ]$/,
   uk: /^[а-щьюяєіїґА-ЩЬЮЯЄІЇҐ]$/,
 };
